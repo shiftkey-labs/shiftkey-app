@@ -110,10 +110,6 @@ After you submit your pull request, it will be reviewed by the maintainers. They
 - **Join the Discussion:** Participate in discussions on GitHub issues and pull requests.
 - **Stay Updated:** Regularly sync your fork with the main repository to stay up-to-date.
 
-## Code of Conduct
-
-Please follow our [Code of Conduct](LINK_TO_CODE_OF_CONDUCT) in all your interactions with the project.
-
 ## Thank You
 
 We appreciate your contributions to making the Shiftkey Labs mobile app a robust and valuable tool. Thank you for being a part of our community!
