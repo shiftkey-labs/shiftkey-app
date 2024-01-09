@@ -5,6 +5,7 @@ Welcome to the Shiftkey Labs mobile app contribution guide! This document is a c
 ## Prerequisites
 
 Before you begin, ensure you have the following installed:
+
 - Node.js
 - Expo CLI
 
@@ -15,7 +16,7 @@ Before you begin, ensure you have the following installed:
    Visit the [Shiftkey Labs repository on GitHub](https://github.com/orgs/shiftkey-labs/projects/1) and fork it to your account.
 
 2. **Clone the Forked Repository:**
-   
+
    ```bash
    git clone https://github.com/your-username/ShiftkeyEvents.git
    cd ShiftkeyEvents
@@ -104,6 +105,27 @@ Before you begin, ensure you have the following installed:
 ## Code Review Process
 
 After you submit your pull request, it will be reviewed by the maintainers. They may suggest changes, improvements, or additional tests. Keep an eye on your PR for feedback and continue the conversation until your PR is merged.
+
+## Development Guidelines
+
+As part of our commitment to maintaining a consistent and high-quality codebase, please adhere to the following guidelines:
+
+#### Using Existing Styles
+
+- **Theme Reference**: Make sure to utilize the theme setup in our `App` for styling common components like buttons and text. Additionally, refer to the `theme.ts` file, which contains global styles that should be incorporated into your work.
+
+#### Adherence to Stylesheets and Design
+
+- **Design Consistency**: Ensure that you strictly adhere to the stylesheets and design guidelines provided. This consistency is crucial for maintaining the unified look and feel of our application.
+
+#### Code Quality and Best Practices
+
+- **Linting**: Always run the linting tools before pushing your code. This helps in maintaining code quality and adhering to the coding standards.
+- **Prettier and ESLint Configuration**: Ensure that Prettier and ESLint are configured on your local machine. This will help you catch and fix issues early in the development process.
+
+#### Branch Management
+
+- **Production and Development Branches**: The latest production branch is `main`, and the latest development branch is `jason`. Make sure to base your work off the appropriate branch.
 
 ## Community and Communication
 
