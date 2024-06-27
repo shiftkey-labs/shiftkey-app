@@ -5,9 +5,20 @@ import EditScreenInfo from "@/components/EditScreenInfo";
 import { Text, View } from "@/components/Themed";
 import tw from "./styles/tailwind";
 import { useRouter } from "expo-router";
+import QRCode from "react-native-qrcode-svg";
+import state from "./state";
+import { useRef } from "react";
 
 export default function ModalScreen() {
   const router = useRouter();
+  const user = state.user.get();
+  const qrRef = useRef(null);
+  const currentEvent = state.currentEvent.get();
+  const qrCodeValue = JSON.stringify({
+    userId: user.uid,
+    eventId: currentEvent.id,
+    bookingDate: new Date().toISOString(),
+  });
 
   const handleBack = () => {
     router.back();
@@ -26,9 +37,12 @@ export default function ModalScreen() {
         <Text style={tw`text-center text-gray-600 mb-5`}>
           Point this QR code to the scan place
         </Text>
-        <Image
-          source={require("@/assets/images/events/qr-code.png")}
-          style={tw`w-48 h-48`}
+        <QRCode
+          value={qrCodeValue}
+          size={200}
+          backgroundColor="white"
+          color="black"
+          ref={qrRef}
         />
         <Text style={tw`text-xl font-montserratBold mt-5`}>DWP IV X AW</Text>
         <View style={tw`flex-row justify-between w-full mt-5`}>

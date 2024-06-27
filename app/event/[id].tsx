@@ -23,6 +23,7 @@ const EventDetails = () => {
   const currentEvent = state.currentEvent.get();
   const [loading, setLoading] = useState(true);
   const user = state.user.get();
+  const userBookings = state.userBookings.get();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -53,6 +54,8 @@ const EventDetails = () => {
       </View>
     );
   }
+
+  const isEventBooked = userBookings.some((booking) => booking.eventId === id);
 
   const handleConfirm = async () => {
     try {
@@ -119,7 +122,7 @@ const EventDetails = () => {
 
         <Text style={tw`text-lg font-bold mt-5`}>About Event</Text>
         <Text style={tw`text-gray-600 mt-2`}>{currentEvent.description}</Text>
-        {currentEvent.booked ? (
+        {isEventBooked ? (
           <TouchableOpacity
             style={tw`bg-primary p-4 rounded-lg mt-5`}
             onPress={handleViewTicket}
