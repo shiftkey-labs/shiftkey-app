@@ -1,71 +1,87 @@
-// app/tabs/myEvents.tsx
 import React from "react";
 import {
   View,
   Text,
-  ScrollView,
   TouchableOpacity,
   Image,
+  ScrollView,
   SafeAreaView,
 } from "react-native";
-import { useRouter } from "expo-router";
 import tw from "../styles/tailwind";
-import EventCard from "@/components/home/EventCard";
-import eventsData from "@/constants/eventsData"; // Replace with the actual data source for booked events
+import { FontAwesome } from "@expo/vector-icons";
 
-const MyEvents = () => {
-  const router = useRouter();
-
-  const handlePressEvent = (eventId: string) => {
-    router.push({ pathname: `/event/${eventId}` });
-  };
-
-  const bookedEvents = eventsData.filter((event) => event.booked);
-
+const Profile = () => {
   return (
-    <SafeAreaView style={tw`flex-1 bg-background p-5`}>
-      <View style={tw`flex-1 bg-background p-5`}>
-        <Text style={tw`text-2xl font-montserratBold mb-5`}>Events</Text>
-        <View style={tw`flex-row mb-5`}>
-          <TouchableOpacity style={tw`flex-1 bg-primary p-3 rounded-full mr-2`}>
-            <Text style={tw`text-center text-white`}>Upcoming</Text>
+    <SafeAreaView style={tw`flex-1 bg-background`}>
+      <ScrollView style={tw`flex-1 bg-background p-5`}>
+        <View style={tw`items-center mb-5`}>
+          <Image
+            source={require("@/assets/images/events/vansh.png")}
+            style={tw`w-24 h-24 rounded-full mb-3`}
+          />
+          <Text style={tw`text-2xl font-montserratBold`}>John Doe</Text>
+          <Text style={tw`text-gray-600`}>johndoe@example.com</Text>
+        </View>
+        <View style={tw`bg-white p-5 rounded-lg shadow-md mb-5`}>
+          <Text style={tw`text-lg font-montserratBold mb-3`}>
+            Account Settings
+          </Text>
+          <TouchableOpacity
+            style={tw`flex-row items-center justify-between mb-3`}
+            onPress={() => console.log("Edit Profile pressed")}
+          >
+            <Text style={tw`text-gray-700`}>Edit Profile</Text>
+            <FontAwesome name="chevron-right" size={24} color="gray" />
           </TouchableOpacity>
           <TouchableOpacity
-            style={tw`flex-1 bg-gray-200 p-3 rounded-full ml-2`}
+            style={tw`flex-row items-center justify-between mb-3`}
+            onPress={() => console.log("Change Password pressed")}
           >
-            <Text style={tw`text-center text-gray-600`}>Past Events</Text>
+            <Text style={tw`text-gray-700`}>Change Password</Text>
+            <FontAwesome name="chevron-right" size={24} color="gray" />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={tw`flex-row items-center justify-between mb-3`}
+            onPress={() => console.log("Notifications pressed")}
+          >
+            <Text style={tw`text-gray-700`}>Notifications</Text>
+            <FontAwesome name="chevron-right" size={24} color="gray" />
           </TouchableOpacity>
         </View>
-        {bookedEvents.length > 0 ? (
-          <ScrollView>
-            {bookedEvents.map((event) => (
-              <EventCard
-                key={event.id}
-                title={event.title}
-                location={event.location}
-                date={event.date}
-                image={event.image}
-                onPress={() => handlePressEvent(event.id)}
-              />
-            ))}
-          </ScrollView>
-        ) : (
-          <View style={tw`flex-1 items-center justify-center`}>
-            <Text style={tw`text-xl font-montserratBold mb-2`}>
-              No Upcoming Event
-            </Text>
-            <Text style={tw`text-gray-600 mb-5`}>No Result Show</Text>
-            <TouchableOpacity
-              style={tw`bg-primary p-4 rounded-lg`}
-              onPress={() => router.push("/")}
-            >
-              <Text style={tw`text-white text-center`}>Explore Events</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-      </View>
+        <View style={tw`bg-white p-5 rounded-lg shadow-md`}>
+          <Text style={tw`text-lg font-montserratBold mb-3`}>More Options</Text>
+          <TouchableOpacity
+            style={tw`flex-row items-center justify-between mb-3`}
+            onPress={() => console.log("Privacy Policy pressed")}
+          >
+            <Text style={tw`text-gray-700`}>Privacy Policy</Text>
+            <FontAwesome name="chevron-right" size={24} color="gray" />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={tw`flex-row items-center justify-between mb-3`}
+            onPress={() => console.log("Terms of Service pressed")}
+          >
+            <Text style={tw`text-gray-700`}>Terms of Service</Text>
+            <FontAwesome name="chevron-right" size={24} color="gray" />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={tw`flex-row items-center justify-between mb-3`}
+            onPress={() => console.log("Help & Support pressed")}
+          >
+            <Text style={tw`text-gray-700`}>Help & Support</Text>
+            <FontAwesome name="chevron-right" size={24} color="gray" />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={tw`flex-row items-center justify-between`}
+            onPress={() => console.log("Logout pressed")}
+          >
+            <Text style={tw`text-red-600`}>Logout</Text>
+            <FontAwesome name="chevron-right" size={24} color="gray" />
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
     </SafeAreaView>
   );
 };
 
-export default MyEvents;
+export default Profile;
