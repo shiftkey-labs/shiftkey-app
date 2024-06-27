@@ -24,8 +24,8 @@ const Home = () => {
   const recommendedEvents = eventsData.slice(3);
 
   return (
-    <SafeAreaView style={tw`flex-1 bg-white`}>
-      <ScrollView style={tw`flex-1 bg-white p-5`}>
+    <SafeAreaView style={tw`flex-1 bg-background`}>
+      <ScrollView style={tw`flex-1 bg-background p-5`}>
         <SearchBar />
         <View style={tw`flex-row mt-3`}>
           <View style={tw`flex-1 bg-gray-200 p-3 rounded-full mr-2`}>

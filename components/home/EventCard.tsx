@@ -19,7 +19,7 @@ const EventCard: React.FC<EventCardProps> = ({
 }) => {
   return (
     <TouchableOpacity
-      style={tw`flex-row items-center p-3 bg-white rounded-lg mb-2 shadow-md`}
+      style={tw`flex-row items-center p-3 bg-white rounded-lg mb-2 shadow-sm`}
       onPress={onPress}
     >
       <Image source={image} style={tw`w-16 h-16 rounded-lg`} />

@@ -12,6 +12,7 @@ export interface Event {
     venueAddress: string;
     time: string;
   };
+  booked?: boolean;
 }
 
 const eventsData: Event[] = [
@@ -30,6 +31,7 @@ const eventsData: Event[] = [
       venueAddress: "CS Building",
       time: "Tuesday, 4:00PM - 9:00PM",
     },
+    booked: true,
   },
   {
     id: "2",

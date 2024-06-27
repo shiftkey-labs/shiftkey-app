@@ -1,5 +1,12 @@
-import React from "react";
-import { View, Text, Image, TouchableOpacity, ScrollView } from "react-native";
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  Image,
+  TouchableOpacity,
+  ScrollView,
+  Modal,
+} from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import tw from "../styles/tailwind";
 import eventsData from "@/constants/eventsData";
@@ -8,6 +15,8 @@ import { FontAwesome } from "@expo/vector-icons";
 const EventDetails = () => {
   const { id } = useLocalSearchParams();
   const event = eventsData.find((event) => event.id === id);
+  const router = useRouter();
+  const [modalVisible, setModalVisible] = useState(false);
 
   if (!event) {
     return (
@@ -16,6 +25,19 @@ const EventDetails = () => {
       </View>
     );
   }
+
+  const handleConfirm = () => {
+    setModalVisible(true);
+  };
+
+  const handleViewTicket = () => {
+    router.push("/modal");
+  };
+
+  const handleGoHome = () => {
+    setModalVisible(false);
+    router.push("/");
+  };
 
   return (
     <ScrollView style={tw`flex-1 bg-background`}>
@@ -61,11 +83,59 @@ const EventDetails = () => {
 
         <Text style={tw`text-lg font-bold mt-5`}>About Event</Text>
         <Text style={tw`text-gray-600 mt-2`}>{event.details.description}</Text>
-
-        <TouchableOpacity style={tw`bg-primary p-4 rounded-lg mt-5`}>
-          <Text style={tw`text-white text-center`}>Confirm</Text>
-        </TouchableOpacity>
+        {event.booked ? (
+          <TouchableOpacity
+            style={tw`bg-primary p-4 rounded-lg mt-5`}
+            onPress={handleViewTicket}
+          >
+            <Text style={tw`text-white text-center`}>View Ticket</Text>
+          </TouchableOpacity>
+        ) : (
+          <TouchableOpacity
+            style={tw`bg-primary p-4 rounded-lg mt-5`}
+            onPress={handleConfirm}
+          >
+            <Text style={tw`text-white text-center`}>Confirm Attendance</Text>
+          </TouchableOpacity>
+        )}
       </View>
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => {
+          setModalVisible(!modalVisible);
+        }}
+      >
+        <View
+          style={tw`flex-1 justify-center items-center bg-black bg-opacity-50`}
+        >
+          <View style={tw`bg-white rounded-lg p-5 w-4/5`}>
+            <View style={tw`items-center mb-5`}>
+              <FontAwesome name="check-circle" size={50} color="green" />
+              <Text style={tw`text-2xl font-montserratBold mb-2`}>
+                Congratulations !
+              </Text>
+              <Text style={tw`text-center text-gray-600 mb-5`}>
+                You have successfully placed order for Darshan Raval music show.
+                Enjoy the event!
+              </Text>
+            </View>
+            <TouchableOpacity
+              style={tw`bg-primary p-4 rounded-lg mb-3`}
+              onPress={handleViewTicket}
+            >
+              <Text style={tw`text-white text-center`}>View E-Ticket</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={tw`bg-gray-200 p-4 rounded-lg`}
+              onPress={handleGoHome}
+            >
+              <Text style={tw`text-center`}>Go to Home</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </ScrollView>
   );
 };
