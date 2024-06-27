@@ -10,12 +10,12 @@ import {
   SafeAreaView,
 } from "react-native";
 import { useRouter } from "expo-router";
-import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
-import { ref, set } from "firebase/database";
-import { auth, database } from "@/config/firebaseConfig";
+
 import { Picker } from "@react-native-picker/picker";
-import CheckBox from "expo-checkbox";
+import CheckBox from "@react-native-community/checkbox";
 import tw from "../styles/tailwind";
+import { signUpUser } from "@/helpers/authHelpers";
+import { saveUserDetails } from "@/helpers/userHelpers";
 import state from "../state";
 
 const Signup = () => {
@@ -47,13 +47,8 @@ const Signup = () => {
 
     setLoading(true);
     try {
-      const userCredential = await createUserWithEmailAndPassword(
-        auth,
-        form.email,
-        form.password
-      );
-      await updateProfile(userCredential.user, { displayName: form.name });
-      await set(ref(database, `users/${userCredential.user.uid}`), {
+      const user = await signUpUser(form.email, form.password, form.name);
+      await saveUserDetails(user.uid, {
         name: form.name,
         email: form.email,
         university: form.university,
@@ -62,7 +57,7 @@ const Signup = () => {
         isInternational: form.isInternational,
       });
       state.user.set({
-        uid: userCredential.user.uid,
+        uid: user.uid,
         name: form.name,
         email: form.email,
         university: form.university,
@@ -70,7 +65,7 @@ const Signup = () => {
         year: form.year,
         isInternational: form.isInternational,
       });
-      router.push("/home");
+      router.push("/");
     } catch (error) {
       Alert.alert("Signup Error", error.message);
     } finally {

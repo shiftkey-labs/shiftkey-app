@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   ScrollView,
   Modal,
+  ActivityIndicator,
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import tw from "../styles/tailwind";
@@ -17,19 +18,35 @@ const EventDetails = () => {
   const { id } = useLocalSearchParams();
   const router = useRouter();
   const [modalVisible, setModalVisible] = useState(false);
+  const currentEvent = state.currentEvent.get();
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (id) {
-      fetchEventById(id as string);
-    }
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        await fetchEventById(id);
+      } catch (error) {
+        console.error("Failed to fetch event details:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
   }, [id]);
 
-  const event = state.currentEvent.get();
-
-  if (!event) {
+  if (loading) {
     return (
       <View style={tw`flex-1 items-center justify-center`}>
-        <Text style={tw`text-xl`}>Loading...</Text>
+        <ActivityIndicator size="large" color="#0000ff" />
+      </View>
+    );
+  }
+
+  if (!currentEvent) {
+    return (
+      <View style={tw`flex-1 items-center justify-center`}>
+        <Text style={tw`text-xl`}>Event not found</Text>
       </View>
     );
   }
@@ -49,7 +66,7 @@ const EventDetails = () => {
 
   return (
     <ScrollView style={tw`flex-1 bg-background`}>
-      <Image source={event.image} style={tw`w-full h-56`} />
+      <Image source={currentEvent.image} style={tw`w-full h-56`} />
       <View style={tw`p-5`}>
         <View style={tw`flex-row items-center justify-between`}>
           <Text style={tw`text-2xl font-montserratBold`}>Event Details</Text>
@@ -60,16 +77,18 @@ const EventDetails = () => {
 
         <View style={tw`flex-row items-center mt-4`}>
           <Image
-            source={event.speakerImage}
+            source={currentEvent.speakerImage}
             style={tw`w-12 h-12 rounded-full`}
           />
           <View style={tw`ml-3`}>
-            <Text style={tw`text-lg font-bold`}>{event.speaker}</Text>
+            <Text style={tw`text-lg font-bold`}>{currentEvent.speaker}</Text>
             <Text style={tw`text-gray-500`}>Speaker</Text>
           </View>
         </View>
 
-        <Text style={tw`text-3xl font-montserratBold mt-5`}>{event.title}</Text>
+        <Text style={tw`text-3xl font-montserratBold mt-5`}>
+          {currentEvent.title}
+        </Text>
         <View style={tw`flex-row items-center mt-3`}>
           <FontAwesome
             name="calendar"
@@ -77,7 +96,7 @@ const EventDetails = () => {
             color="gray"
             style={tw`mr-2`}
           />
-          <Text style={tw`text-gray-600`}>{event.date}</Text>
+          <Text style={tw`text-gray-600`}>{currentEvent.date}</Text>
         </View>
         <View style={tw`flex-row items-center mt-3`}>
           <FontAwesome
@@ -86,12 +105,12 @@ const EventDetails = () => {
             color="gray"
             style={tw`mr-2`}
           />
-          <Text style={tw`text-gray-600`}>{event.location}</Text>
+          <Text style={tw`text-gray-600`}>{currentEvent.location}</Text>
         </View>
 
         <Text style={tw`text-lg font-bold mt-5`}>About Event</Text>
-        <Text style={tw`text-gray-600 mt-2`}>{event.description}</Text>
-        {event.booked ? (
+        <Text style={tw`text-gray-600 mt-2`}>{currentEvent.description}</Text>
+        {currentEvent.booked ? (
           <TouchableOpacity
             style={tw`bg-primary p-4 rounded-lg mt-5`}
             onPress={handleViewTicket}

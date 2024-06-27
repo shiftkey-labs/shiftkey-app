@@ -7,35 +7,20 @@ const state = observable({
   events: [],
   currentEvent: {},
 });
-
 export const fetchEvents = async () => {
-  const url = process.env.EXPO_API_URL || "http://localhost:3000/events";
   try {
     const response = await axios.get(
       "https://shiftkeylabs.ca/wp-json/tribe/events/v1/events/"
     );
-
     const events = response.data.events.map((event: any) => ({
       id: event.id,
       title: event.title,
       date: event.start_date,
       location: event.venue ? event.venue.venue : "No location provided",
-      image: event.image.url,
+      image: event.image ? event.image.url : null,
       description: event.description,
-      speaker: event.speaker ? event.speaker : "Shiftkey Labs",
-      speakerImage: event.speaker_image
-        ? event.speaker_image
-        : require("@/assets/images/adaptive-icon.png"),
+      booked: false,
     }));
-    console.log(
-      "Fetched events:",
-      events[0].id,
-      events[0].title,
-      events[0].location,
-      events[0].date,
-      events[0].image
-    );
-
     state.events.set(events);
   } catch (error) {
     console.error("Failed to fetch events:", error);
@@ -58,8 +43,10 @@ export const fetchEventById = async (id: string) => {
       description: response.data.description,
     };
     state.currentEvent.set(event);
+    return event;
   } catch (error) {
     console.error("Failed to fetch event:", error);
+    throw error;
   }
 };
 

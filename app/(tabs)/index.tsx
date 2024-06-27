@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { ScrollView, View, Text, SafeAreaView } from "react-native";
 import tw from "../styles/tailwind";
 import SearchBar from "@/components/home/SearchBar";
@@ -7,23 +7,30 @@ import SectionHeader from "@/components/home/SectionHeader";
 import eventsData from "@/constants/eventsData";
 import BigBoyCard from "@/components/home/BigBoyCard";
 import { useRouter } from "expo-router";
-import state from "../state";
+import state, { fetchEventById } from "../state";
 
 const Home = () => {
   const router = useRouter();
   const events = state.events.get();
+  const [eventsList, setEventsList] = useState([]);
 
-  const handlePressEvent = (eventId: string) => {
-    router.push({ pathname: `/event/${eventId}` });
+  const handlePressEvent = async (eventId) => {
+    try {
+      router.push(`/event/${eventId}`);
+    } catch (error) {
+      console.error("Failed to load event details:", error);
+    }
   };
   const handlePressSeeAll = (section: string) => {
     // Handle see all press
     console.log("See all pressed for section:", section);
   };
 
-  const upcomingEvents = events.slice(0, 2);
-  const popularEvents = events.slice(2, 4);
-  const recommendedEvents = events.slice(3);
+  useEffect(() => {
+    if (events) {
+      setEventsList(events);
+    }
+  }, [events]);
 
   return (
     <SafeAreaView style={tw`flex-1 bg-background`}>
@@ -42,7 +49,7 @@ const Home = () => {
           title="Upcoming Events"
           onPressSeeAll={() => handlePressSeeAll("Upcoming Events")}
         />
-        {upcomingEvents.map((event) => (
+        {eventsList.slice(0, 3).map((event) => (
           <EventCard
             key={event.id}
             title={event.title}
@@ -62,7 +69,7 @@ const Home = () => {
           showsHorizontalScrollIndicator={false}
           style={tw`-mx-5 px-5`}
         >
-          {popularEvents.map((event) => (
+          {events.slice(0, 2).map((event) => (
             <BigBoyCard
               key={event.id}
               title={event.title}
@@ -81,7 +88,7 @@ const Home = () => {
           title="Recommendations for you"
           onPressSeeAll={() => handlePressSeeAll("Recommendations for you")}
         />
-        {recommendedEvents.map((event) => (
+        {events.slice(2, 4).map((event) => (
           <EventCard
             key={event.id}
             title={event.title}
