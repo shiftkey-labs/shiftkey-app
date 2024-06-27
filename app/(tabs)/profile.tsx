@@ -6,11 +6,33 @@ import {
   Image,
   ScrollView,
   SafeAreaView,
+  Alert,
 } from "react-native";
 import tw from "../styles/tailwind";
 import { FontAwesome } from "@expo/vector-icons";
+import state from "../state";
+import { signOut } from "firebase/auth";
+import { auth } from "@/config/firebaseConfig";
+import { useRouter } from "expo-router";
 
 const Profile = () => {
+  const user = state.user.get();
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      state.user.set(null);
+      router.push("/(auth)/login");
+    } catch (error) {
+      Alert.alert("Logout Error", error.message);
+    }
+  };
+
+  if (!user) {
+    return null;
+  }
+
   return (
     <SafeAreaView style={tw`flex-1 bg-background`}>
       <ScrollView style={tw`flex-1 bg-background p-5`}>
@@ -19,8 +41,12 @@ const Profile = () => {
             source={require("@/assets/images/events/vansh.png")}
             style={tw`w-24 h-24 rounded-full mb-3`}
           />
-          <Text style={tw`text-2xl font-montserratBold`}>John Doe</Text>
-          <Text style={tw`text-gray-600`}>johndoe@example.com</Text>
+          <Text style={tw`text-2xl font-montserratBold`}>
+            {user.name || "John Doe"}
+          </Text>
+          <Text style={tw`text-gray-600`}>
+            {user.email || "johndoe@example.com"}
+          </Text>
         </View>
         <View style={tw`bg-white p-5 rounded-lg shadow-md mb-5`}>
           <Text style={tw`text-lg font-montserratBold mb-3`}>
@@ -73,7 +99,7 @@ const Profile = () => {
           </TouchableOpacity>
           <TouchableOpacity
             style={tw`flex-row items-center justify-between`}
-            onPress={() => console.log("Logout pressed")}
+            onPress={handleLogout}
           >
             <Text style={tw`text-red-600`}>Logout</Text>
             <FontAwesome name="chevron-right" size={24} color="gray" />
@@ -83,5 +109,4 @@ const Profile = () => {
     </SafeAreaView>
   );
 };
-
 export default Profile;

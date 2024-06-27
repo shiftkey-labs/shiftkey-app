@@ -1,11 +1,9 @@
+import { auth } from "@/config/firebaseConfig";
 import { observable } from "@legendapp/state";
 import axios from "axios";
 
 const state = observable({
-  user: {
-    name: "Vansh Sood",
-    email: "vanshsood@dal.ca",
-  },
+  user: {},
   events: [],
   currentEvent: {},
 });
@@ -63,6 +61,32 @@ export const fetchEventById = async (id: string) => {
   } catch (error) {
     console.error("Failed to fetch event:", error);
   }
+};
+
+export const initializeAuth = () => {
+  auth.onAuthStateChanged((user) => {
+    if (user) {
+      state.user.set({
+        uid: user.uid,
+        name: user.displayName,
+        email: user.email,
+        university: "",
+        program: "",
+        year: "",
+        isInternational: false,
+      });
+    } else {
+      state.user.set({
+        uid: null,
+        name: "",
+        email: "",
+        university: "",
+        program: "",
+        year: "",
+        isInternational: false,
+      });
+    }
+  });
 };
 
 export default state;

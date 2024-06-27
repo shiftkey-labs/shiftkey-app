@@ -25,7 +25,6 @@ const EventDetails = () => {
   }, [id]);
 
   const event = state.currentEvent.get();
-  console.log("fetchisng event by id", event.speakerImage);
 
   if (!event) {
     return (

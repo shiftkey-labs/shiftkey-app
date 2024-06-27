@@ -12,7 +12,6 @@ import state from "../state";
 const Home = () => {
   const router = useRouter();
   const events = state.events.get();
-  console.log("eee", events);
 
   const handlePressEvent = (eventId: string) => {
     router.push({ pathname: `/event/${eventId}` });

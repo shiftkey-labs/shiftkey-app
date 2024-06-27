@@ -1,39 +1,69 @@
 // src/app/login.tsx
-import React from "react";
-import { View, Text, TouchableOpacity, Button } from "react-native";
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  Button,
+  Alert,
+  TextInput,
+} from "react-native";
 import { useRouter } from "expo-router";
 import tw from "../styles/tailwind";
 import Logo from "@/components/common/Logo";
+import { auth } from "@/config/firebaseConfig";
 import InputField from "@/components/common/InputField";
+import { signInWithEmailAndPassword } from "firebase/auth";
 
 const Login = () => {
   const router = useRouter();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleLogin = async () => {
+    setLoading(true);
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      router.push("/");
+    } catch (error) {
+      Alert.alert("Login Error", error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <View style={tw`flex-1 bg-background p-5`}>
+    <View style={tw`flex-1 justify-center p-5 bg-white`}>
       <Logo />
-      <Text style={tw`text-center text-xl font-bold font-montserratBold mt-5`}>
-        Welcome Back!
+      <Text style={tw`text-3xl font-montserratBold text-center mb-5`}>
+        Login
       </Text>
-      <Text style={tw`text-center text-base text-gray-500 my-2`}>
-        Use Credentials to access your account
-      </Text>
-      <InputField placeholder="Enter Username" iconName="user" />
-      <InputField
-        placeholder="Enter Password"
-        iconName="lock"
-        secureTextEntry={true}
+      <TextInput
+        style={tw`border p-3 rounded mb-3`}
+        placeholder="Email"
+        value={email}
+        onChangeText={setEmail}
       />
-      <TouchableOpacity onPress={() => {}} style={tw`self-end mt-2`}>
-        <Text style={tw`text-primary`}>Forgot Password?</Text>
+      <TextInput
+        style={tw`border p-3 rounded mb-5`}
+        placeholder="Password"
+        value={password}
+        onChangeText={setPassword}
+        secureTextEntry
+      />
+      <TouchableOpacity
+        style={tw`bg-primary p-4 rounded mb-3`}
+        onPress={handleLogin}
+        disabled={loading}
+      >
+        <Text style={tw`text-white text-center`}>Login</Text>
       </TouchableOpacity>
-      <Button title="Login" onPress={() => {}} />
-      <View style={tw`flex-row justify-center items-center mt-5`}>
-        <Text style={tw`text-gray-500`}>Don’t have an account?</Text>
-        <TouchableOpacity onPress={() => router.push("/signup")}>
-          <Text style={tw`text-primary ml-1`}>Signup</Text>
-        </TouchableOpacity>
-      </View>
+      <TouchableOpacity onPress={() => router.push("/(auth)/signup")}>
+        <Text style={tw`text-center text-primary`}>
+          Don't have an account? Sign Up
+        </Text>
+      </TouchableOpacity>
     </View>
   );
 };
