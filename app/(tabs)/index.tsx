@@ -7,9 +7,12 @@ import SectionHeader from "@/components/home/SectionHeader";
 import eventsData from "@/constants/eventsData";
 import BigBoyCard from "@/components/home/BigBoyCard";
 import { useRouter } from "expo-router";
+import state from "../state";
 
 const Home = () => {
   const router = useRouter();
+  const events = state.events.get();
+  console.log("eee", events);
 
   const handlePressEvent = (eventId: string) => {
     router.push({ pathname: `/event/${eventId}` });
@@ -19,9 +22,9 @@ const Home = () => {
     console.log("See all pressed for section:", section);
   };
 
-  const upcomingEvents = eventsData.slice(0, 2);
-  const popularEvents = eventsData.slice(2, 4);
-  const recommendedEvents = eventsData.slice(3);
+  const upcomingEvents = events.slice(0, 2);
+  const popularEvents = events.slice(2, 4);
+  const recommendedEvents = events.slice(3);
 
   return (
     <SafeAreaView style={tw`flex-1 bg-background`}>

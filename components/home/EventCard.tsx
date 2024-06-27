@@ -12,7 +12,6 @@ interface EventCardProps {
 
 const EventCard: React.FC<EventCardProps> = ({
   title,
-  location,
   date,
   image,
   onPress,
@@ -25,8 +24,7 @@ const EventCard: React.FC<EventCardProps> = ({
       <Image source={image} style={tw`w-16 h-16 rounded-lg`} />
       <View style={tw`flex-1 ml-3`}>
         <Text style={tw`font-montserratBold text-base`}>{title}</Text>
-        <Text style={tw`text-gray-500`}>{location}</Text>
-        <Text style={tw`text-gray-500`}>{date}</Text>
+        <Text style={tw`text-gray-500 mt-2`}>{date}</Text>
       </View>
       <TouchableOpacity
         style={tw`bg-primary p-2 rounded-full`}

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -11,17 +11,26 @@ import { useRouter, useLocalSearchParams } from "expo-router";
 import tw from "../styles/tailwind";
 import eventsData from "@/constants/eventsData";
 import { FontAwesome } from "@expo/vector-icons";
+import state, { fetchEventById } from "../state";
 
 const EventDetails = () => {
   const { id } = useLocalSearchParams();
-  const event = eventsData.find((event) => event.id === id);
   const router = useRouter();
   const [modalVisible, setModalVisible] = useState(false);
+
+  useEffect(() => {
+    if (id) {
+      fetchEventById(id as string);
+    }
+  }, [id]);
+
+  const event = state.currentEvent.get();
+  console.log("fetchisng event by id", event.speakerImage);
 
   if (!event) {
     return (
       <View style={tw`flex-1 items-center justify-center`}>
-        <Text style={tw`text-xl`}>Event not found</Text>
+        <Text style={tw`text-xl`}>Loading...</Text>
       </View>
     );
   }
@@ -52,11 +61,11 @@ const EventDetails = () => {
 
         <View style={tw`flex-row items-center mt-4`}>
           <Image
-            source={event.details.speakerImage}
+            source={event.speakerImage}
             style={tw`w-12 h-12 rounded-full`}
           />
           <View style={tw`ml-3`}>
-            <Text style={tw`text-lg font-bold`}>{event.details.speaker}</Text>
+            <Text style={tw`text-lg font-bold`}>{event.speaker}</Text>
             <Text style={tw`text-gray-500`}>Speaker</Text>
           </View>
         </View>
@@ -78,11 +87,11 @@ const EventDetails = () => {
             color="gray"
             style={tw`mr-2`}
           />
-          <Text style={tw`text-gray-600`}>{event.details.venue}</Text>
+          <Text style={tw`text-gray-600`}>{event.location}</Text>
         </View>
 
         <Text style={tw`text-lg font-bold mt-5`}>About Event</Text>
-        <Text style={tw`text-gray-600 mt-2`}>{event.details.description}</Text>
+        <Text style={tw`text-gray-600 mt-2`}>{event.description}</Text>
         {event.booked ? (
           <TouchableOpacity
             style={tw`bg-primary p-4 rounded-lg mt-5`}
