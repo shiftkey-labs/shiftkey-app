@@ -66,7 +66,7 @@ const EventDetails = () => {
 
   return (
     <ScrollView style={tw`flex-1 bg-background`}>
-      <Image source={currentEvent.image} style={tw`w-full h-56`} />
+      <Image source={{ uri: currentEvent.image }} style={tw`w-full h-56`} />
       <View style={tw`p-5`}>
         <View style={tw`flex-row items-center justify-between`}>
           <Text style={tw`text-2xl font-montserratBold`}>Event Details</Text>
@@ -77,7 +77,7 @@ const EventDetails = () => {
 
         <View style={tw`flex-row items-center mt-4`}>
           <Image
-            source={currentEvent.speakerImage}
+            source={{ uri: currentEvent.speakerImage }}
             style={tw`w-12 h-12 rounded-full`}
           />
           <View style={tw`ml-3`}>

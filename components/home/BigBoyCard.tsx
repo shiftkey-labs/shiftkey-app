@@ -23,7 +23,7 @@ const BigBoyCard: React.FC<BigBoyCardProps> = ({
   return (
     <View style={tw`mr-4`}>
       <View style={tw`relative w-80`}>
-        <Image source={image} style={tw`w-80 h-40 rounded-lg`} />
+        <Image source={{ uri: image }} style={tw`w-80 h-40 rounded-lg`} />
         <TouchableOpacity
           style={tw`absolute top-2 left-2 bg-white rounded p-1`}
         >

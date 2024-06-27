@@ -21,7 +21,7 @@ const EventCard: React.FC<EventCardProps> = ({
       style={tw`flex-row items-center p-3 bg-white rounded-lg mb-2 shadow-sm`}
       onPress={onPress}
     >
-      <Image source={image} style={tw`w-16 h-16 rounded-lg`} />
+      <Image source={{ uri: image }} style={tw`w-16 h-16 rounded-lg`} />
       <View style={tw`flex-1 ml-3`}>
         <Text style={tw`font-montserratBold text-base`}>{title}</Text>
         <Text style={tw`text-gray-500 mt-2`}>{date}</Text>
