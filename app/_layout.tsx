@@ -12,7 +12,7 @@ import { useEffect } from "react";
 import "react-native-reanimated";
 
 import { useColorScheme } from "@/components/useColorScheme";
-import state, { fetchEvents, initializeAuth } from "./state";
+import state, { initializeApp, initializeAuth } from "./state";
 import { observer } from "@legendapp/state/react";
 
 export {
@@ -34,7 +34,11 @@ const RootLayoutNav = observer(() => {
   const user = state.user.get();
 
   useEffect(() => {
-    fetchEvents();
+    const initialize = async () => {
+      await initializeApp();
+      SplashScreen.hideAsync();
+    };
+    initialize();
     initializeAuth();
   }, []);
 

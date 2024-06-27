@@ -1,5 +1,5 @@
 // app/tabs/myEvents.tsx
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -10,8 +10,6 @@ import {
 import { useRouter } from "expo-router";
 import tw from "../styles/tailwind";
 import EventCard from "@/components/home/EventCard";
-import { observer } from "@legendapp/state/react";
-import axios from "axios";
 import state from "../state";
 import { getUserBookings } from "@/helpers/userHelpers";
 
@@ -20,41 +18,27 @@ const MyEvents = () => {
   const [bookedEvents, setBookedEvents] = useState([]);
   const [activeTab, setActiveTab] = useState("upcoming");
   const user = state.user.get();
+  const events = state.events.get();
 
   useEffect(() => {
     const fetchBookings = async () => {
       if (user.uid) {
         const bookings = await getUserBookings(user.uid);
-        const events = await fetchEventsData(Object.keys(bookings));
         const formattedEvents = formatBookings(events, bookings);
         setBookedEvents(formattedEvents);
       }
     };
     fetchBookings();
-  }, [user]);
-
-  const fetchEventsData = async (eventIds) => {
-    const events = await Promise.all(
-      eventIds.map(async (id) => {
-        const response = await axios.get(
-          `https://shiftkeylabs.ca/wp-json/tribe/events/v1/events/${id}`
-        );
-        return response.data;
-      })
-    );
-    return events;
-  };
+  }, [user, events]);
 
   const formatBookings = (events, bookings) => {
-    return events.map((event) => ({
-      id: event.id,
-      title: event.title,
-      location: event.venue ? event.venue.venue : "No location provided",
-      date: event.start_date,
-      image: event.image ? event.image.url : null,
-      bookingDate: bookings[event.id].bookingDate,
-      attendance: bookings[event.id].attendance,
-    }));
+    return events
+      .filter((event) => bookings[event.id])
+      .map((event) => ({
+        ...event,
+        bookingDate: bookings[event.id].bookingDate,
+        attendance: bookings[event.id].attendance,
+      }));
   };
 
   const handlePressEvent = (eventId: string) => {

@@ -35,7 +35,7 @@ const Home = () => {
   return (
     <SafeAreaView style={tw`flex-1 bg-background`}>
       <ScrollView style={tw`flex-1 bg-background p-5`}>
-        <SearchBar />
+        {/* <SearchBar />
         <View style={tw`flex-row mt-3`}>
           <View style={tw`flex-1 bg-gray-200 p-3 rounded-full mr-2`}>
             <Text style={tw`text-center`}>Say Hello To</Text>
@@ -43,22 +43,7 @@ const Home = () => {
           <View style={tw`flex-1 bg-gray-200 p-3 rounded-full ml-2`}>
             <Text style={tw`text-center`}>Hackathons</Text>
           </View>
-        </View>
-
-        <SectionHeader
-          title="Upcoming Events"
-          onPressSeeAll={() => handlePressSeeAll("Upcoming Events")}
-        />
-        {eventsList.slice(0, 3).map((event) => (
-          <EventCard
-            key={event.id}
-            title={event.title}
-            location={event.location}
-            date={event.date}
-            image={event.image}
-            onPress={() => handlePressEvent(event.id)}
-          />
-        ))}
+        </View> */}
 
         <SectionHeader
           title="Popular Now"
@@ -69,7 +54,7 @@ const Home = () => {
           showsHorizontalScrollIndicator={false}
           style={tw`-mx-5 px-5`}
         >
-          {events.slice(0, 2).map((event) => (
+          {eventsList.slice(0, eventsList.length / 2).map((event) => (
             <BigBoyCard
               key={event.id}
               title={event.title}
@@ -88,7 +73,7 @@ const Home = () => {
           title="Recommendations for you"
           onPressSeeAll={() => handlePressSeeAll("Recommendations for you")}
         />
-        {events.slice(2, 4).map((event) => (
+        {eventsList.slice(eventsList.length / 2).map((event) => (
           <EventCard
             key={event.id}
             title={event.title}
