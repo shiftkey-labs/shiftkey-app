@@ -4,6 +4,7 @@ import {
   fetchEventsFromFirebase,
   syncEventsWithFirebase,
 } from "@/helpers/eventHelpers";
+import { getUserBookings } from "@/helpers/userHelpers";
 import { observable } from "@legendapp/state";
 import axios from "axios";
 
@@ -19,6 +20,7 @@ const state = observable({
   },
   events: [],
   currentEvent: null,
+  userBookings: [],
 });
 
 export const initializeApp = async () => {
@@ -38,6 +40,16 @@ export const fetchEventById = async (id: string) => {
   }
 };
 
+export const fetchUserBookings = async (uid: string) => {
+  try {
+    const bookings = await getUserBookings(uid);
+    state.userBookings.set(Object.values(bookings));
+    console.log("User bookings:", state.userBookings.get());
+  } catch (error) {
+    console.error("Failed to fetch user bookings:", error);
+  }
+};
+
 export const initializeAuth = () => {
   auth.onAuthStateChanged((user) => {
     if (user) {
@@ -50,6 +62,7 @@ export const initializeAuth = () => {
         year: "",
         isInternational: false,
       });
+      fetchUserBookings(user.uid);
     } else {
       state.user.set({
         uid: null,

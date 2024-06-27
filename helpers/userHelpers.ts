@@ -1,4 +1,3 @@
-// firebaseHelpers/userHelpers.js
 import { database } from "@/config/firebaseConfig";
 import { get, push, ref, set } from "firebase/database";
 
@@ -16,8 +15,11 @@ export const addBooking = async (uid, eventId, bookingDate) => {
 };
 
 export const getUserBookings = async (uid) => {
+  console.log("uid", uid);
+
   const bookingsRef = ref(database, `bookings/${uid}`);
   const snapshot = await get(bookingsRef);
+
   if (snapshot.exists()) {
     return snapshot.val();
   }

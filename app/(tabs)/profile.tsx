@@ -56,21 +56,21 @@ const Profile = () => {
             style={tw`flex-row items-center justify-between mb-3`}
             onPress={() => console.log("Edit Profile pressed")}
           >
-            <Text style={tw`text-gray-700`}>Edit Profile</Text>
+            <Text style={tw`text-text`}>Edit Profile</Text>
             <FontAwesome name="chevron-right" size={24} color="gray" />
           </TouchableOpacity>
           <TouchableOpacity
             style={tw`flex-row items-center justify-between mb-3`}
             onPress={() => console.log("Change Password pressed")}
           >
-            <Text style={tw`text-gray-700`}>Change Password</Text>
+            <Text style={tw`text-text`}>Change Password</Text>
             <FontAwesome name="chevron-right" size={24} color="gray" />
           </TouchableOpacity>
           <TouchableOpacity
             style={tw`flex-row items-center justify-between mb-3`}
             onPress={() => console.log("Notifications pressed")}
           >
-            <Text style={tw`text-gray-700`}>Notifications</Text>
+            <Text style={tw`text-text`}>Notifications</Text>
             <FontAwesome name="chevron-right" size={24} color="gray" />
           </TouchableOpacity>
         </View>
@@ -80,21 +80,21 @@ const Profile = () => {
             style={tw`flex-row items-center justify-between mb-3`}
             onPress={() => console.log("Privacy Policy pressed")}
           >
-            <Text style={tw`text-gray-700`}>Privacy Policy</Text>
+            <Text style={tw`text-text`}>Privacy Policy</Text>
             <FontAwesome name="chevron-right" size={24} color="gray" />
           </TouchableOpacity>
           <TouchableOpacity
             style={tw`flex-row items-center justify-between mb-3`}
             onPress={() => console.log("Terms of Service pressed")}
           >
-            <Text style={tw`text-gray-700`}>Terms of Service</Text>
+            <Text style={tw`text-text`}>Terms of Service</Text>
             <FontAwesome name="chevron-right" size={24} color="gray" />
           </TouchableOpacity>
           <TouchableOpacity
             style={tw`flex-row items-center justify-between mb-3`}
             onPress={() => console.log("Help & Support pressed")}
           >
-            <Text style={tw`text-gray-700`}>Help & Support</Text>
+            <Text style={tw`text-text`}>Help & Support</Text>
             <FontAwesome name="chevron-right" size={24} color="gray" />
           </TouchableOpacity>
           <TouchableOpacity

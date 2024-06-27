@@ -10,44 +10,60 @@ import {
 import { useRouter } from "expo-router";
 import tw from "../styles/tailwind";
 import EventCard from "@/components/home/EventCard";
-import state from "../state";
-import { getUserBookings } from "@/helpers/userHelpers";
 
-const MyEvents = () => {
+import { observer } from "@legendapp/state/react";
+import state, { fetchUserBookings } from "../state";
+
+const MyEvents = observer(() => {
   const router = useRouter();
-  const [bookedEvents, setBookedEvents] = useState([]);
   const [activeTab, setActiveTab] = useState("upcoming");
   const user = state.user.get();
   const events = state.events.get();
+  const userBookings = state.userBookings.get();
 
   useEffect(() => {
-    const fetchBookings = async () => {
-      if (user.uid) {
-        const bookings = await getUserBookings(user.uid);
-        const formattedEvents = formatBookings(events, bookings);
-        setBookedEvents(formattedEvents);
-      }
-    };
-    fetchBookings();
-  }, [user, events]);
+    if (user.uid) {
+      fetchLocalUserBookings(user.uid);
+    }
+  }, [user]);
+
+  const fetchLocalUserBookings = async (uid) => {
+    await fetchUserBookings(uid);
+  };
 
   const formatBookings = (events, bookings) => {
-    return events
-      .filter((event) => bookings[event.id])
-      .map((event) => ({
-        ...event,
-        bookingDate: bookings[event.id].bookingDate,
-        attendance: bookings[event.id].attendance,
-      }));
+    const formattedEvents = bookings
+      .map((booking) => {
+        const event = events.find((e) => e.id.toString() === booking.eventId);
+        if (event) {
+          return {
+            ...event,
+            bookingDate: booking.bookingDate,
+            attendance: booking.attendance,
+          };
+        }
+        return null;
+      })
+      .filter((event) => event !== null);
+    return formattedEvents;
   };
+
+  const bookedEvents = formatBookings(events, userBookings);
 
   const handlePressEvent = (eventId: string) => {
     router.push({ pathname: `/event/${eventId}` });
   };
 
-  const today = new Date().toISOString().split("T")[0];
-  const upcomingEvents = bookedEvents.filter((event) => event.date >= today);
-  const pastEvents = bookedEvents.filter((event) => event.date < today);
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  const yesterdayISOString = yesterday.toISOString().split("T")[0];
+
+  const upcomingEvents = bookedEvents.filter(
+    (event) => event.date >= yesterdayISOString
+  );
+  const pastEvents = bookedEvents.filter(
+    (event) => event.date < yesterdayISOString
+  );
 
   const eventsToDisplay =
     activeTab === "upcoming" ? upcomingEvents : pastEvents;
@@ -120,6 +136,6 @@ const MyEvents = () => {
       </View>
     </SafeAreaView>
   );
-};
+});
 
 export default MyEvents;
