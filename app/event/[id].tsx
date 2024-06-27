@@ -7,12 +7,14 @@ import {
   ScrollView,
   Modal,
   ActivityIndicator,
+  Alert,
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import tw from "../styles/tailwind";
 import eventsData from "@/constants/eventsData";
 import { FontAwesome } from "@expo/vector-icons";
 import state, { fetchEventById } from "../state";
+import { addBooking } from "@/helpers/userHelpers";
 
 const EventDetails = () => {
   const { id } = useLocalSearchParams();
@@ -20,6 +22,7 @@ const EventDetails = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const currentEvent = state.currentEvent.get();
   const [loading, setLoading] = useState(true);
+  const user = state.user.get();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -51,8 +54,14 @@ const EventDetails = () => {
     );
   }
 
-  const handleConfirm = () => {
-    setModalVisible(true);
+  const handleConfirm = async () => {
+    try {
+      await addBooking(user.uid, id, new Date().toISOString());
+      setModalVisible(true);
+    } catch (error) {
+      Alert.alert("Error", "Failed to confirm attendance.");
+      console.error("Failed to confirm attendance:", error);
+    }
   };
 
   const handleViewTicket = () => {
