@@ -61,6 +61,10 @@ const RootLayoutNav = observer(() => {
           name="(tabs)"
           options={{ headerShown: false, gestureEnabled: false }}
         />
+        <Stack.Screen
+          name="event"
+          options={{ headerShown: false, gestureEnabled: false }}
+        />
         <Stack.Screen name="modal" options={{ presentation: "modal" }} />
       </Stack>
     </ThemeProvider>

@@ -11,7 +11,6 @@ import {
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import tw from "../styles/tailwind";
-import eventsData from "@/constants/eventsData";
 import { FontAwesome } from "@expo/vector-icons";
 import state, { fetchEventById } from "../state";
 import { addBooking } from "@/helpers/userHelpers";
@@ -76,31 +75,44 @@ const EventDetails = () => {
     router.push("/");
   };
 
+  const handleVolunteer = () => {
+    Alert.alert("Volunteer", "You have volunteered for this event.");
+  };
+
+  const handleBack = () => {
+    router.back();
+  };
+
   return (
-    <ScrollView style={tw`flex-1 bg-background`}>
+    <ScrollView style={tw`flex-1 bg-white pb-10`}>
+      <TouchableOpacity
+        onPress={handleBack}
+        style={tw`absolute mb-5 top-10 left-5 z-10 bg-white p-3 rounded-md shadow-md`}
+      >
+        <FontAwesome name="chevron-left" size={20} color="black" />
+      </TouchableOpacity>
       <Image source={{ uri: currentEvent.image }} style={tw`w-full h-56`} />
-      <View style={tw`p-5`}>
-        <View style={tw`flex-row items-center justify-between`}>
+      <View style={tw`p-5 pb-10`}>
+        {/* <View style={tw`flex-row items-center justify-between`}>
           <Text style={tw`text-2xl font-montserratBold`}>Event Details</Text>
           <TouchableOpacity style={tw`bg-primary p-2 rounded-lg`}>
             <Text style={tw`text-white`}>Invite</Text>
           </TouchableOpacity>
-        </View>
+        </View> */}
 
-        <View style={tw`flex-row items-center mt-4`}>
-          <Image
-            source={{ uri: currentEvent.speakerImage }}
-            style={tw`w-12 h-12 rounded-full`}
-          />
-          <View style={tw`ml-3`}>
-            <Text style={tw`text-lg font-bold`}>{currentEvent.speaker}</Text>
-            <Text style={tw`text-gray-500`}>Speaker</Text>
+        {currentEvent.speaker && (
+          <View style={tw`flex-row items-center mt-4`}>
+            <Image
+              source={{ uri: currentEvent.speakerImage }}
+              style={tw`w-12 h-12 rounded-full`}
+            />
+            <View style={tw`ml-3`}>
+              <Text style={tw`text-lg font-bold`}>{currentEvent.speaker}</Text>
+              <Text style={tw`text-gray-500`}>Speaker</Text>
+            </View>
           </View>
-        </View>
-
-        <Text style={tw`text-3xl font-montserratBold mt-5`}>
-          {currentEvent.title}
-        </Text>
+        )}
+        <Text style={tw`text-3xl font-bold mt-2`}>{currentEvent.title}</Text>
         <View style={tw`flex-row items-center mt-3`}>
           <FontAwesome
             name="calendar"
@@ -130,12 +142,22 @@ const EventDetails = () => {
             <Text style={tw`text-white text-center`}>View Ticket</Text>
           </TouchableOpacity>
         ) : (
-          <TouchableOpacity
-            style={tw`bg-primary p-4 rounded-lg mt-5`}
-            onPress={handleConfirm}
-          >
-            <Text style={tw`text-white text-center`}>Confirm Attendance</Text>
-          </TouchableOpacity>
+          <View style={tw`flex-row justify-between mt-5`}>
+            <TouchableOpacity
+              style={tw`bg-primary p-4 rounded-lg flex-1 mr-2`}
+              onPress={handleConfirm}
+            >
+              <Text style={tw`text-white text-center`}>Confirm Attendance</Text>
+            </TouchableOpacity>
+            {user.role === "VOLUNTEER" && (
+              <TouchableOpacity
+                style={tw`bg-white p-4 rounded-lg flex-1 ml-2 border border-primary`}
+                onPress={handleVolunteer}
+              >
+                <Text style={tw`text-primary text-center`}>Volunteer</Text>
+              </TouchableOpacity>
+            )}
+          </View>
         )}
       </View>
       <Modal
@@ -167,7 +189,7 @@ const EventDetails = () => {
               <Text style={tw`text-white text-center`}>View E-Ticket</Text>
             </TouchableOpacity>
             <TouchableOpacity
-              style={tw`bg-gray-200 p-4 rounded-lg`}
+              style={tw`bg-gray p-4 rounded-lg`}
               onPress={handleGoHome}
             >
               <Text style={tw`text-center`}>Go to Home</Text>

@@ -1,12 +1,12 @@
+// state.ts
 import { auth } from "@/config/firebaseConfig";
 import {
   fetchEventByIdFromFirebase,
   fetchEventsFromFirebase,
   syncEventsWithFirebase,
 } from "@/helpers/eventHelpers";
-import { getUserBookings } from "@/helpers/userHelpers";
+import { getUserBookings, getUserRole } from "@/helpers/userHelpers";
 import { observable } from "@legendapp/state";
-import axios from "axios";
 
 const state = observable({
   user: {
@@ -17,6 +17,7 @@ const state = observable({
     program: "",
     year: "",
     isInternational: false,
+    role: "STUDENT",
   },
   events: [],
   currentEvent: null,
@@ -51,8 +52,9 @@ export const fetchUserBookings = async (uid: string) => {
 };
 
 export const initializeAuth = () => {
-  auth.onAuthStateChanged((user) => {
+  auth.onAuthStateChanged(async (user) => {
     if (user) {
+      const role = await getUserRole(user.uid);
       state.user.set({
         uid: user.uid,
         name: user.displayName,
@@ -61,6 +63,7 @@ export const initializeAuth = () => {
         program: "",
         year: "",
         isInternational: false,
+        role,
       });
       fetchUserBookings(user.uid);
     } else {
@@ -72,6 +75,7 @@ export const initializeAuth = () => {
         program: "",
         year: "",
         isInternational: false,
+        role: "STUDENT",
       });
     }
   });

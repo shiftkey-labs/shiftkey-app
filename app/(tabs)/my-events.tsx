@@ -71,12 +71,12 @@ const MyEvents = observer(() => {
   return (
     <SafeAreaView style={tw`flex-1 bg-background p-5`}>
       <View style={tw`flex-1 bg-background p-5`}>
-        <Text style={tw`text-2xl font-montserratBold mb-5`}>Events</Text>
+        <Text style={tw`text-3xl font-bold mb-5`}>My Events</Text>
         <View style={tw`flex-row mb-5`}>
           <TouchableOpacity
             style={[
               tw`flex-1 p-3 rounded-full mr-2`,
-              activeTab === "upcoming" ? tw`bg-primary` : tw`bg-gray-200`,
+              activeTab === "upcoming" ? tw`bg-primary` : tw`bg-transparent`,
             ]}
             onPress={() => setActiveTab("upcoming")}
           >
@@ -92,7 +92,7 @@ const MyEvents = observer(() => {
           <TouchableOpacity
             style={[
               tw`flex-1 p-3 rounded-full ml-2`,
-              activeTab === "past" ? tw`bg-primary` : tw`bg-gray-200`,
+              activeTab === "past" ? tw`bg-primary` : tw`bg-transparent`,
             ]}
             onPress={() => setActiveTab("past")}
           >

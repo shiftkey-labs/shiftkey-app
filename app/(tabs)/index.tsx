@@ -1,5 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { ScrollView, View, Text, SafeAreaView } from "react-native";
+import {
+  ScrollView,
+  View,
+  Text,
+  SafeAreaView,
+  TouchableOpacity,
+} from "react-native";
 import tw from "../styles/tailwind";
 import SearchBar from "@/components/home/SearchBar";
 import EventCard from "@/components/home/EventCard";
@@ -8,6 +14,7 @@ import eventsData from "@/constants/eventsData";
 import BigBoyCard from "@/components/home/BigBoyCard";
 import { useRouter } from "expo-router";
 import state, { fetchEventById } from "../state";
+import { FontAwesome5 } from "@expo/vector-icons";
 
 const Home = () => {
   const router = useRouter();
@@ -37,22 +44,31 @@ const Home = () => {
       <ScrollView style={tw`flex-1 bg-background p-5`}>
         {/* <SearchBar />
         <View style={tw`flex-row mt-3`}>
-          <View style={tw`flex-1 bg-gray-200 p-3 rounded-full mr-2`}>
+          <View style={tw`flex-1 bg-gray p-3 rounded-full mr-2`}>
             <Text style={tw`text-center`}>Say Hello To</Text>
           </View>
-          <View style={tw`flex-1 bg-gray-200 p-3 rounded-full ml-2`}>
+          <View style={tw`flex-1 bg-gray p-3 rounded-full ml-2`}>
             <Text style={tw`text-center`}>Hackathons</Text>
           </View>
         </View> */}
+        <View style={tw`flex-row pt-5 justify-between items-center`}>
+          <Text style={tw`text-4xl font-bold`}>Hi Vansh</Text>
+          <TouchableOpacity onPress={() => console.log("Profile pressed")}>
+            <FontAwesome5 name="moon" size={24} color="black" />
+          </TouchableOpacity>
+        </View>
+        <Text style={tw`text-lg text-gray-500`}>
+          Let's find you something to do
+        </Text>
 
-        <SectionHeader
+        {/* <SectionHeader
           title="Popular Now"
           onPressSeeAll={() => handlePressSeeAll("Popular Now")}
-        />
+        /> */}
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          style={tw`-mx-5 px-5`}
+          style={tw`-mx-5 px-5 mt-7`}
         >
           {eventsList.slice(0, eventsList.length / 2).map((event) => (
             <BigBoyCard

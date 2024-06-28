@@ -1,19 +1,18 @@
+import React, { useRef } from "react";
 import { StatusBar } from "expo-status-bar";
 import { Platform, Image, TouchableOpacity } from "react-native";
-
-import EditScreenInfo from "@/components/EditScreenInfo";
+import QRCode from "react-native-qrcode-svg";
 import { Text, View } from "@/components/Themed";
 import tw from "./styles/tailwind";
 import { useRouter } from "expo-router";
-import QRCode from "react-native-qrcode-svg";
 import state from "./state";
-import { useRef } from "react";
 
 export default function ModalScreen() {
   const router = useRouter();
   const user = state.user.get();
-  const qrRef = useRef(null);
   const currentEvent = state.currentEvent.get();
+  const qrRef = useRef(null);
+
   const qrCodeValue = JSON.stringify({
     userId: user.uid,
     eventId: currentEvent.id,
@@ -23,6 +22,12 @@ export default function ModalScreen() {
   const handleBack = () => {
     router.back();
   };
+
+  const eventDate = new Date(currentEvent.date);
+  const eventTime = eventDate.toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 
   return (
     <View style={tw`flex-1 bg-background p-5`}>
@@ -44,22 +49,27 @@ export default function ModalScreen() {
           color="black"
           ref={qrRef}
         />
-        <Text style={tw`text-xl font-montserratBold mt-5`}>DWP IV X AW</Text>
+        <Text style={tw`text-xl font-montserratBold mt-5`}>
+          {currentEvent.title}
+        </Text>
         <View style={tw`flex-row justify-between w-full mt-5`}>
           <View>
             <Text style={tw`text-gray-500`}>Full Name</Text>
-            <Text style={tw`font-bold`}>Vansh</Text>
+            <Text style={tw`font-bold`}>{user.name}</Text>
           </View>
-          <View>
-            <Text style={tw`text-gray-500`}>Hours</Text>
-            <Text style={tw`font-bold`}>10.00AM</Text>
-          </View>
+          {eventTime !== "12:00 AM" && (
+            <View>
+              <Text style={tw`text-gray-500`}>Hours</Text>
+              <Text style={tw`font-bold`}>{eventTime}</Text>
+            </View>
+          )}
         </View>
         <View style={tw`w-full mt-5`}>
           <Text style={tw`text-gray-500`}>Date</Text>
-          <Text style={tw`font-bold`}>27 Dec 2023</Text>
+          <Text style={tw`font-bold`}>{eventDate.toLocaleDateString()}</Text>
         </View>
       </View>
+      <StatusBar style={Platform.OS === "ios" ? "light" : "auto"} />
     </View>
   );
 }
