@@ -27,6 +27,7 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: Colors["light"].primary,
+        tabBarInactiveTintColor: Colors["light"].text,
         // Disable the static render of the header on web
         // to prevent a hydration error in React Navigation v6.
         headerShown: false,
@@ -41,21 +42,23 @@ export default function TabLayout() {
         name="index"
         options={{
           title: "Explore",
-          tabBarIcon: ({ color }) => <TabBarIcon name="home" color={color} />,
-          headerRight: () => (
-            <Link href="/modal" asChild>
-              <Pressable>
-                {({ pressed }) => (
-                  <Ionicons
-                    name="home"
-                    size={24}
-                    color={Colors["light"].text}
-                    style={{ marginRight: 15, opacity: pressed ? 0.5 : 1 }}
-                  />
-                )}
-              </Pressable>
-            </Link>
+          tabBarIcon: ({ color }) => (
+            <Ionicons name="home-outline" size={24} color={color} />
           ),
+          // headerRight: () => (
+          //   <Link href="/modal" asChild>
+          //     <Pressable>
+          //       {({ pressed }) => (
+          //         <Ionicons
+          //           name="home-outline"
+          //           size={24}
+          //           color={Colors["light"].text}
+          //           style={{ marginRight: 15, opacity: pressed ? 0.5 : 1 }}
+          //         />
+          //       )}
+          //     </Pressable>
+          //   </Link>
+          // ),
         }}
       />
       <Tabs.Screen
@@ -63,7 +66,7 @@ export default function TabLayout() {
         options={{
           title: "My Events",
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="calendar" color={color} size={24} />
+            <Ionicons name="calendar-outline" color={color} size={24} />
           ),
         }}
       />
@@ -72,7 +75,7 @@ export default function TabLayout() {
         options={{
           title: "Volunteer",
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="people" color={color} size={24} />
+            <Ionicons name="people-outline" color={color} size={24} />
           ),
         }}
       />
@@ -81,7 +84,7 @@ export default function TabLayout() {
         options={{
           title: "Profile",
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="settings" color={color} size={24} />
+            <Ionicons name="settings-outline" color={color} size={24} />
           ),
         }}
       />

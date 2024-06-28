@@ -8,6 +8,7 @@ import {
   Modal,
   ActivityIndicator,
   Alert,
+  SafeAreaView,
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import tw from "../styles/tailwind";
@@ -84,81 +85,88 @@ const EventDetails = () => {
   };
 
   return (
-    <ScrollView style={tw`flex-1 bg-white pb-10`}>
-      <TouchableOpacity
-        onPress={handleBack}
-        style={tw`absolute mb-5 top-10 left-5 z-10 bg-white p-3 rounded-md shadow-md`}
-      >
-        <FontAwesome name="chevron-left" size={20} color="black" />
-      </TouchableOpacity>
-      <Image source={{ uri: currentEvent.image }} style={tw`w-full h-56`} />
-      <View style={tw`p-5 pb-10`}>
-        {/* <View style={tw`flex-row items-center justify-between`}>
-          <Text style={tw`text-2xl font-montserratBold`}>Event Details</Text>
-          <TouchableOpacity style={tw`bg-primary p-2 rounded-lg`}>
-            <Text style={tw`text-white`}>Invite</Text>
-          </TouchableOpacity>
-        </View> */}
-
-        {currentEvent.speaker && (
-          <View style={tw`flex-row items-center mt-4`}>
-            <Image
-              source={{ uri: currentEvent.speakerImage }}
-              style={tw`w-12 h-12 rounded-full`}
-            />
-            <View style={tw`ml-3`}>
-              <Text style={tw`text-lg font-bold`}>{currentEvent.speaker}</Text>
-              <Text style={tw`text-gray-500`}>Speaker</Text>
+    <SafeAreaView style={tw`flex-1 bg-background`}>
+      <View style={tw`flex-1`}>
+        <Image
+          source={{ uri: currentEvent.image }}
+          style={tw`absolute w-full h-84`}
+        />
+        <TouchableOpacity
+          onPress={handleBack}
+          style={tw`absolute top-5 left-5 z-10 bg-white p-3 rounded-md shadow-md`}
+        >
+          <FontAwesome name="chevron-left" size={20} color="black" />
+        </TouchableOpacity>
+        <ScrollView style={tw`flex-1`} contentContainerStyle={tw`pt-72`}>
+          <View style={tw`p-5 bg-white rounded-t-lg mt-[-10]`}>
+            {currentEvent.speaker && (
+              <View style={tw`flex-row items-center mt-4`}>
+                <Image
+                  source={{ uri: currentEvent.speakerImage }}
+                  style={tw`w-12 h-12 rounded-full`}
+                />
+                <View style={tw`ml-3`}>
+                  <Text style={tw`text-lg font-bold`}>
+                    {currentEvent.speaker}
+                  </Text>
+                  <Text style={tw`text-gray-500`}>Speaker</Text>
+                </View>
+              </View>
+            )}
+            <Text style={tw`text-3xl font-bold mt-2`}>
+              {currentEvent.title}
+            </Text>
+            <View style={tw`flex-row items-center mt-3`}>
+              <FontAwesome
+                name="map-marker"
+                size={24}
+                style={tw`text-primary`}
+              />
+              <Text style={tw`text-gray-600 ml-5 text-lg my-3`}>
+                {currentEvent.location}
+              </Text>
             </View>
-          </View>
-        )}
-        <Text style={tw`text-3xl font-bold mt-2`}>{currentEvent.title}</Text>
-        <View style={tw`flex-row items-center mt-3`}>
-          <FontAwesome
-            name="calendar"
-            size={24}
-            color="gray"
-            style={tw`mr-2`}
-          />
-          <Text style={tw`text-gray-600`}>{currentEvent.date}</Text>
-        </View>
-        <View style={tw`flex-row items-center mt-3`}>
-          <FontAwesome
-            name="map-marker"
-            size={24}
-            color="gray"
-            style={tw`mr-2`}
-          />
-          <Text style={tw`text-gray-600`}>{currentEvent.location}</Text>
-        </View>
 
-        <Text style={tw`text-lg font-bold mt-5`}>About Event</Text>
-        <Text style={tw`text-gray-600 mt-2`}>{currentEvent.description}</Text>
-        {isEventBooked ? (
-          <TouchableOpacity
-            style={tw`bg-primary p-4 rounded-lg mt-5`}
-            onPress={handleViewTicket}
-          >
-            <Text style={tw`text-white text-center`}>View Ticket</Text>
-          </TouchableOpacity>
-        ) : (
-          <View style={tw`flex-row justify-between mt-5`}>
-            <TouchableOpacity
-              style={tw`bg-primary p-4 rounded-lg flex-1 mr-2`}
-              onPress={handleConfirm}
-            >
-              <Text style={tw`text-white text-center`}>Confirm Attendance</Text>
-            </TouchableOpacity>
-            {user.role === "VOLUNTEER" && (
+            <View style={tw`flex-row items-center mt-3`}>
+              <FontAwesome name="calendar" size={24} style={tw`text-primary`} />
+              <Text style={tw`text-gray-600 ml-4 text-lg`}>
+                {currentEvent.date}
+              </Text>
+            </View>
+
+            <Text style={tw`text-lg font-bold mt-5`}>About Event</Text>
+            <Text style={tw`text-gray-600 mt-2`}>
+              {currentEvent.description}
+            </Text>
+            {isEventBooked ? (
               <TouchableOpacity
-                style={tw`bg-white p-4 rounded-lg flex-1 ml-2 border border-primary`}
-                onPress={handleVolunteer}
+                style={tw`bg-primary p-4 rounded-lg mt-5`}
+                onPress={handleViewTicket}
               >
-                <Text style={tw`text-primary text-center`}>Volunteer</Text>
+                <Text style={tw`text-white text-center`}>View Ticket</Text>
               </TouchableOpacity>
+            ) : (
+              <View style={tw`flex-row justify-between mt-5`}>
+                <TouchableOpacity
+                  style={tw`bg-primary p-4 rounded-lg flex-1 mr-2`}
+                  onPress={handleConfirm}
+                >
+                  <Text style={tw`text-white text-center`}>
+                    Confirm Attendance
+                  </Text>
+                </TouchableOpacity>
+                {user.role === "VOLUNTEER" && (
+                  <TouchableOpacity
+                    style={tw`bg-white p-4 rounded-lg flex-1 ml-2 border border-primary`}
+                    onPress={handleVolunteer}
+                  >
+                    <Text style={tw`text-primary text-center`}>Volunteer</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
             )}
           </View>
-        )}
+        </ScrollView>
       </View>
       <Modal
         animationType="slide"
@@ -197,7 +205,7 @@ const EventDetails = () => {
           </View>
         </View>
       </Modal>
-    </ScrollView>
+    </SafeAreaView>
   );
 };
 
