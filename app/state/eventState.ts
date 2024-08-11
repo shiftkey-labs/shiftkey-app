@@ -6,7 +6,7 @@ const eventState = observable({
   currentEvent: null,
 });
 
-export const initializeEvents = async () => {
+const initializeEvents = async () => {
   try {
     const events = await getAllEvents();
     eventState.events.set(Object.values(events));
@@ -15,7 +15,7 @@ export const initializeEvents = async () => {
   }
 };
 
-export const fetchEventDetails = async (id: string) => {
+const fetchEventDetails = async (id: string) => {
   try {
     const event = await getEventById(id);
     eventState.currentEvent.set(event);
@@ -26,4 +26,4 @@ export const fetchEventDetails = async (id: string) => {
   }
 };
 
-export default eventState;
+export { eventState, initializeEvents, fetchEventDetails };

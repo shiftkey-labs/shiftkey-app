@@ -12,7 +12,7 @@ const userState = observable({
   role: "STUDENT",
 });
 
-export const initializeUser = async (userId: string) => {
+const initializeUser = async (userId: string) => {
   try {
     const user = await getUserById(userId);
     userState.set({
@@ -30,4 +30,4 @@ export const initializeUser = async (userId: string) => {
   }
 };
 
-export default userState;
+export { userState, initializeUser };
