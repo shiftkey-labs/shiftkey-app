@@ -5,7 +5,7 @@ const registrationState = observable({
   userRegistrations: [],
 });
 
-export const fetchUserRegistrations = async (uid: string) => {
+const fetchUserRegistrations = async (uid: string) => {
   try {
     const registrations = await getUserRegistrations(uid);
     registrationState.userRegistrations.set(Object.values(registrations));
@@ -18,4 +18,4 @@ export const fetchUserRegistrations = async (uid: string) => {
   }
 };
 
-export default registrationState;
+export { registrationState, fetchUserRegistrations };
