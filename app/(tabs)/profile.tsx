@@ -16,7 +16,7 @@ import state from "../state";
 import { roleSettingsOptions } from "@/config/roleSettingsOptions";
 
 const Profile = () => {
-  const user = state.user.get();
+  const user = state.user.userState.get();
   const router = useRouter();
 
   const handleLogout = async () => {

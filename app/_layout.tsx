@@ -12,8 +12,11 @@ import { useEffect } from "react";
 import "react-native-reanimated";
 
 import { useColorScheme } from "@/components/useColorScheme";
-import state, { initializeApp, initializeAuth } from "./state";
 import { observer } from "@legendapp/state/react";
+import { initializeEvents } from "./state/eventState";
+import { initializeAuth } from "./state/userState";
+import state from "./state";
+import Toast from "react-native-toast-message";
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -31,11 +34,11 @@ SplashScreen.preventAutoHideAsync();
 const RootLayoutNav = observer(() => {
   const colorScheme = useColorScheme();
   const router = useRouter();
-  const user = state.user.get();
+  const user = state.user.userState.get();
 
   useEffect(() => {
     const initialize = async () => {
-      await initializeApp();
+      await initializeEvents();
       SplashScreen.hideAsync();
     };
     initialize();
@@ -52,6 +55,7 @@ const RootLayoutNav = observer(() => {
 
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
+      <Toast />
       <Stack>
         <Stack.Screen
           name="(auth)"
