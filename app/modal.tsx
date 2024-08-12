@@ -9,7 +9,7 @@ import state from "./state";
 
 export default function ModalScreen() {
   const router = useRouter();
-  const user = state.user.get();
+  const user = state.user.userState.get();
   const currentEvent = state.currentEvent.get();
   const qrRef = useRef(null);
 

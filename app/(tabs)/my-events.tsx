@@ -17,7 +17,7 @@ import state, { fetchUserBookings } from "../state";
 const MyEvents = observer(() => {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("upcoming");
-  const user = state.user.get();
+  const user = state.user.userState.get();
   const events = state.events.get();
   const userBookings = state.userBookings.get();
 

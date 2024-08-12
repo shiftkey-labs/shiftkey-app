@@ -20,7 +20,7 @@ function TabBarIcon(props: {
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
-  const user = state.user.get();
+  const user = state.user.userState.get();
   const role = user.role;
 
   return (

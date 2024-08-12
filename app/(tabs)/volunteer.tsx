@@ -8,7 +8,7 @@ import VolunteerEventsList from "@/components/VolunteerEventsList";
 import VolunteerSignupForm from "@/components/VolunteerSignupForm";
 
 const Volunteer = observer(() => {
-  const user = state.user.get();
+  const user = state.user.userState.get();
   const role = user.role;
 
   if (role === "VOLUNTEER") {

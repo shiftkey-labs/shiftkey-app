@@ -22,7 +22,7 @@ const EventDetails = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const currentEvent = state.currentEvent.get();
   const [loading, setLoading] = useState(true);
-  const user = state.user.get();
+  const user = state.user.userState.get();
   const userBookings = state.userBookings.get();
 
   useEffect(() => {
