@@ -38,7 +38,6 @@ const RootLayoutNav = observer(() => {
 
   useEffect(() => {
     const initialize = async () => {
-      await initializeEvents();
       SplashScreen.hideAsync();
     };
     initialize();

@@ -4,9 +4,9 @@ import { useRouter } from "expo-router";
 import tw from "../styles/tailwind";
 import Logo from "@/components/common/Logo";
 import axios from "axios";
-import Toast from "react-native-toast-message"; // Import the Toast component
+import Toast from "react-native-toast-message";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import state from "../state";
-import server from "@/config/axios";
 
 const Login = () => {
   const router = useRouter();
@@ -43,35 +43,53 @@ const Login = () => {
   const verifyOtp = async () => {
     setLoading(true);
     try {
-      console.log(email, otp);
-
       const response = await axios.post(
         "http://localhost:3000/auth/verify-otp",
-        {
-          email,
-          otp,
-        }
+        { email, otp }
       );
-      console.log(response);
-
       if (response.status === 200) {
-        console.log(response.data);
+        const userData = response.data.user;
+        console.log("userData", userData);
 
-        if (response.data.user.status === "Active") {
-          state.user.userState.set(response.data.user);
-          router.push("/");
+        // Update userState with the user data
+        state.user.userState.set(userData);
+
+        // Store user data in AsyncStorage
+        await AsyncStorage.setItem("user", JSON.stringify(userData));
+
+        // Check for missing fields
+        const requiredFields = [
+          "email",
+          "firstName",
+          "lastName",
+          "pronouns",
+          "isStudent",
+          "currentDegree",
+          "faculty",
+          "school",
+          "shirtSize",
+          "backgroundCheck",
+          "hours",
+        ];
+        const missingFields = requiredFields.filter(
+          (field) => !userData[field]
+        );
+
+        if (missingFields.length > 0) {
+          // If there are missing fields, redirect to signup
+          router.push("/(auth)/signup");
         } else {
-          state.user.userState.set({ email, name: "", uid: null }); // Temporarily store the email and set other fields to null
-          router.push("/(auth)/signup"); // Redirect to signup
+          // If all fields are present, redirect to home
+          router.push("/");
         }
       }
     } catch (error) {
-      Alert.alert("Login Error", "Invalid OTP. Please try again.");
-      console.log(error.message);
+      Alert.alert("Verification Error", "Invalid OTP. Please try again.");
     } finally {
       setLoading(false);
     }
   };
+
   return (
     <View style={tw`flex-1 justify-center p-5 bg-white`}>
       <Logo />
@@ -79,7 +97,7 @@ const Login = () => {
         Login
       </Text>
       <TextInput
-        style={tw`border p-3 rounded mb-3`}
+        style={tw` p-3 rounded mb-3 border`}
         placeholder="Email"
         value={email}
         onChangeText={setEmail}
