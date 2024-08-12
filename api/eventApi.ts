@@ -20,7 +20,10 @@ export const getEventById = async (eventId: string) => {
 
 export const getAllEvents = async () => {
   try {
-    const response = await server.get("/events/read");
+    console.log("getAllEvents");
+
+    const response = await server.get("/event/read");
+
     return response.data;
   } catch (error) {
     throw new Error(`Error fetching events: ${error.message}`);
