@@ -14,12 +14,64 @@ import { useRouter } from "expo-router";
 import { FontAwesome5 } from "@expo/vector-icons";
 import state from "../state";
 
-const Home = () => {
+// Type definitions
+type EventFields = {
+  category1?: string[];
+  category2?: string[];
+  endDate?: string | null;
+  eventDetails?: string | null;
+  eventName?: string | null;
+  location?: string | null;
+  manualTotalAttendees?: number | null;
+  manualTotalInternationalStudents?: number | null;
+  manualTotalNonDalFCSStudents?: number | null;
+  manualTotalNonStudentsCommunity?: number | null;
+  manualTotalNonStudentsFacultyStaff?: number | null;
+  manualTotalNonStudentsFederalGov?: number | null;
+  manualTotalNonStudentsMunicipalGov?: number | null;
+  manualTotalNonStudentsNonProfit?: number | null;
+  manualTotalNonStudentsPrivateSector?: number | null;
+  manualTotalNonStudentsProvincialGov?: number | null;
+  manualTotalNovaScotianStudents?: number | null;
+  manualTotalOutOfProvinceStudents?: number | null;
+  manualTotalPOC?: number | null;
+  manualTotalWomenNonBinary?: number | null;
+  manualTotalYouthP12?: number | null;
+  notes?: string | null;
+  startDate?: string | null;
+  totalAttendees?: number | null;
+  totalInternationalStudents?: number | null;
+  totalNonDalFCSStudents?: number | null;
+  totalNonStudentsCommunity?: number | null;
+  totalNonStudentsFacultyStaff?: number | null;
+  totalNonStudentsFederalGov?: number | null;
+  totalNonStudentsMunicipalGov?: number | null;
+  totalNonStudentsNonProfit?: number | null;
+  totalNonStudentsPrivateSector?: number | null;
+  totalNonStudentsProvincialGov?: number | null;
+  totalNovaScotianStudents?: number | null;
+  totalOutOfProvinceStudents?: number | null;
+  totalPOC?: number | null;
+  totalWomenNonBinary?: number | null;
+  totalYouthP12?: number | null;
+  volunteer?: any[] | null;
+  volunteerShifts?: any[] | null;
+  images?: any[] | null;
+};
+
+type Event = {
+  id: string;
+  fields: EventFields;
+};
+
+const Home: React.FC = () => {
   const router = useRouter();
   const events = state.event;
-  const [eventsList, setEventsList] = useState([]);
+  const [eventsList, setEventsList] = useState<Event[]>([]);
 
-  const handlePressEvent = async (eventId) => {
+  const dummyImageUrl = "https://example.com/dummy-image.png";
+
+  const handlePressEvent = async (eventId: string) => {
     try {
       await events.fetchEventDetails(eventId); // Fetch event details before navigating
       router.push(`/event/${eventId}`);
@@ -44,6 +96,7 @@ const Home = () => {
     if (events) {
       setEventsList(events.eventState.events.get());
     }
+    console.log("eventsList", eventsList[0]);
   }, [events]);
 
   return (
@@ -67,10 +120,18 @@ const Home = () => {
           {eventsList.slice(0, eventsList.length / 2).map((event) => (
             <BigBoyCard
               key={event.id}
-              title={event.fields.title}
-              date={event.fields.date}
-              category="Crypto"
-              image={event.fields.image}
+              title={event.fields.eventName || "No Title"}
+              date={event.fields.startDate || "No Date"}
+              category={
+                event.fields.category1
+                  ? event.fields.category1[0]
+                  : "No Category"
+              }
+              images={
+                event.fields.images?.length
+                  ? event.fields.images
+                  : [{ url: dummyImageUrl }]
+              }
               onPressShow={() => handlePressEvent(event.id)}
               onPressFavorite={() =>
                 console.log("Favorite pressed for event:", event.id)
@@ -86,10 +147,14 @@ const Home = () => {
         {eventsList.slice(eventsList.length / 2).map((event) => (
           <EventCard
             key={event.id}
-            title={event.fields.title}
-            location={event.fields.location}
-            date={event.fields.date}
-            image={event.fields.image}
+            title={event.fields.eventName || "No Title"}
+            location={event.fields.location || "No Location"}
+            date={event.fields.startDate || "No Date"}
+            images={
+              event.fields.images?.length
+                ? event.fields.images
+                : [{ url: dummyImageUrl }]
+            }
             onPress={() => handlePressEvent(event.id)}
           />
         ))}
