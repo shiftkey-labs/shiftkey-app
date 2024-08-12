@@ -3,17 +3,18 @@ import { View, Text, TouchableOpacity, Alert, TextInput } from "react-native";
 import { useRouter } from "expo-router";
 import tw from "../styles/tailwind";
 import Logo from "@/components/common/Logo";
-import axios from "axios"; // For making API requests
+import axios from "axios";
+import Toast from "react-native-toast-message"; // Import the Toast component
 import state from "../state";
+import server from "@/config/axios";
 
 const Login = () => {
   const router = useRouter();
   const [email, setEmail] = useState("");
-  const [otp, setOtp] = useState(""); // New state for OTP
-  const [otpSent, setOtpSent] = useState(false); // Track if OTP is sent
+  const [otp, setOtp] = useState("");
+  const [otpSent, setOtpSent] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // Function to request OTP
   const requestOtp = async () => {
     setLoading(true);
     try {
@@ -25,31 +26,52 @@ const Login = () => {
         Alert.alert("OTP Sent", "Please check your email for the OTP.");
       }
     } catch (error) {
-      Alert.alert("Error", "Failed to send OTP. Please try again.");
+      if (error.response && error.response.status === 404) {
+        Toast.show({
+          type: "error",
+          text1: "User Not Found",
+          text2: "The email you entered does not exist. Please sign up first.",
+        });
+      } else {
+        Alert.alert("Error", "Failed to send OTP. Please try again.");
+      }
     } finally {
       setLoading(false);
     }
   };
 
-  // Function to verify OTP
   const verifyOtp = async () => {
     setLoading(true);
     try {
+      console.log(email, otp);
+
       const response = await axios.post(
         "http://localhost:3000/auth/verify-otp",
-        { email, otp }
+        {
+          email,
+          otp,
+        }
       );
+      console.log(response);
+
       if (response.status === 200) {
-        state.user.userState.set(response.data.user); // Store the authenticated user in state
-        router.push("/"); // Navigate to the main app
+        console.log(response.data);
+
+        if (response.data.user.status === "Active") {
+          state.user.userState.set(response.data.user);
+          router.push("/");
+        } else {
+          state.user.userState.set({ email, name: "", uid: null }); // Temporarily store the email and set other fields to null
+          router.push("/(auth)/signup"); // Redirect to signup
+        }
       }
     } catch (error) {
       Alert.alert("Login Error", "Invalid OTP. Please try again.");
+      console.log(error.message);
     } finally {
       setLoading(false);
     }
   };
-
   return (
     <View style={tw`flex-1 justify-center p-5 bg-white`}>
       <Logo />
@@ -63,6 +85,7 @@ const Login = () => {
         onChangeText={setEmail}
         keyboardType="email-address"
         autoCapitalize="none"
+        aria-disabled={otpSent}
       />
       {otpSent && (
         <TextInput
@@ -88,13 +111,6 @@ const Login = () => {
           disabled={loading}
         >
           <Text style={tw`text-white text-center`}>Verify OTP</Text>
-        </TouchableOpacity>
-      )}
-      {!otpSent && (
-        <TouchableOpacity onPress={() => router.push("/(auth)/signup")}>
-          <Text style={tw`text-center text-primary`}>
-            Don't have an account? Sign Up
-          </Text>
         </TouchableOpacity>
       )}
     </View>
