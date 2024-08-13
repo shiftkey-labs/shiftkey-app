@@ -1,4 +1,4 @@
-type EventFields = {
+export type EventFields = {
   category1?: string[];
   category2?: string[];
   endDate?: string | null;
@@ -39,10 +39,43 @@ type EventFields = {
   totalYouthP12?: number | null;
   volunteer?: any[] | null;
   volunteerShifts?: any[] | null;
-  image?: string | null;
+  images?: any[] | null;
 };
 
-type Event = {
+export type Event = {
   id: string;
   fields: EventFields;
 };
+
+export interface Image {
+  id: string;
+  url: string;
+  filename: string;
+  size: number;
+  type: string;
+  thumbnails: {
+    small: {
+      url: string;
+      width: number;
+      height: number;
+    };
+    large: {
+      url: string;
+      width: number;
+      height: number;
+    };
+    full: {
+      url: string;
+      width: number;
+      height: number;
+    };
+  };
+}
+
+export interface EventCardProps {
+  title: string;
+  location: string;
+  date: string;
+  images: Image[];
+  onPress: () => void;
+}

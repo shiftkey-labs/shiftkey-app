@@ -1,39 +1,7 @@
 import React from "react";
 import { View, Text, Image, TouchableOpacity } from "react-native";
 import tw from "@/app/styles/tailwind";
-
-interface Image {
-  id: string;
-  url: string;
-  filename: string;
-  size: number;
-  type: string;
-  thumbnails: {
-    small: {
-      url: string;
-      width: number;
-      height: number;
-    };
-    large: {
-      url: string;
-      width: number;
-      height: number;
-    };
-    full: {
-      url: string;
-      width: number;
-      height: number;
-    };
-  };
-}
-
-interface EventCardProps {
-  title: string;
-  location: string;
-  date: string;
-  images: Image[];
-  onPress: () => void;
-}
+import { EventCardProps } from "@/types/event";
 
 const dummyImageUrl = "https://example.com/dummy-image.png";
 
@@ -44,7 +12,6 @@ const EventCard: React.FC<EventCardProps> = ({
   images,
   onPress,
 }) => {
-  // Extract the first image URL if available, otherwise use a dummy image URL
   const imageUrl = images.length > 0 ? images[0].url : dummyImageUrl;
 
   return (

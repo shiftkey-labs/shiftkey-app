@@ -1,6 +1,6 @@
 import React, { useRef } from "react";
 import { StatusBar } from "expo-status-bar";
-import { Platform, Image, TouchableOpacity } from "react-native";
+import { Platform, TouchableOpacity } from "react-native";
 import QRCode from "react-native-qrcode-svg";
 import { Text, View } from "@/components/Themed";
 import tw from "./styles/tailwind";
@@ -10,11 +10,11 @@ import state from "./state";
 export default function ModalScreen() {
   const router = useRouter();
   const user = state.user.userState.get();
-  const currentEvent = state.currentEvent.get();
+  const currentEvent = state.event.eventState.currentEvent.get();
   const qrRef = useRef(null);
 
   const qrCodeValue = JSON.stringify({
-    userId: user.uid,
+    userId: user.id,
     eventId: currentEvent.id,
     bookingDate: new Date().toISOString(),
   });
@@ -23,7 +23,7 @@ export default function ModalScreen() {
     router.back();
   };
 
-  const eventDate = new Date(currentEvent.date);
+  const eventDate = new Date(currentEvent.startDate);
   const eventTime = eventDate.toLocaleTimeString([], {
     hour: "2-digit",
     minute: "2-digit",
@@ -40,7 +40,7 @@ export default function ModalScreen() {
           Scan This QR Code
         </Text>
         <Text style={tw`text-center text-gray-600 mb-5`}>
-          Point this QR code to the scan place
+          Point this QR code at the scanner
         </Text>
         <QRCode
           value={qrCodeValue}
@@ -50,7 +50,7 @@ export default function ModalScreen() {
           ref={qrRef}
         />
         <Text style={tw`text-xl font-montserratBold mt-5`}>
-          {currentEvent.title}
+          {currentEvent.eventName || "Event Title"}
         </Text>
         <View style={tw`flex-row justify-between w-full mt-5`}>
           <View>
