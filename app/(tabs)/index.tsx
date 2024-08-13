@@ -93,11 +93,9 @@ const Home: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (events) {
-      setEventsList(events.eventState.events.get());
-    }
+    setEventsList(events.eventState.events.get());
     console.log("eventsList", eventsList[0]);
-  }, [events]);
+  }, []);
 
   return (
     <SafeAreaView style={tw`flex-1 bg-background`}>

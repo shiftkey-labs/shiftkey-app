@@ -13,23 +13,27 @@ import {
 import { useRouter, useLocalSearchParams } from "expo-router";
 import tw from "../styles/tailwind";
 import { FontAwesome } from "@expo/vector-icons";
-import state, { fetchEventById } from "../state";
+import state from "../state";
 import { addBooking } from "@/helpers/userHelpers";
 
 const EventDetails = () => {
   const { id } = useLocalSearchParams();
   const router = useRouter();
   const [modalVisible, setModalVisible] = useState(false);
-  const currentEvent = state.currentEvent.get();
+  const currentEvent = state.event.eventState.currentEvent.get().fields;
   const [loading, setLoading] = useState(true);
   const user = state.user.userState.get();
-  const userBookings = state.userBookings.get();
+  const userRegistrations =
+    state.registration.registrationState.userRegistrations.get();
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        await fetchEventById(id);
+        await state.event.fetchEventDetails(id);
+        console.log("user", user);
+
+        await state.registration.fetchUserRegistrations(user.email);
       } catch (error) {
         console.error("Failed to fetch event details:", error);
       } finally {
@@ -38,6 +42,7 @@ const EventDetails = () => {
     };
     fetchData();
   }, [id]);
+  console.log("currentEvent", currentEvent);
 
   if (loading) {
     return (
@@ -55,15 +60,17 @@ const EventDetails = () => {
     );
   }
 
-  const isEventBooked = userBookings.some((booking) => booking.eventId === id);
+  const isEventRegistered = userRegistrations.some(
+    (registration) => registration.eventId === id
+  );
 
   const handleConfirm = async () => {
     try {
-      await addBooking(user.uid, id, new Date().toISOString());
+      await state.registration.registerForEvent(user.id, id);
       setModalVisible(true);
     } catch (error) {
-      Alert.alert("Error", "Failed to confirm attendance.");
-      console.error("Failed to confirm attendance:", error);
+      Alert.alert("Error", "Failed to confirm registration.");
+      console.error("Failed to confirm registration:", error);
     }
   };
 
@@ -84,13 +91,15 @@ const EventDetails = () => {
     router.back();
   };
 
+  const eventImage =
+    currentEvent.images && currentEvent.images.length > 0
+      ? currentEvent.images[0].url
+      : "https://via.placeholder.com/500"; // Dummy image URL if no image is provided
+
   return (
     <SafeAreaView style={tw`flex-1 bg-background`}>
       <View style={tw`flex-1`}>
-        <Image
-          source={{ uri: currentEvent.image }}
-          style={tw`absolute w-full h-84`}
-        />
+        <Image source={{ uri: eventImage }} style={tw`absolute w-full h-84`} />
         <TouchableOpacity
           onPress={handleBack}
           style={tw`absolute top-5 left-5 z-10 bg-white p-3 rounded-md shadow-md`}
@@ -99,22 +108,8 @@ const EventDetails = () => {
         </TouchableOpacity>
         <ScrollView style={tw`flex-1`} contentContainerStyle={tw`pt-72`}>
           <View style={tw`p-5 bg-white rounded-t-lg mt-[-10]`}>
-            {currentEvent.speaker && (
-              <View style={tw`flex-row items-center mt-4`}>
-                <Image
-                  source={{ uri: currentEvent.speakerImage }}
-                  style={tw`w-12 h-12 rounded-full`}
-                />
-                <View style={tw`ml-3`}>
-                  <Text style={tw`text-lg font-bold`}>
-                    {currentEvent.speaker}
-                  </Text>
-                  <Text style={tw`text-gray-500`}>Speaker</Text>
-                </View>
-              </View>
-            )}
             <Text style={tw`text-3xl font-bold mt-2`}>
-              {currentEvent.title}
+              {currentEvent.eventName || "Event Name"}
             </Text>
             <View style={tw`flex-row items-center mt-3`}>
               <FontAwesome
@@ -123,22 +118,23 @@ const EventDetails = () => {
                 style={tw`text-primary`}
               />
               <Text style={tw`text-gray-600 ml-5 text-lg my-3`}>
-                {currentEvent.location}
+                {currentEvent.location || "No location specified"}
               </Text>
             </View>
 
             <View style={tw`flex-row items-center mt-3`}>
               <FontAwesome name="calendar" size={24} style={tw`text-primary`} />
               <Text style={tw`text-gray-600 ml-4 text-lg`}>
-                {currentEvent.date}
+                {new Date(currentEvent.startDate).toLocaleString() ||
+                  "No date provided"}
               </Text>
             </View>
 
             <Text style={tw`text-lg font-bold mt-5`}>About Event</Text>
             <Text style={tw`text-gray-600 mt-2`}>
-              {currentEvent.description}
+              {currentEvent.eventDetails || "No event details provided"}
             </Text>
-            {isEventBooked ? (
+            {isEventRegistered ? (
               <TouchableOpacity
                 style={tw`bg-primary p-4 rounded-lg mt-5`}
                 onPress={handleViewTicket}
@@ -183,11 +179,11 @@ const EventDetails = () => {
             <View style={tw`items-center mb-5`}>
               <FontAwesome name="check-circle" size={50} color="green" />
               <Text style={tw`text-2xl font-montserratBold mb-2`}>
-                Congratulations !
+                Congratulations!
               </Text>
               <Text style={tw`text-center text-gray-600 mb-5`}>
-                You have successfully placed order for Darshan Raval music show.
-                Enjoy the event!
+                You have successfully placed an order for this event. Enjoy the
+                event!
               </Text>
             </View>
             <TouchableOpacity

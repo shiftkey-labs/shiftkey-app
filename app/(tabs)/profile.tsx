@@ -14,6 +14,7 @@ import { auth } from "@/config/firebaseConfig";
 import { useRouter } from "expo-router";
 import state from "../state";
 import { roleSettingsOptions } from "@/config/roleSettingsOptions";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const Profile = () => {
   const user = state.user.userState.get();
@@ -22,7 +23,26 @@ const Profile = () => {
   const handleLogout = async () => {
     try {
       await signOut(auth);
-      state.user.set(null);
+      state.user.userState.set({
+        id: null,
+        firstName: "",
+        lastName: "",
+        email: "",
+        pronouns: "",
+        isStudent: "",
+        currentDegree: "",
+        faculty: "",
+        school: "",
+        shirtSize: "",
+        backgroundCheck: "",
+        hours: 0,
+        university: "",
+        program: "",
+        year: "",
+        isInternational: false,
+        role: "STUDENT",
+      });
+      AsyncStorage.removeItem("user");
       router.push("/(auth)/login");
     } catch (error) {
       Alert.alert("Logout Error", error.message);

@@ -2,7 +2,7 @@ import server from "@/config/axios";
 
 export const createEvent = async (eventData: any) => {
   try {
-    const response = await server.post("/events/create", eventData);
+    const response = await server.post("/event/create", eventData);
     return response.data;
   } catch (error) {
     throw new Error(`Error creating event: ${error.message}`);
@@ -11,7 +11,11 @@ export const createEvent = async (eventData: any) => {
 
 export const getEventById = async (eventId: string) => {
   try {
-    const response = await server.get(`/events/read/${eventId}`);
+    console.log("getEventById");
+
+    const response = await server.get(`/event/read/${eventId}`);
+    console.log("response", response.data);
+
     return response.data;
   } catch (error) {
     throw new Error(`Error fetching event: ${error.message}`);
@@ -32,7 +36,7 @@ export const getAllEvents = async () => {
 
 export const updateEventById = async (eventId: string, updateData: any) => {
   try {
-    const response = await server.put(`/events/update/${eventId}`, updateData);
+    const response = await server.put(`/event/update/${eventId}`, updateData);
     return response.data;
   } catch (error) {
     throw new Error(`Error updating event: ${error.message}`);
@@ -41,7 +45,7 @@ export const updateEventById = async (eventId: string, updateData: any) => {
 
 export const deleteEventById = async (eventId: string) => {
   try {
-    await server.delete(`/events/delete/${eventId}`);
+    await server.delete(`/event/delete/${eventId}`);
   } catch (error) {
     throw new Error(`Error deleting event: ${error.message}`);
   }

@@ -4,13 +4,21 @@ import {
   volunteerState,
   fetchUserVolunteerRegistrations,
 } from "./volunteerState";
-import { registrationState, fetchUserRegistrations } from "./registrationState";
+import {
+  registrationState,
+  fetchUserRegistrations,
+  registerForEvent,
+} from "./registrationState";
 
 const state = {
   event: { eventState, initializeEvents, fetchEventDetails },
   user: { userState, initializeUser },
   volunteer: { volunteerState, fetchUserVolunteerRegistrations },
-  registration: { registrationState, fetchUserRegistrations },
+  registration: {
+    registrationState,
+    fetchUserRegistrations,
+    registerForEvent,
+  },
 };
 
 export default state;

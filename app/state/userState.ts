@@ -60,6 +60,8 @@ const initializeAuth = async () => {
 const initializeUser = async (userId: string) => {
   try {
     const user = await getUserById(userId);
+    console.log("User data:", user);
+
     const userData = {
       id: user.id,
       firstName: user.fields.firstName || "",
