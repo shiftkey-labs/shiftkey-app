@@ -57,6 +57,7 @@ type EventFields = {
   volunteer?: any[] | null;
   volunteerShifts?: any[] | null;
   images?: any[] | null;
+  uid: number | null;
 };
 
 type Event = {
@@ -73,7 +74,7 @@ const Home: React.FC = () => {
 
   const handlePressEvent = async (eventId: string) => {
     try {
-      await events.fetchEventDetails(eventId); // Fetch event details before navigating
+      await events.fetchEventDetails(eventId);
       router.push(`/event/${eventId}`);
     } catch (error) {
       console.error("Failed to load event details:", error);
@@ -94,7 +95,6 @@ const Home: React.FC = () => {
 
   useEffect(() => {
     setEventsList(events.eventState.events.get());
-    console.log("eventsList", eventsList[0]);
   }, []);
 
   return (

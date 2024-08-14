@@ -60,8 +60,10 @@ const EventDetails = () => {
     );
   }
 
+  console.log("userRegistrations", userRegistrations);
+
   const isEventRegistered = userRegistrations.some(
-    (registration) => registration.eventId === id
+    (registration) => registration.eventId === currentEvent.uid
   );
 
   const handleConfirm = async () => {
