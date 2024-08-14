@@ -18,9 +18,7 @@ export const registerUserForEvent = async (registrationData: {
 export const getUserRegistrations = async (userId: string) => {
   try {
     const response = await server.get(`/registration/user/${userId}/events`);
-    return response.data.filter(
-      (registration: any) => registration.fields["Has Attended"]
-    );
+    return response.data;
   } catch (error) {
     throw new Error(`Error fetching user registrations: ${error.message}`);
   }
