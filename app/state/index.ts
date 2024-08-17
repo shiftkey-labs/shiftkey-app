@@ -1,8 +1,9 @@
 import { eventState, initializeEvents, fetchEventDetails } from "./eventState";
 import { userState, initializeUser } from "./userState";
 import {
+  fetchUserVolunteeredEvents,
+  volunteerForEvent,
   volunteerState,
-  fetchUserVolunteerRegistrations,
 } from "./volunteerState";
 import {
   registrationState,
@@ -13,7 +14,7 @@ import {
 const state = {
   event: { eventState, initializeEvents, fetchEventDetails },
   user: { userState, initializeUser },
-  volunteer: { volunteerState, fetchUserVolunteerRegistrations },
+  volunteer: { volunteerState, fetchUserVolunteeredEvents, volunteerForEvent },
   registration: {
     registrationState,
     fetchUserRegistrations,

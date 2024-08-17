@@ -1,4 +1,4 @@
-import { getVolunteerEvents } from "@/api/volunteerApi";
+import { assignVolunteerToEvent, getVolunteerEvents } from "@/api/volunteerApi";
 import { observable } from "@legendapp/state";
 
 const volunteerState = observable({
@@ -18,4 +18,18 @@ const fetchUserVolunteeredEvents = async (uid: string) => {
   }
 };
 
-export { volunteerState, fetchUserVolunteeredEvents };
+const volunteerForEvent = async (userId: string, eventId: string) => {
+  try {
+    const response = await assignVolunteerToEvent({
+      userId,
+      eventId,
+    });
+    console.log("Volunteer assigned:", response);
+    // Optionally, update the state with the new volunteer event
+    fetchUserVolunteeredEvents(userId);
+  } catch (error) {
+    console.error("Failed to volunteer for event:", error);
+  }
+};
+
+export { volunteerState, fetchUserVolunteeredEvents, volunteerForEvent };
