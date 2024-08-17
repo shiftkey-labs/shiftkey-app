@@ -1,21 +1,21 @@
-import { getUserRegistrations } from "@/api/registrationApi";
+import { getVolunteerEvents } from "@/api/volunteerApi";
 import { observable } from "@legendapp/state";
 
 const volunteerState = observable({
-  userRegistrations: [],
+  userVolunteeredEvents: [],
 });
 
-const fetchUserVolunteerRegistrations = async (uid: string) => {
+const fetchUserVolunteeredEvents = async (uid: string) => {
   try {
-    const registrations = await getUserRegistrations(uid);
-    volunteerState.userRegistrations.set(Object.values(registrations));
+    const volunteeredEvents = await getVolunteerEvents(uid);
+    volunteerState.userVolunteeredEvents.set(volunteeredEvents);
     console.log(
-      "User volunteer registrations:",
-      volunteerState.userRegistrations.get()
+      "User volunteered events:",
+      volunteerState.userVolunteeredEvents.get()
     );
   } catch (error) {
-    console.error("Failed to fetch user volunteer registrations:", error);
+    console.error("Failed to fetch user volunteered events:", error);
   }
 };
 
-export { volunteerState, fetchUserVolunteerRegistrations };
+export { volunteerState, fetchUserVolunteeredEvents };

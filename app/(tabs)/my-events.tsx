@@ -1,4 +1,3 @@
-// app/tabs/myEvents.tsx
 import React, { useEffect, useState } from "react";
 import {
   View,
@@ -10,60 +9,53 @@ import {
 import { useRouter } from "expo-router";
 import tw from "../styles/tailwind";
 import EventCard from "@/components/home/EventCard";
-
 import { observer } from "@legendapp/state/react";
-import state, { fetchUserBookings } from "../state";
+import state from "../state";
+import { fetchUserRegistrations } from "../state/registrationState";
+import { fetchEventDetails } from "../state/eventState";
 
 const MyEvents = observer(() => {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("upcoming");
   const user = state.user.userState.get();
-  const events = state.events.get();
-  const userBookings = state.userBookings.get();
+  const events = state.event.eventState.get();
+  const userRegistrations =
+    state.registration.registrationState.userRegistrations.get()[0];
 
   useEffect(() => {
-    if (user.uid) {
-      fetchLocalUserBookings(user.uid);
+    if (user.id) {
+      fetchLocalUserRegistrations(user.email);
     }
   }, [user]);
 
-  const fetchLocalUserBookings = async (uid) => {
-    await fetchUserBookings(uid);
+  const fetchLocalUserRegistrations = async (uid: string) => {
+    await fetchUserRegistrations(uid);
   };
 
-  const formatBookings = (events, bookings) => {
-    const formattedEvents = bookings
-      .map((booking) => {
-        const event = events.find((e) => e.id.toString() === booking.eventId);
-        if (event) {
-          return {
-            ...event,
-            bookingDate: booking.bookingDate,
-            attendance: booking.attendance,
-          };
-        }
-        return null;
-      })
-      .filter((event) => event !== null);
-    return formattedEvents;
-  };
+  const handlePressEvent = async (eventId: string) => {
+    console.log("eventId", eventId);
 
-  const bookedEvents = formatBookings(events, userBookings);
-
-  const handlePressEvent = (eventId: string) => {
-    router.push({ pathname: `/event/${eventId}` });
+    try {
+      await fetchEventDetails(eventId);
+      router.push(`/event/${eventId}`);
+    } catch (error) {
+      console.error("Failed to load event details:", error);
+    }
   };
 
   const yesterday = new Date();
   yesterday.setDate(yesterday.getDate() - 1);
   const yesterdayISOString = yesterday.toISOString().split("T")[0];
 
-  const upcomingEvents = bookedEvents.filter(
-    (event) => event.date >= yesterdayISOString
+  const upcomingEvents = userRegistrations.filter(
+    (event) => event.endDate >= yesterdayISOString
   );
-  const pastEvents = bookedEvents.filter(
-    (event) => event.date < yesterdayISOString
+
+  const pastEvents = userRegistrations.filter(
+    (event) => event.endDate < yesterdayISOString
   );
+
+  console.log("upcomingEvents", userRegistrations[0]);
 
   const eventsToDisplay =
     activeTab === "upcoming" ? upcomingEvents : pastEvents;
@@ -111,10 +103,10 @@ const MyEvents = observer(() => {
             {eventsToDisplay.map((event) => (
               <EventCard
                 key={event.id}
-                title={event.title}
+                title={event.eventName}
                 location={event.location}
-                date={event.date}
-                image={event.image}
+                date={event.startDate.split("T")[0]}
+                images={event.images}
                 onPress={() => handlePressEvent(event.id)}
               />
             ))}

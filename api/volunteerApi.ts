@@ -59,3 +59,14 @@ export const deleteVolunteerById = async (userId: string) => {
     throw new Error(`Error deleting volunteer: ${error.message}`);
   }
 };
+
+export const getVolunteerEvents = async (userId: string) => {
+  try {
+    const response = await server.get(`/volunteer/user/${userId}`);
+    console.log("response", response);
+
+    return response.data;
+  } catch (error) {
+    throw new Error(`Error fetching volunteer events: ${error.message}`);
+  }
+};
