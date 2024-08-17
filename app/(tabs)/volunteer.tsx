@@ -10,16 +10,16 @@ import { fetchUserVolunteeredEvents } from "../state/volunteerState";
 
 const Volunteer = observer(() => {
   const user = state.user.userState.get();
-  console.log("user", user);
+  const volunteerEvents =
+    state.volunteer.volunteerState.userVolunteeredEvents.get();
 
   const role = user.role;
-  console.log("role", role);
 
   useEffect(() => {
-    if (role === "VOLUNTEER" && user.id) {
-      fetchUserVolunteeredEvents(user.uid);
+    if (role === "VOLUNTEER" && user.email) {
+      fetchUserVolunteeredEvents(user.email);
     }
-  }, [role, user.id]);
+  }, [role, user.email]);
 
   const handleSubmitVolunteerRequest = async () => {
     try {
@@ -36,20 +36,6 @@ const Volunteer = observer(() => {
   };
 
   if (role === "VOLUNTEER") {
-    const volunteerEvents = [
-      {
-        id: "1",
-        title: "Event 1",
-        date: "2024-07-15",
-        location: "Location 1",
-      },
-      {
-        id: "2",
-        title: "Event 2",
-        date: "2024-08-22",
-        location: "Location 2",
-      },
-    ];
     return (
       <SafeAreaView style={tw`flex-1`}>
         <VolunteerEventsList events={volunteerEvents} />

@@ -92,10 +92,22 @@ const EventDetails = () => {
     router.push("/");
   };
 
-  const handleVolunteer = () => {
-    Alert.alert("Volunteer", "You have volunteered for this event.");
+  const handleVolunteer = async () => {
+    try {
+      await state.volunteer.volunteerForEvent(user.id, id);
+      Alert.alert("Success", "You have successfully signed up as a volunteer", [
+        {
+          text: "OK",
+          onPress: () => {
+            router.navigate("/volunteer");
+          },
+        },
+      ]);
+    } catch (error) {
+      Alert.alert("Error", "Failed to sign up as a volunteer.");
+      console.error("Failed to sign up as a volunteer:", error);
+    }
   };
-
   const handleBack = () => {
     router.back();
   };
