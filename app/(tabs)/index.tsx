@@ -13,6 +13,7 @@ import SectionHeader from "@/components/home/SectionHeader";
 import { useRouter } from "expo-router";
 import { FontAwesome5 } from "@expo/vector-icons";
 import state from "../state";
+import { initializeAuth } from "../state/userState";
 
 // Type definitions
 type EventFields = {
@@ -88,6 +89,7 @@ const Home: React.FC = () => {
   useEffect(() => {
     const initialize = async () => {
       await events.initializeEvents();
+      initializeAuth();
     };
 
     initialize();

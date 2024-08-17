@@ -3,7 +3,7 @@ import { View, Text, Image, TouchableOpacity } from "react-native";
 import tw from "@/app/styles/tailwind";
 import { EventCardProps } from "@/types/event";
 
-const dummyImageUrl = "https://example.com/dummy-image.png";
+const dummyImageUrl = "https://via.placeholder.com/150";
 
 const EventCard: React.FC<EventCardProps> = ({
   title,
@@ -12,7 +12,7 @@ const EventCard: React.FC<EventCardProps> = ({
   images,
   onPress,
 }) => {
-  const imageUrl = images.length > 0 ? images[0].url : dummyImageUrl;
+  const imageUrl = images ? images[0].url : dummyImageUrl;
 
   return (
     <TouchableOpacity

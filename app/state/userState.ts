@@ -20,7 +20,7 @@ const userState = observable({
   program: "",
   year: "",
   isInternational: false,
-  role: "STUDENT",
+  role: "",
 });
 
 // Function to initialize the authentication state
@@ -48,7 +48,7 @@ const initializeAuth = async () => {
         program: "",
         year: "",
         isInternational: false,
-        role: "STUDENT",
+        role: "",
       });
     }
   } catch (error) {
@@ -79,7 +79,7 @@ const initializeUser = async (userId: string) => {
       program: user.fields.program || "",
       year: user.fields.year || "",
       isInternational: user.fields.isInternational || false,
-      role: user.fields.role || "STUDENT",
+      role: user.fields.role || "",
     };
 
     userState.set(userData);

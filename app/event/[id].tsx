@@ -20,9 +20,15 @@ const EventDetails = () => {
   const { id } = useLocalSearchParams();
   const router = useRouter();
   const [modalVisible, setModalVisible] = useState(false);
-  const currentEvent = state.event.eventState.currentEvent.get().fields;
+  const curr = state.event.eventState.currentEvent.get();
+  const currentEvent = curr.fields;
+
   const [loading, setLoading] = useState(true);
   const user = state.user.userState.get();
+  console.log("++++++++===========");
+
+  console.log("user", user.role);
+
   const userRegistrations =
     state.registration.registrationState.userRegistrations.get();
 
@@ -60,10 +66,11 @@ const EventDetails = () => {
     );
   }
 
-  console.log("userRegistrations", userRegistrations);
+  console.log("userRegistrations", userRegistrations[0].id);
+  console.log("currentEvent", curr.id);
 
   const isEventRegistered = userRegistrations.some(
-    (registration) => registration.eventId === currentEvent.uid
+    (registration) => registration.id === curr.id
   );
 
   const handleConfirm = async () => {
@@ -136,15 +143,15 @@ const EventDetails = () => {
             <Text style={tw`text-gray-600 mt-2`}>
               {currentEvent.eventDetails || "No event details provided"}
             </Text>
-            {isEventRegistered ? (
-              <TouchableOpacity
-                style={tw`bg-primary p-4 rounded-lg mt-5`}
-                onPress={handleViewTicket}
-              >
-                <Text style={tw`text-white text-center`}>View Ticket</Text>
-              </TouchableOpacity>
-            ) : (
-              <View style={tw`flex-row justify-between mt-5`}>
+            <View style={tw`flex-row justify-between mt-5`}>
+              {isEventRegistered ? (
+                <TouchableOpacity
+                  style={tw`bg-primary p-4 rounded-lg flex-1 mr-2`}
+                  onPress={handleViewTicket}
+                >
+                  <Text style={tw`text-white text-center`}>View Ticket</Text>
+                </TouchableOpacity>
+              ) : (
                 <TouchableOpacity
                   style={tw`bg-primary p-4 rounded-lg flex-1 mr-2`}
                   onPress={handleConfirm}
@@ -153,16 +160,16 @@ const EventDetails = () => {
                     Confirm Attendance
                   </Text>
                 </TouchableOpacity>
-                {user.role === "VOLUNTEER" && (
-                  <TouchableOpacity
-                    style={tw`bg-white p-4 rounded-lg flex-1 ml-2 border border-primary`}
-                    onPress={handleVolunteer}
-                  >
-                    <Text style={tw`text-primary text-center`}>Volunteer</Text>
-                  </TouchableOpacity>
-                )}
-              </View>
-            )}
+              )}
+              {user.role === "VOLUNTEER" && (
+                <TouchableOpacity
+                  style={tw`bg-white p-4 rounded-lg flex-1 ml-2 border border-primary`}
+                  onPress={handleVolunteer}
+                >
+                  <Text style={tw`text-primary text-center`}>Volunteer</Text>
+                </TouchableOpacity>
+              )}
+            </View>
           </View>
         </ScrollView>
       </View>
