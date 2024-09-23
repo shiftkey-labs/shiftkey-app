@@ -9,28 +9,23 @@ import {
   SafeAreaView,
 } from "react-native";
 import { useRouter } from "expo-router";
+import { Dropdown } from "react-native-element-dropdown";
 import tw from "../styles/tailwind";
 import axios from "axios";
 import state from "../state";
 import { signupForm } from "@/constants/signupForm";
+import { DEV_URL } from "@/config/axios";
 
 const Signup = () => {
   const router = useRouter();
   const email = state.user.userState.get().email;
 
   // Define the initial form data
-  const initialFormData = {
-    firstName: state.user.userState.firstName.get() || "",
-    lastName: state.user.userState.lastName.get() || "",
-    pronouns: state.user.userState.pronouns.get() || "",
-    isStudent: state.user.userState.isStudent.get() || "",
-    currentDegree: state.user.userState.currentDegree.get() || "",
-    faculty: state.user.userState.faculty.get() || "",
-    school: state.user.userState.school.get() || "",
-    shirtSize: state.user.userState.shirtSize.get() || "",
-    backgroundCheck: state.user.userState.backgroundCheck.get() || "",
-    hours: state.user.userState.hours.get() || "",
-  };
+  const initialFormData = signupForm.reduce((acc, field) => {
+    acc[field.key] = state.user.userState[field.key]?.get() || "";
+    return acc;
+  }, {});
+
   // Create formData state
   const [formData, setFormData] = useState(initialFormData);
   const [loading, setLoading] = useState(false);
@@ -46,22 +41,21 @@ const Signup = () => {
     setLoading(true);
     try {
       console.log("email", email);
-
       console.log("formData", formData);
-      console.log(state.user.userState.get());
 
-      const response = await axios.post("http://localhost:3000/auth/signup", {
+      const response = await axios.post(`${DEV_URL}auth/signup`, {
         email,
         ...formData,
       });
+      console.log("response", response);
+
       if (response.status === 200) {
         state.user.userState.set(response.data.user); // Update userState with the full user details
         Alert.alert("Signup Successful", "Your account has been created.");
         router.push("/"); // Navigate to the main app
       }
     } catch (error) {
-      console.log(error);
-
+      console.log(error.message);
       Alert.alert(
         "Signup Error",
         "Failed to create account. Please try again."
@@ -78,18 +72,30 @@ const Signup = () => {
           Complete Your Signup
         </Text>
         {signupForm.map((field) => (
-          <>
+          <View key={field.key}>
             <Text style={tw`text-lg font-montserratBold mb-2`}>
               {field.label}
             </Text>
-            <TextInput
-              key={field.key}
-              style={tw`border p-3 rounded mb-3`}
-              placeholder={field.placeholder}
-              value={formData[field.key]}
-              onChangeText={(value) => handleInputChange(field.key, value)}
-            />
-          </>
+            {field.type === "text" || field.type === "numeric" ? (
+              <TextInput
+                style={tw`border p-3 rounded mb-3`}
+                placeholder={field.placeholder}
+                keyboardType={field.type === "numeric" ? "numeric" : "default"}
+                value={formData[field.key]}
+                onChangeText={(value) => handleInputChange(field.key, value)}
+              />
+            ) : (
+              <Dropdown
+                style={tw`border p-3 rounded mb-3`}
+                data={field.options}
+                labelField="label"
+                valueField="value"
+                placeholder="Select an option"
+                value={formData[field.key]}
+                onChange={(item) => handleInputChange(field.key, item.value)}
+              />
+            )}
+          </View>
         ))}
         <TouchableOpacity
           style={tw`bg-primary p-4 rounded mb-3`}

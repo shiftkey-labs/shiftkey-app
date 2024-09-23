@@ -15,6 +15,8 @@ const Volunteer = observer(() => {
 
   const role = user.role;
 
+  console.log("role", user);
+
   useEffect(() => {
     if (role === "VOLUNTEER" && user.email) {
       fetchUserVolunteeredEvents(user.email);
@@ -37,13 +39,13 @@ const Volunteer = observer(() => {
 
   if (role === "VOLUNTEER") {
     return (
-      <SafeAreaView style={tw`flex-1`}>
+      <SafeAreaView style={tw`flex-1 bg-background`}>
         <VolunteerEventsList events={volunteerEvents} />
       </SafeAreaView>
     );
   } else if (role === "STUDENT") {
     return (
-      <SafeAreaView style={tw`flex-1`}>
+      <SafeAreaView style={tw`flex-1 bg-background`}>
         <View style={tw`p-5`}>
           <Text style={tw`text-3xl font-bold mb-5`}>Volunteer Signup Form</Text>
           <Text style={tw`text-lg mb-5`}>

@@ -20,13 +20,15 @@ const MyEvents = observer(() => {
   const user = state.user.userState.get();
   const events = state.event.eventState.get();
   const userRegistrations =
-    state.registration.registrationState.userRegistrations.get()[0];
+    state.registration.registrationState.userRegistrations.get();
 
   useEffect(() => {
     if (user.id) {
       fetchLocalUserRegistrations(user.email);
     }
   }, [user]);
+
+  console.log("userRegistrations", userRegistrations);
 
   const fetchLocalUserRegistrations = async (uid: string) => {
     await fetchUserRegistrations(uid);

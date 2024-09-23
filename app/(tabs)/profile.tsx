@@ -9,8 +9,6 @@ import {
   Alert,
 } from "react-native";
 import tw from "../styles/tailwind";
-import { signOut } from "firebase/auth";
-import { auth } from "@/config/firebaseConfig";
 import { useRouter } from "expo-router";
 import state from "../state";
 import { roleSettingsOptions } from "@/config/roleSettingsOptions";
@@ -22,7 +20,6 @@ const Profile = () => {
 
   const handleLogout = async () => {
     try {
-      await signOut(auth);
       state.user.userState.set({
         id: null,
         firstName: "",

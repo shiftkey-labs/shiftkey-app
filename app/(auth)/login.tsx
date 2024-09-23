@@ -7,6 +7,7 @@ import axios from "axios";
 import Toast from "react-native-toast-message";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import state from "../state";
+import { DEV_URL } from "@/config/axios";
 
 const Login = () => {
   const router = useRouter();
@@ -18,7 +19,9 @@ const Login = () => {
   const requestOtp = async () => {
     setLoading(true);
     try {
-      const response = await axios.post("http://localhost:3000/auth/send-otp", {
+      console.log("email", email);
+
+      const response = await axios.post(`${DEV_URL}auth/send-otp`, {
         email,
       });
       if (response.status === 200) {
@@ -43,12 +46,13 @@ const Login = () => {
   const verifyOtp = async () => {
     setLoading(true);
     try {
-      const response = await axios.post(
-        "http://localhost:3000/auth/verify-otp",
-        { email, otp }
-      );
+      const response = await axios.post(`${DEV_URL}auth/verify-otp`, {
+        email,
+        otp,
+      });
       if (response.status === 200) {
         const userData = response.data.user;
+
         console.log("userData", userData);
 
         // Update userState with the user data
@@ -71,6 +75,8 @@ const Login = () => {
           "backgroundCheck",
           "hours",
         ];
+        console.log("userData", userData);
+
         const missingFields = requiredFields.filter(
           (field) => !userData[field]
         );
