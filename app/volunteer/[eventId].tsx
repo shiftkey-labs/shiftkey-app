@@ -10,7 +10,7 @@ import {
   SafeAreaView,
   Modal,
 } from "react-native";
-import { useRouter, useLocalSearchParams } from "expo-router";
+import { useRouter, useLocalSearchParams, Stack } from "expo-router";
 import axios from "axios";
 import { AntDesign } from "@expo/vector-icons";
 import { Camera, CameraView } from "expo-camera";
@@ -45,9 +45,8 @@ const EventAttendance = () => {
   const fetchEventDetails = async () => {
     try {
       const response = await server.get(`/event/read/${eventId}`);
-      console.log("event details", response.data.fields.eventDetails);
 
-      setEventTitle(response.data.fields.eventDetails);
+      setEventTitle(response.data.fields.eventName);
     } catch (error) {
       console.error(error);
       Alert.alert("Error", "Failed to fetch event details.");
@@ -123,7 +122,16 @@ const EventAttendance = () => {
 
   return (
     <SafeAreaView style={tw`flex-1 bg-white`}>
-      {/* Header */}
+      <Stack.Screen
+        options={{
+          title: "My home",
+          headerStyle: { backgroundColor: "#f4511e" },
+          headerTintColor: "#fff",
+          headerTitleStyle: {
+            fontWeight: "bold",
+          },
+        }}
+      />
       <View style={tw`flex-row items-center justify-between p-4 bg-gray-200`}>
         <TouchableOpacity onPress={() => router.back()}>
           <AntDesign name="arrowleft" size={24} color="black" />
