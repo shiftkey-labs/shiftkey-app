@@ -28,12 +28,11 @@ export default function TabLayout() {
       screenOptions={{
         tabBarActiveTintColor: Colors["light"].primary,
         tabBarInactiveTintColor: Colors["light"].text,
-        // Disable the static render of the header on web
-        // to prevent a hydration error in React Navigation v6.
         headerShown: false,
         tabBarStyle: {
           height: 90,
           paddingVertical: 10,
+          backgroundColor: "#fff",
         },
         tabBarShowLabel: false,
       }}
@@ -71,7 +70,7 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="volunteer"
+        name="my-volunteer"
         options={{
           title: "Volunteer",
           tabBarIcon: ({ color, size }) => (

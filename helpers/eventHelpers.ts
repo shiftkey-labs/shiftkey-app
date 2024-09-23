@@ -1,4 +1,3 @@
-// firebaseHelpers/eventHelpers.js
 import { ref, get, child, set } from "firebase/database";
 import axios from "axios";
 import { database } from "@/config/firebaseConfig";

@@ -25,8 +25,6 @@ const volunteerForEvent = async (userId: string, eventId: string) => {
       eventId,
     });
     console.log("Volunteer assigned:", response);
-    // Optionally, update the state with the new volunteer event
-    fetchUserVolunteeredEvents(userId);
   } catch (error) {
     console.error("Failed to volunteer for event:", error);
   }
