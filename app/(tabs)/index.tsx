@@ -89,14 +89,11 @@ const Home: React.FC = () => {
   useEffect(() => {
     const initialize = async () => {
       await events.initializeEvents();
+      setEventsList(events.eventState.events.get()); // Update eventsList here
       initializeAuth();
     };
 
     initialize();
-  }, []);
-
-  useEffect(() => {
-    setEventsList(events.eventState.events.get());
   }, []);
 
   return (
