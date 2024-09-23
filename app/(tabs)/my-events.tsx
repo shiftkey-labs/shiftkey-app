@@ -28,7 +28,7 @@ const MyEvents = observer(() => {
     }
   }, [user]);
 
-  console.log("userRegistrations", userRegistrations);
+  console.log("userRegistrations", userRegistrations[0]);
 
   const fetchLocalUserRegistrations = async (uid: string) => {
     await fetchUserRegistrations(uid);
@@ -47,17 +47,17 @@ const MyEvents = observer(() => {
 
   const yesterday = new Date();
   yesterday.setDate(yesterday.getDate() - 1);
-  const yesterdayISOString = yesterday.toISOString().split("T")[0];
+  yesterday.setHours(0, 0, 0, 0);
 
-  const upcomingEvents = userRegistrations.filter(
-    (event) => event.endDate >= yesterdayISOString
-  );
+  const upcomingEvents = userRegistrations[0].filter((event) => {
+    const eventEndDate = new Date(event.endDate);
+    return eventEndDate >= yesterday;
+  });
 
-  const pastEvents = userRegistrations.filter(
-    (event) => event.endDate < yesterdayISOString
-  );
-
-  console.log("upcomingEvents", userRegistrations[0]);
+  const pastEvents = userRegistrations[0].filter((event) => {
+    const eventEndDate = new Date(event.endDate);
+    return eventEndDate < yesterday;
+  });
 
   const eventsToDisplay =
     activeTab === "upcoming" ? upcomingEvents : pastEvents;
