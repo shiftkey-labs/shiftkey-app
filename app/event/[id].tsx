@@ -99,7 +99,7 @@ const EventDetails = () => {
         {
           text: "OK",
           onPress: () => {
-            router.navigate("/volunteer");
+            router.navigate("/my-volunteer");
           },
         },
       ]);
