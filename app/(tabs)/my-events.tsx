@@ -22,13 +22,31 @@ const MyEvents = observer(() => {
   const userRegistrations =
     state.registration.registrationState.userRegistrations.get();
 
+  const [upcomingEvents, setUpcomingEvents] = useState([]);
+  const [pastEvents, setPastEvents] = useState([]);
+
   useEffect(() => {
     if (user.id) {
       fetchLocalUserRegistrations(user.email);
     }
   }, [user]);
 
-  console.log("userRegistrations", userRegistrations[0]);
+  useEffect(() => {
+    if (userRegistrations.length > 0) {
+      console.log("userRegistrations", userRegistrations);
+
+      const upcoming = userRegistrations[0].filter((event) => {
+        return new Date(event.startDate) >= new Date();
+      });
+
+      const past = userRegistrations[0].filter((event) => {
+        return new Date(event.startDate) < new Date();
+      });
+
+      setUpcomingEvents(upcoming);
+      setPastEvents(past);
+    }
+  }, [userRegistrations]);
 
   const fetchLocalUserRegistrations = async (uid: string) => {
     await fetchUserRegistrations(uid);
@@ -48,16 +66,6 @@ const MyEvents = observer(() => {
   const yesterday = new Date();
   yesterday.setDate(yesterday.getDate() - 1);
   yesterday.setHours(0, 0, 0, 0);
-
-  const upcomingEvents = userRegistrations[0].filter((event) => {
-    const eventEndDate = new Date(event.endDate);
-    return eventEndDate >= yesterday;
-  });
-
-  const pastEvents = userRegistrations[0].filter((event) => {
-    const eventEndDate = new Date(event.endDate);
-    return eventEndDate < yesterday;
-  });
 
   const eventsToDisplay =
     activeTab === "upcoming" ? upcomingEvents : pastEvents;

@@ -30,6 +30,8 @@ export const getAllUsers = async () => {
 
 export const updateUserById = async (userId: string, updateData: any) => {
   try {
+    console.log("Update data:", updateData);
+
     const response = await server.put(`/users/update/${userId}`, updateData);
     return response.data;
   } catch (error) {

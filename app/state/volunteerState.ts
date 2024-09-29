@@ -1,5 +1,6 @@
 import { assignVolunteerToEvent, getVolunteerEvents } from "@/api/volunteerApi";
 import { observable } from "@legendapp/state";
+import { userState } from "./userState";
 
 const volunteerState = observable({
   userVolunteeredEvents: [],
@@ -20,6 +21,9 @@ const fetchUserVolunteeredEvents = async (uid: string) => {
 
 const volunteerForEvent = async (userId: string, eventId: string) => {
   try {
+    userState.role.set("VOLUNTEER");
+    console.log("userState", userState);
+
     const response = await assignVolunteerToEvent({
       userId,
       eventId,
