@@ -43,7 +43,7 @@ const Signup = () => {
       console.log("email", email);
       console.log("formData", formData);
 
-      const response = await axios.post(`${DEV_URL}auth/signup`, {
+      const response = await axios.post(`${DEV_URL}/auth/signup`, {
         email,
         ...formData,
       });

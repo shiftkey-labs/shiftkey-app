@@ -11,7 +11,6 @@ import {
   Modal,
 } from "react-native";
 import { useRouter, useLocalSearchParams, Stack } from "expo-router";
-import axios from "axios";
 import { AntDesign } from "@expo/vector-icons";
 import { Camera, CameraView } from "expo-camera";
 import tw from "../styles/tailwind";
@@ -55,9 +54,13 @@ const EventAttendance = () => {
 
   const fetchAttendees = async () => {
     try {
+      console.log("eventId", eventId);
+
       const response = await server.get(
         `/registration/event/${eventId}/attendees`
       );
+      console.log("response", response.data.attendees);
+
       setAttendees(response.data.attendees);
     } catch (error) {
       console.error(error);

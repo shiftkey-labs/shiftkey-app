@@ -72,7 +72,10 @@ const RootLayoutNav = observer(() => {
           name="volunteer"
           options={{ headerShown: false, gestureEnabled: false }}
         />
-        <Stack.Screen name="modal" options={{ presentation: "modal" }} />
+        <Stack.Screen
+          name="modal"
+          options={{ presentation: "modal", headerShown: false }}
+        />
       </Stack>
     </ThemeProvider>
   );

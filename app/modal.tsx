@@ -12,6 +12,8 @@ export default function ModalScreen() {
   const user = state.user.userState.get();
   const currentEvent = state.event.eventState.currentEvent.get();
   const qrRef = useRef(null);
+  console.log("user", user);
+  console.log("currentEvent", currentEvent);
 
   const qrCodeValue = JSON.stringify({
     userId: user.id,
@@ -23,7 +25,7 @@ export default function ModalScreen() {
     router.back();
   };
 
-  const eventDate = new Date(currentEvent.startDate);
+  const eventDate = new Date(currentEvent.fields.startDate);
   const eventTime = eventDate.toLocaleTimeString([], {
     hour: "2-digit",
     minute: "2-digit",
@@ -50,12 +52,14 @@ export default function ModalScreen() {
           ref={qrRef}
         />
         <Text style={tw`text-xl font-montserratBold mt-5`}>
-          {currentEvent.eventName || "Event Title"}
+          {currentEvent.fields.eventName || "Event Title"}
         </Text>
         <View style={tw`flex-row justify-between w-full mt-5`}>
           <View>
             <Text style={tw`text-gray-500`}>Full Name</Text>
-            <Text style={tw`font-bold`}>{user.name}</Text>
+            <Text style={tw`font-bold`}>
+              {user.firstName + " " + user.lastName}
+            </Text>
           </View>
           {eventTime !== "12:00 AM" && (
             <View>

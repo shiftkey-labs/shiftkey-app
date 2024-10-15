@@ -21,7 +21,7 @@ const Login = () => {
     try {
       console.log("email", email);
 
-      const response = await axios.post(`${DEV_URL}auth/send-otp`, {
+      const response = await axios.post(`${DEV_URL}/auth/send-otp`, {
         email,
       });
       if (response.status === 200) {
@@ -46,7 +46,7 @@ const Login = () => {
   const verifyOtp = async () => {
     setLoading(true);
     try {
-      const response = await axios.post(`${DEV_URL}auth/verify-otp`, {
+      const response = await axios.post(`${DEV_URL}/auth/verify-otp`, {
         email,
         otp,
       });

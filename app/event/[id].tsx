@@ -23,6 +23,8 @@ const EventDetails = () => {
   const curr = state.event.eventState.currentEvent.get();
   const currentEvent = curr.fields;
 
+  const [isEventRegistered, setIsEventRegistered] = useState(false);
+
   const [loading, setLoading] = useState(true);
   const user = state.user.userState.get();
   console.log("++++++++===========");
@@ -48,6 +50,14 @@ const EventDetails = () => {
     };
     fetchData();
   }, [id]);
+
+  useEffect(() => {
+    const bb = userRegistrations[0].some(
+      (registration) => registration.id === curr.id
+    );
+    setIsEventRegistered(bb);
+  }, [userRegistrations]);
+
   console.log("currentEvent", currentEvent);
 
   if (loading) {
@@ -65,13 +75,6 @@ const EventDetails = () => {
       </View>
     );
   }
-
-  console.log("userRegistrations", userRegistrations[0].id);
-  console.log("currentEvent", curr.id);
-
-  const isEventRegistered = userRegistrations.some(
-    (registration) => registration.id === curr.id
-  );
 
   const handleConfirm = async () => {
     try {
