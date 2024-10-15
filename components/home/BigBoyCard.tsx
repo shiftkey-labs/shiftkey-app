@@ -36,6 +36,7 @@ interface BigBoyCardProps {
   images: Image[];
   onPressShow: () => void;
   onPressFavorite: () => void;
+  style?: any;
 }
 
 const dummyImageUrl = "https://example.com/dummy-image.png";
@@ -47,6 +48,7 @@ const BigBoyCard: React.FC<BigBoyCardProps> = ({
   images,
   onPressShow,
   onPressFavorite,
+  style,
 }) => {
   // Extract the first image URL if available, otherwise use a dummy image URL
   const imageUrl = images.length > 0 ? images[0].url : dummyImageUrl;
@@ -54,7 +56,7 @@ const BigBoyCard: React.FC<BigBoyCardProps> = ({
   return (
     <TouchableOpacity
       onPress={onPressShow}
-      style={tw`mr-4 bg-white rounded-lg overflow-hidden w-80`}
+      style={tw`mr-4 bg-white rounded-lg overflow-hidden w-80 ${style}`}
     >
       <View style={tw`relative w-full`}>
         <Image source={{ uri: imageUrl }} style={tw`w-full h-48`} />

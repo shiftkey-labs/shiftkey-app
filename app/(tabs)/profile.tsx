@@ -45,6 +45,7 @@ const Profile = () => {
       Alert.alert("Logout Error", error.message);
     }
   };
+  console.log("user", user);
 
   if (!user) {
     return null;
@@ -58,7 +59,7 @@ const Profile = () => {
       <ScrollView style={tw`flex-1 bg-background p-5`}>
         <View style={tw`mb-5`}>
           <Text style={tw`text-2xl font-montserratBold`}>
-            {user.name || "John Doe"}
+            {user.firstName || "John"} {user.lastName || "Doe"}
           </Text>
           <Text style={tw`text-gray-600`}>
             {user.email || "johndoe@example.com"}
