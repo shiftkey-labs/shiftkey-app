@@ -176,14 +176,15 @@ const EventDetails = () => {
                   </Text>
                 </TouchableOpacity>
               )}
-              {user.role === "VOLUNTEER" && (
-                <TouchableOpacity
-                  style={tw`bg-white p-4 rounded-lg flex-1 ml-2 border border-primary`}
-                  onPress={handleVolunteer}
-                >
-                  <Text style={tw`text-primary text-center`}>Volunteer</Text>
-                </TouchableOpacity>
-              )}
+              {user.role === "VOLUNTEER" &&
+                currentEvent.volunteerCount > currentEvent.shiftsScheduled && (
+                  <TouchableOpacity
+                    style={tw`bg-white p-4 rounded-lg flex-1 ml-2 border border-primary`}
+                    onPress={handleVolunteer}
+                  >
+                    <Text style={tw`text-primary text-center`}>Volunteer</Text>
+                  </TouchableOpacity>
+                )}
             </View>
           </View>
         </ScrollView>
