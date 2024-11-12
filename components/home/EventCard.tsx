@@ -3,7 +3,8 @@ import { View, Text, Image, TouchableOpacity } from "react-native";
 import tw from "@/app/styles/tailwind";
 import { EventCardProps } from "@/types/event";
 
-const dummyImageUrl = "https://via.placeholder.com/150";
+const dummyImageUrl =
+  "https://shiftkeylabs.ca/wp-content/uploads/2022/12/Shiftkey-Labs-Logo-01-e1487284025704-1200x515-1.png";
 
 const EventCard: React.FC<EventCardProps> = ({
   title,
@@ -24,7 +25,9 @@ const EventCard: React.FC<EventCardProps> = ({
       <View style={tw`flex-1 ml-3 p-3`}>
         <Text style={tw`font-bold text-md w-full`}>{title}</Text>
         <Text style={tw`text-gray-500 mt-1`}>{location}</Text>
-        <Text style={tw`text-gray-400 mt-1`}>{date}</Text>
+        <Text style={tw`text-gray-400 mt-1`}>
+          {new Date(date).toLocaleDateString()}
+        </Text>
       </View>
     </TouchableOpacity>
   );

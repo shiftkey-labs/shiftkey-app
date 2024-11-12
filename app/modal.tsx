@@ -12,8 +12,6 @@ export default function ModalScreen() {
   const user = state.user.userState.get();
   const currentEvent = state.event.eventState.currentEvent.get();
   const qrRef = useRef(null);
-  console.log("user", user);
-  console.log("currentEvent", currentEvent);
 
   const qrCodeValue = JSON.stringify({
     userId: user.id,

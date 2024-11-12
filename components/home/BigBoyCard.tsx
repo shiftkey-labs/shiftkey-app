@@ -39,7 +39,8 @@ interface BigBoyCardProps {
   style?: any;
 }
 
-const dummyImageUrl = "https://example.com/dummy-image.png";
+const dummyImageUrl =
+  "https://shiftkeylabs.ca/wp-content/uploads/2022/12/Shiftkey-Labs-Logo-01-e1487284025704-1200x515-1.png";
 
 const BigBoyCard: React.FC<BigBoyCardProps> = ({
   title,
@@ -77,7 +78,9 @@ const BigBoyCard: React.FC<BigBoyCardProps> = ({
         />
         <View style={tw`absolute bottom-4 left-4`}>
           <Text style={tw`text-2xl font-bold text-white py-1`}>{title}</Text>
-          <Text style={tw`text-lg text-white`}>{date}</Text>
+          <Text style={tw`text-lg text-white`}>
+            {new Date(date).toLocaleDateString()}
+          </Text>
         </View>
       </View>
     </TouchableOpacity>
