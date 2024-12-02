@@ -7,6 +7,7 @@ import {
   Alert,
   ScrollView,
   SafeAreaView,
+  ActivityIndicator,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { Dropdown } from "react-native-element-dropdown";
@@ -46,8 +47,8 @@ const Signup = () => {
       const response = await axios.post(`${DEV_URL}/auth/signup`, {
         email,
         ...formData,
+        pronouns: [formData.pronouns],
       });
-      console.log("response", response);
 
       if (response.status === 200) {
         state.user.userState.set(response.data.user); // Update userState with the full user details
@@ -58,7 +59,7 @@ const Signup = () => {
       console.log(error.message);
       Alert.alert(
         "Signup Error",
-        "Failed to create account. Please try again."
+        "Please check your details and try again."
       );
     } finally {
       setLoading(false);
@@ -97,13 +98,22 @@ const Signup = () => {
             )}
           </View>
         ))}
-        <TouchableOpacity
-          style={tw`bg-primary p-4 rounded mb-3`}
-          onPress={handleSignup}
-          disabled={loading}
-        >
-          <Text style={tw`text-white text-center`}>Create Account</Text>
-        </TouchableOpacity>
+       {
+        loading ? (
+          <View style={tw`flex-1 items-center justify-center`}>
+            <ActivityIndicator size="large" color="#0000ff" />
+          </View>
+        ) : (
+          <TouchableOpacity
+            style={tw`bg-blue-500 p-3 rounded mt-5`}
+            onPress={handleSignup}
+          >
+            <Text style={tw`text-white text-center font-montserratBold`}>
+              Update Profile
+            </Text>
+          </TouchableOpacity>
+        )
+       }
       </ScrollView>
     </SafeAreaView>
   );

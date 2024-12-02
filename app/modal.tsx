@@ -11,13 +11,9 @@ export default function ModalScreen() {
   const router = useRouter();
   const user = state.user.userState.get();
   const currentEvent = state.event.eventState.currentEvent.get();
-  const qrRef = useRef(null);
+  const qrRef = useRef(null);  
 
-  const qrCodeValue = JSON.stringify({
-    userId: user.id,
-    eventId: currentEvent.id,
-    bookingDate: new Date().toISOString(),
-  });
+  const qrCodeValue = user.id + "~" + new Date().toISOString() + "~" + currentEvent.id;
 
   const handleBack = () => {
     router.back();

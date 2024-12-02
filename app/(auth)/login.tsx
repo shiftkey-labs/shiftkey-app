@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, TouchableOpacity, Alert, TextInput } from "react-native";
+import { View, Text, TouchableOpacity, Alert, TextInput, KeyboardAvoidingView, ScrollView } from "react-native";
 import { useRouter } from "expo-router";
 import tw from "../styles/tailwind";
 import Logo from "@/components/common/Logo";
@@ -8,6 +8,7 @@ import Toast from "react-native-toast-message";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import state from "../state";
 import { DEV_URL } from "@/config/axios";
+import { SafeAreaView } from "react-native";
 
 const Login = () => {
   const router = useRouter();
@@ -97,7 +98,7 @@ const Login = () => {
   };
 
   return (
-    <View style={tw`flex-1 justify-center p-5 bg-white`}>
+    <ScrollView contentContainerStyle={tw`flex-1 justify-center p-5 bg-white`}>
       <Logo />
       <Text style={tw`text-3xl font-montserratBold text-center mb-5`}>
         Login
@@ -137,7 +138,7 @@ const Login = () => {
           <Text style={tw`text-white text-center`}>Verify OTP</Text>
         </TouchableOpacity>
       )}
-    </View>
+    </ScrollView>
   );
 };
 
