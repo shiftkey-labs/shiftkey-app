@@ -96,27 +96,5 @@ export const signupForm = [
       { label: "Cape Breton University", value: "Cape Breton University" },
       { label: "Other", value: "Other" },
     ],
-  },
-  {
-    label: "Shirt Size",
-    key: "shirtSize",
-    type: "dropdown",
-    options: [
-      { label: "S", value: "S" },
-      { label: "M", value: "M" },
-      { label: "L", value: "L" },
-      { label: "XL", value: "XL" },
-      { label: "XXL", value: "XXL" },
-      { label: "XXXL", value: "XXXL" },
-    ],
-  },
-  {
-    label: "Have you had a background check within the last year?",
-    key: "backgroundCheck",
-    type: "dropdown",
-    options: [
-      { label: "Yes", value: "Yes" },
-      { label: "No", value: "No" },
-    ],
-  },
+  }
 ];

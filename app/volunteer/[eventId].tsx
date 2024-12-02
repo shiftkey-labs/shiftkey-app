@@ -90,14 +90,9 @@ const EventAttendance = () => {
   const handleBarCodeScanned = async ({ type, data }) => {
     setScanning(false);
     try {
-      await server.post(
-        `/registration/event/${eventId}/attendees/mark-attendance`,
-        {
-          qrCodeData: data,
-        }
-      );
-      // Optionally update the attendees list
-      fetchAttendees();
+      console.log("qr,", data);
+      
+      markAttendance(data.split("~")[0]);
       Alert.alert("Success", "Attendance marked via QR code.");
     } catch (error) {
       console.error(error);
@@ -176,8 +171,8 @@ const EventAttendance = () => {
         >
           <CameraView
             style={tw`flex-1`}
-            onBarCodeScanned={handleBarCodeScanned}
-            barCodeScannerSettings={{
+            onBarcodeScanned={handleBarCodeScanned}
+            barcodeScannerSettings={{
               barcodeTypes: ["qr"],
             }}
           >
