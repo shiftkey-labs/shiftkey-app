@@ -1,9 +1,11 @@
+import { router } from "expo-router";
+
 export const roleSettingsOptions = {
   STUDENT: {
     accountSettings: [
       {
         label: "Edit Profile",
-        action: () => console.log("Edit Profile pressed"),
+        action: () => router.push("/(settings)/edit-profile"),
       },
       {
         label: "Change Password",

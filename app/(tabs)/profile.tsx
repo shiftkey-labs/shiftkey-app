@@ -30,8 +30,6 @@ const Profile = () => {
         currentDegree: "",
         faculty: "",
         school: "",
-        shirtSize: "",
-        backgroundCheck: "",
         hours: 0,
         university: "",
         program: "",
@@ -45,6 +43,7 @@ const Profile = () => {
       Alert.alert("Logout Error", error.message);
     }
   };
+
   console.log("user", user);
 
   if (!user) {
@@ -52,11 +51,12 @@ const Profile = () => {
   }
 
   const { accountSettings, moreOptions } =
-    roleSettingsOptions[user.role] || roleSettingsOptions.STUDENT;
+    roleSettingsOptions[user.role as keyof typeof roleSettingsOptions] || roleSettingsOptions.STUDENT;
 
   return (
     <SafeAreaView style={tw`flex-1 bg-background`}>
       <ScrollView style={tw`flex-1 bg-background p-5`}>
+        <Text style={tw`text-xl font-bold mb-5`}>Links here are dummy, will be replaced with actual settings</Text>
         <View style={tw`mb-5`}>
           <Text style={tw`text-2xl font-montserratBold`}>
             {user.firstName || "John"} {user.lastName || "Doe"}
