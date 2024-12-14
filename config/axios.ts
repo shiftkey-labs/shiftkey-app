@@ -5,7 +5,7 @@ export const V_S = "http://3.136.217.21:3000";
 export const DEV_URL = "http://192.168.2.205:3000";
 
 const server = axios.create({
-  baseURL: DEV_URL,
+  baseURL: "http://3.136.217.21:3000",
   headers: {
     "Content-Type": "application/json",
   },

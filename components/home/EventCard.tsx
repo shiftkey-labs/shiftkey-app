@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, Image, TouchableOpacity } from "react-native";
+import { View, Text, Image, TouchableOpacity, ActivityIndicator } from "react-native";
 import tw from "@/app/styles/tailwind";
 import { EventCardProps } from "@/types/event";
 
@@ -12,6 +12,7 @@ const EventCard: React.FC<EventCardProps> = ({
   date,
   images,
   onPress,
+  isLoading = false
 }) => {
   const imageUrl = images ? images[0].url : dummyImageUrl;
 
@@ -20,7 +21,13 @@ const EventCard: React.FC<EventCardProps> = ({
       style={tw`flex-row items-center bg-white rounded-lg mb-2 shadow-sm`}
       onPress={onPress}
       activeOpacity={0.8}
+      disabled={isLoading}
     >
+      {isLoading ? (
+        <View style={tw`absolute z-10 w-full h-full justify-center items-center bg-black/30`}>
+          <ActivityIndicator size="large" color="#ffffff" />
+        </View>
+      ) : null}
       <Image source={{ uri: imageUrl }} style={tw`w-24 h-24 rounded-lg`} />
       <View style={tw`flex-1 ml-3 p-3`}>
         <Text style={tw`font-bold text-md w-full`}>{title}</Text>

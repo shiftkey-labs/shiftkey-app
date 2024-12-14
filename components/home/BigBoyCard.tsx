@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, Image, TouchableOpacity } from "react-native";
+import { View, Text, Image, TouchableOpacity, ActivityIndicator } from "react-native";
 import { FontAwesome } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import tw from "@/app/styles/tailwind";
@@ -37,6 +37,7 @@ interface BigBoyCardProps {
   onPressShow: () => void;
   onPressFavorite: () => void;
   style?: any;
+  isLoading?: boolean;
 }
 
 const dummyImageUrl =
@@ -50,6 +51,7 @@ const BigBoyCard: React.FC<BigBoyCardProps> = ({
   onPressShow,
   onPressFavorite,
   style,
+  isLoading = false
 }) => {
   // Extract the first image URL if available, otherwise use a dummy image URL
   const imageUrl = images.length > 0 ? images[0].url : dummyImageUrl;
@@ -58,7 +60,13 @@ const BigBoyCard: React.FC<BigBoyCardProps> = ({
     <TouchableOpacity
       onPress={onPressShow}
       style={tw`mr-4 bg-white rounded-lg overflow-hidden w-80 ${style}`}
+      disabled={isLoading}
     >
+      {isLoading ? (
+        <View style={tw`absolute z-10 w-full h-full justify-center items-center bg-black/30`}>
+          <ActivityIndicator size="large" color="#ffffff" />
+        </View>
+      ) : null}
       <View style={tw`relative w-full`}>
         <Image source={{ uri: imageUrl }} style={tw`w-full h-48`} />
         <TouchableOpacity
