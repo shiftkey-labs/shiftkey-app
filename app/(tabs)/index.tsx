@@ -5,6 +5,7 @@ import {
   Text,
   SafeAreaView,
   TouchableOpacity,
+  ActivityIndicator,
 } from "react-native";
 import tw from "../styles/tailwind";
 import BigBoyCard from "@/components/home/BigBoyCard";
@@ -70,6 +71,7 @@ const Home: React.FC = () => {
   const router = useRouter();
   const events = state.event;
   const [eventsList, setEventsList] = useState<Event[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   const dummyImageUrl = "https://example.com/dummy-image.png";
 
@@ -88,13 +90,28 @@ const Home: React.FC = () => {
 
   useEffect(() => {
     const initialize = async () => {
-      await events.initializeEvents();
-      setEventsList(events.eventState.events.get()); // Update eventsList here
-      initializeAuth();
+      try {
+        setIsLoading(true);
+        await events.initializeEvents();
+        setEventsList(events.eventState.events.get());
+        await initializeAuth();
+      } catch (error) {
+        console.error("Failed to initialize:", error);
+      } finally {
+        setIsLoading(false);
+      }
     };
 
     initialize();
   }, []);
+
+  if (isLoading) {
+    return (
+      <SafeAreaView style={tw`flex-1 bg-background justify-center items-center`}>
+        <ActivityIndicator size="large" color="#0000ff" />
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={tw`flex-1 bg-background`}>

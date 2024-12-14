@@ -1,7 +1,7 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { observer } from "@legendapp/state/react";
 
-import { View, Text, SafeAreaView, Pressable, Alert } from "react-native";
+import { View, Text, SafeAreaView, Pressable, Alert, ActivityIndicator } from "react-native";
 import tw from "../styles/tailwind";
 import state from "../state";
 import VolunteerEventsList from "@/components/VolunteerEventsList";
@@ -17,14 +17,31 @@ const Volunteer = observer(() => {
 
   console.log("role", user);
 
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   useEffect(() => {
-    if (role === "VOLUNTEER" && user.email) {
-      fetchUserVolunteeredEvents(user.email);
-    }
+    const loadVolunteerEvents = async () => {
+      if (role === "VOLUNTEER" && user.email) {
+        try {
+          setIsLoading(true);
+          await fetchUserVolunteeredEvents(user.email);
+        } catch (error) {
+          console.error("Failed to fetch volunteer events:", error);
+        } finally {
+          setIsLoading(false);
+        }
+      } else {
+        setIsLoading(false);
+      }
+    };
+
+    loadVolunteerEvents();
   }, [role, user.email]);
 
   const handleSubmitVolunteerRequest = async () => {
     try {
+      setIsSubmitting(true);
       const response = await server.post("/user/update-role-to-volunteer", {
         userId: user.id,
       });
@@ -34,8 +51,18 @@ const Volunteer = observer(() => {
     } catch (error) {
       console.error("Error updating role:", error);
       Alert.alert("Error", "Failed to update role. Please try again.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
+
+  if (isLoading) {
+    return (
+      <SafeAreaView style={tw`flex-1 bg-background justify-center items-center`}>
+        <ActivityIndicator size="large" color="#0000ff" />
+      </SafeAreaView>
+    );
+  }
 
   if (role === "VOLUNTEER") {
     return (
@@ -55,8 +82,13 @@ const Volunteer = observer(() => {
           <Pressable
             style={tw`bg-primary p-4 rounded-lg`}
             onPress={handleSubmitVolunteerRequest}
+            disabled={isSubmitting}
           >
-            <Text style={tw`text-white text-center`}>Submit</Text>
+            {isSubmitting ? (
+              <ActivityIndicator color="white" />
+            ) : (
+              <Text style={tw`text-white text-center`}>Submit</Text>
+            )}
           </Pressable>
         </View>
       </SafeAreaView>
