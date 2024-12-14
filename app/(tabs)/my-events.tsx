@@ -5,6 +5,7 @@ import {
   ScrollView,
   TouchableOpacity,
   SafeAreaView,
+  ActivityIndicator,
 } from "react-native";
 import { useRouter } from "expo-router";
 import tw from "../styles/tailwind";
@@ -24,6 +25,7 @@ const MyEvents = observer(() => {
 
   const [upcomingEvents, setUpcomingEvents] = useState([]);
   const [pastEvents, setPastEvents] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     if (user.id) {
@@ -49,7 +51,14 @@ const MyEvents = observer(() => {
   }, [userRegistrations]);
 
   const fetchLocalUserRegistrations = async (uid: string) => {
-    await fetchUserRegistrations(uid);
+    try {
+      setIsLoading(true);
+      await fetchUserRegistrations(uid);
+    } catch (error) {
+      console.error("Failed to fetch registrations:", error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handlePressEvent = async (eventId: string) => {
@@ -69,6 +78,14 @@ const MyEvents = observer(() => {
 
   const eventsToDisplay =
     activeTab === "upcoming" ? upcomingEvents : pastEvents;
+
+  if (isLoading) {
+    return (
+      <SafeAreaView style={tw`flex-1 bg-background justify-center items-center`}>
+        <ActivityIndicator size="large" color="#0000ff" />
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={tw`flex-1 bg-background p-5`}>

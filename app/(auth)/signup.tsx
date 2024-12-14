@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -19,11 +19,26 @@ import { DEV_URL } from "@/config/axios";
 
 const Signup = () => {
   const router = useRouter();
-  const email = state.user.userState.get().email;
+  const user = state.user.userState.get();
+  const email = user.email;
 
-  // Define the initial form data
-  const initialFormData = signupForm.reduce((acc, field) => {
-    acc[field.key] = state.user.userState[field.key]?.get() || "";
+  // Filter out fields that already have data
+  const requiredFields = signupForm.filter(field => {
+    const fieldValue = user[field.key];
+    return !fieldValue || fieldValue === "" ||
+      (Array.isArray(fieldValue) && fieldValue.length === 0);
+  });
+
+  // If no required fields are missing, redirect to home
+  useEffect(() => {
+    if (requiredFields.length === 0) {
+      router.push("/");
+    }
+  }, [requiredFields]);
+
+  // Define the initial form data using only missing fields
+  const initialFormData = requiredFields.reduce((acc, field) => {
+    acc[field.key] = "";
     return acc;
   }, {});
 
@@ -41,22 +56,26 @@ const Signup = () => {
   const handleSignup = async () => {
     setLoading(true);
     try {
-      console.log("email", email);
-      console.log("formData", formData);
+      console.log("Submitting signup with email:", email);
+      console.log("Form data:", formData);
 
       const response = await axios.post(`${DEV_URL}/auth/signup`, {
         email,
-        ...formData,
-        pronouns: [formData.pronouns],
+        fields: {
+          ...formData,
+          pronouns: [formData.pronouns],
+        },
       });
 
       if (response.status === 200) {
-        state.user.userState.set(response.data.user); // Update userState with the full user details
+        console.log("Signup response:", response.data);
+        // Update userState with the full user details including the fields structure
+        state.user.userState.set(response.data.user);
         Alert.alert("Signup Successful", "Your account has been created.");
         router.push("/"); // Navigate to the main app
       }
     } catch (error) {
-      console.log(error.message);
+      console.error("Signup error:", error);
       Alert.alert(
         "Signup Error",
         "Please check your details and try again."
@@ -70,9 +89,9 @@ const Signup = () => {
     <SafeAreaView style={tw`flex-1 bg-white`}>
       <ScrollView style={tw`flex-1 p-5 bg-white`}>
         <Text style={tw`text-3xl font-montserratBold text-center mb-5`}>
-          Complete Your Signup
+          Complete Your Profile
         </Text>
-        {signupForm.map((field) => (
+        {requiredFields.map((field) => (
           <View key={field.key}>
             <Text style={tw`text-lg font-montserratBold mb-2`}>
               {field.label}
@@ -98,22 +117,22 @@ const Signup = () => {
             )}
           </View>
         ))}
-       {
-        loading ? (
-          <View style={tw`flex-1 items-center justify-center`}>
-            <ActivityIndicator size="large" color="#0000ff" />
-          </View>
-        ) : (
-          <TouchableOpacity
-            style={tw`bg-blue-500 p-3 rounded mt-5`}
-            onPress={handleSignup}
-          >
-            <Text style={tw`text-white text-center font-montserratBold`}>
-              Update Profile
-            </Text>
-          </TouchableOpacity>
-        )
-       }
+        {
+          loading ? (
+            <View style={tw`flex-1 items-center justify-center`}>
+              <ActivityIndicator size="large" color="#0000ff" />
+            </View>
+          ) : (
+            <TouchableOpacity
+              style={tw`bg-blue-500 p-3 rounded mt-5`}
+              onPress={handleSignup}
+            >
+              <Text style={tw`text-white text-center font-montserratBold`}>
+                Update Profile
+              </Text>
+            </TouchableOpacity>
+          )
+        }
       </ScrollView>
     </SafeAreaView>
   );
