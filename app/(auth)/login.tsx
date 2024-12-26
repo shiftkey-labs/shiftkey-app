@@ -156,7 +156,7 @@ const Login = () => {
             <TextInput
               style={tw`border p-3 rounded mb-5`}
               placeholder="Email"
-              value={email}
+              value={email.toLowerCase()}
               onChangeText={setEmail}
               keyboardType="email-address"
               autoCapitalize="none"
