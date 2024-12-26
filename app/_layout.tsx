@@ -8,8 +8,10 @@ import {
 import { useFonts } from "expo-font";
 import { Stack, useRouter } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import "react-native-reanimated";
+import { ActivityIndicator, View } from "react-native";
+import tw from "./styles/tailwind";
 
 import { useColorScheme } from "@/components/useColorScheme";
 import { observer } from "@legendapp/state/react";
@@ -35,24 +37,42 @@ const RootLayoutNav = observer(() => {
   const colorScheme = useColorScheme();
   const router = useRouter();
   const user = state.user.userState.get();
+  const [isInitializing, setIsInitializing] = useState(true);
 
   useEffect(() => {
     const initialize = async () => {
-      SplashScreen.hideAsync();
+      try {
+        await initializeAuth();
+      } finally {
+        setIsInitializing(false);
+        SplashScreen.hideAsync();
+      }
     };
     initialize();
-    initializeAuth();
   }, []);
 
   useEffect(() => {
+    if (isInitializing) return; // Don't navigate while initializing
+
     if (!user.email) {
-      router.push("/(auth)/login");
+      console.log("user", user.email);
+      router.replace("/(auth)/login");
     } else if (!hasRequiredFields(user)) {
-      router.push("/(auth)/signup");
+      console.log("user", user);
+      router.replace("/(auth)/signup");
     } else {
-      router.push("/(tabs)/index");
+      router.replace("/(tabs)");
     }
-  }, [user]);
+  }, [user, isInitializing]);
+
+  // Show loading screen while initializing
+  if (isInitializing) {
+    return (
+      <View style={tw`flex-1 justify-center items-center bg-white`}>
+        <ActivityIndicator size="large" color="#0000ff" />
+      </View>
+    );
+  }
 
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
