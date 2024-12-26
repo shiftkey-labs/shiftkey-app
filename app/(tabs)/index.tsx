@@ -70,6 +70,7 @@ type Event = {
 const Home: React.FC = () => {
   const router = useRouter();
   const events = state.event;
+  const user = state.user.userState.get();
   const [eventsList, setEventsList] = useState<Event[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -117,7 +118,7 @@ const Home: React.FC = () => {
     <SafeAreaView style={tw`flex-1 bg-background`}>
       <ScrollView style={tw`flex-1 bg-background p-5`}>
         <View style={tw`flex-row pt-5 justify-between items-center`}>
-          <Text style={tw`text-4xl font-bold`}>Hi {userState.firstName.get()}</Text>
+          <Text style={tw`text-4xl font-bold`}>Hi {user.firstName ?? "there!"}</Text>
           <TouchableOpacity onPress={() => console.log("Profile pressed")}>
             <FontAwesome5 name="moon" size={24} color="black" />
           </TouchableOpacity>
