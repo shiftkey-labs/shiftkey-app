@@ -14,7 +14,7 @@ import "react-native-reanimated";
 import { useColorScheme } from "@/components/useColorScheme";
 import { observer } from "@legendapp/state/react";
 import { initializeEvents } from "./state/eventState";
-import { initializeAuth } from "./state/userState";
+import { initializeAuth, hasRequiredFields } from "./state/userState";
 import state from "./state";
 import Toast from "react-native-toast-message";
 
@@ -45,10 +45,12 @@ const RootLayoutNav = observer(() => {
   }, []);
 
   useEffect(() => {
-    if (user.email) {
-      router.push("/(tabs)/");
-    } else {
+    if (!user.email) {
       router.push("/(auth)/login");
+    } else if (!hasRequiredFields(user)) {
+      router.push("/(auth)/signup");
+    } else {
+      router.push("/(tabs)/index");
     }
   }, [user]);
 
