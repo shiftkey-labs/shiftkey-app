@@ -75,7 +75,7 @@ const Login = () => {
         const userData = response.data.user;
         console.log("Received userData:", userData);
 
-        // Update userState with the user data
+        // Update userState with the user data 
         state.user.userState.set(userData);
 
         // Store user data in AsyncStorage
