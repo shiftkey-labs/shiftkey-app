@@ -77,9 +77,9 @@ const Home: React.FC = () => {
   const dummyImageUrl = "https://example.com/dummy-image.png";
 
   const handlePressEvent = async (eventId: string) => {
-    router.push(`/event/${eventId}`);
     try {
       await events.fetchEventDetails(eventId);
+      router.push(`/event/${eventId}`);
     } catch (error) {
       console.error("Failed to load event details:", error);
     }
