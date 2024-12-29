@@ -96,6 +96,8 @@ const Home: React.FC = () => {
         await events.initializeEvents();
         setEventsList(events.eventState.events.get());
         await initializeAuth();
+        // user = state.user.userState.get();
+        // console.log("final user data: ", user);
       } catch (error) {
         console.error("Failed to initialize:", error);
       } finally {
@@ -118,7 +120,7 @@ const Home: React.FC = () => {
     <SafeAreaView style={tw`flex-1 bg-background`}>
       <ScrollView style={tw`flex-1 bg-background p-5`}>
         <View style={tw`flex-row pt-5 justify-between items-center`}>
-          <Text style={tw`text-4xl font-bold`}>Hi {user.firstName ?? "there!"}</Text>
+          <Text style={tw`text-4xl font-bold`}>Hi {user.firstName }</Text>
           <TouchableOpacity onPress={() => console.log("Profile pressed")}>
             <FontAwesome5 name="moon" size={24} color="black" />
           </TouchableOpacity>

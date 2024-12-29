@@ -16,6 +16,7 @@ import axios from "axios";
 import state from "../state";
 import { signupForm } from "@/constants/signupForm";
 import { DEV_URL } from "@/config/axios";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const Signup = () => {
   const router = useRouter();
@@ -58,19 +59,26 @@ const Signup = () => {
     try {
       console.log("Submitting signup with email:", email);
       console.log("Form data:", formData);
+      
+      // Replace empty strings with null
+      const cleanedFormData = Object.fromEntries(
+        Object.entries(formData).map(([key, value]) => [key, value === "" ? null : value])
+      );
 
       const response = await axios.post(`${DEV_URL}/auth/signup`, {
         email,
-        fields: {
-          ...formData,
-          pronouns: [formData.pronouns],
-        },
+        ...cleanedFormData,
+        pronouns: [cleanedFormData.pronouns]
       });
 
       if (response.status === 200) {
         console.log("Signup response:", response.data);
         // Update userState with the full user details including the fields structure
         state.user.userState.set(response.data.user);
+
+        // Store user data in AsyncStorage
+        await AsyncStorage.setItem("user", JSON.stringify(response.data.user));
+        
         Alert.alert("Signup Successful", "Your account has been created.");
         router.push("/"); // Navigate to the main app
       }
@@ -124,7 +132,7 @@ const Signup = () => {
             </View>
           ) : (
             <TouchableOpacity
-              style={tw`bg-blue-500 p-3 rounded mt-5`}
+              style={tw`bg-blue-500 p-3 rounded mt-5 mb-8`}
               onPress={handleSignup}
             >
               <Text style={tw`text-white text-center font-montserratBold`}>
