@@ -1,20 +1,20 @@
-export const signupForm = [
-  {
+export const signupForm = {
+  firstName: {
     label: "First Name",
     key: "firstName",
     placeholder: "Enter your first name",
-    type: "text", // Text input
+    type: "text",
   },
-  {
+  lastName: {
     label: "Last Name",
     key: "lastName",
     placeholder: "Enter your last name",
-    type: "text", // Text input
+    type: "text",
   },
-  {
+  pronouns: {
     label: "Pronouns",
     key: "pronouns",
-    type: "multi-select", // Multiple select input
+    type: "multi-select",
     options: [
       { label: "She/Her", value: "She/Her" },
       { label: "He/Him", value: "He/Him" },
@@ -23,7 +23,7 @@ export const signupForm = [
       { label: "Other", value: "Other" },
     ],
   },
-  {
+  selfIdentification: {
     label: "Self-Identification (select all that apply)",
     key: "selfIdentification",
     type: "multi-select",
@@ -32,16 +32,13 @@ export const signupForm = [
       { label: "Indigenous Persons", value: "Indigenous Persons" },
       { label: "Mi'kmaq", value: "Mi'kmaq" },
       { label: "Racialized Persons", value: "Racialized Persons" },
-      {
-        label: "Person of African or Black Descent",
-        value: "Person of African or Black Descent",
-      },
+      { label: "Person of African or Black Descent", value: "Person of African or Black Descent" },
       { label: "African Nova Scotian", value: "African Nova Scotian" },
       { label: "Person with Disabilities", value: "Person with Disabilities" },
       { label: "2SLGBTQ+", value: "2SLGBTQ+" },
     ],
   },
-  {
+  isStudent: {
     label: "Are you a post-secondary student?",
     key: "isStudent",
     type: "dropdown",
@@ -50,7 +47,7 @@ export const signupForm = [
       { label: "No", value: "No" },
     ],
   },
-  {
+  currentDegree: {
     label: "Are you currently completing:",
     key: "currentDegree",
     type: "dropdown",
@@ -62,39 +59,27 @@ export const signupForm = [
       { label: "Post-doc", value: "Post-doc" },
     ],
   },
-  {
+  faculty: {
     label: "Which faculty or department, or academic program?",
     key: "faculty",
     type: "text",
     placeholder: "Enter your faculty or department",
   },
-  {
+  school: {
     label: "In which school are you currently enrolled?",
     key: "school",
     type: "dropdown",
     options: [
       { label: "Dalhousie University", value: "Dalhousie University" },
-      {
-        label: "University of King's College",
-        value: "University of King's College",
-      },
+      { label: "University of King's College", value: "University of King's College" },
       { label: "St. Mary's University", value: "St. Mary's University" },
       { label: "NSCAD University", value: "NSCAD University" },
-      {
-        label: "Nova Scotia Community College",
-        value: "Nova Scotia Community College",
-      },
-      {
-        label: "Mount Saint Vincent University",
-        value: "Mount Saint Vincent University",
-      },
+      { label: "Nova Scotia Community College", value: "Nova Scotia Community College" },
+      { label: "Mount Saint Vincent University", value: "Mount Saint Vincent University" },
       { label: "Acadia University", value: "Acadia University" },
-      {
-        label: "St. Francis Xavier University",
-        value: "St. Francis Xavier University",
-      },
+      { label: "St. Francis Xavier University", value: "St. Francis Xavier University" },
       { label: "Cape Breton University", value: "Cape Breton University" },
       { label: "Other", value: "Other" },
     ],
-  }
-];
+  },
+} as const;

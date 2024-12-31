@@ -8,44 +8,106 @@ import {
   ScrollView,
   SafeAreaView,
   ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { Dropdown } from "react-native-element-dropdown";
+import Checkbox from 'expo-checkbox';
 import tw from "../styles/tailwind";
 import axios from "axios";
 import state from "../state";
 import { signupForm } from "@/constants/signupForm";
 import { DEV_URL } from "@/config/axios";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
+type SignupFormType = typeof signupForm;
+type FormFieldKey = keyof SignupFormType;
+type FormField = SignupFormType[FormFieldKey];
+
+interface FormData {
+  [key: string]: string | string[];
+}
+
+interface UserState {
+  id: null | string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  pronouns: string;
+  isStudent: string;
+  currentDegree: string;
+  faculty: string;
+  school: string;
+  hours: number;
+  university: string;
+  program: string;
+  year: string;
+  isInternational: boolean;
+  role: string;
+  [key: string]: string | number | boolean | null;
+}
 
 const Signup = () => {
   const router = useRouter();
-  const user = state.user.userState.get();
+  const user = state.user.userState.get() as UserState;
   const email = user.email;
 
-  // Filter out fields that already have data
-  const requiredFields = signupForm.filter(field => {
-    const fieldValue = user[field.key];
-    return !fieldValue || fieldValue === "" ||
-      (Array.isArray(fieldValue) && fieldValue.length === 0);
-  });
-
-  // If no required fields are missing, redirect to home
+  // Redirect to login if not authenticated
   useEffect(() => {
-    if (requiredFields.length === 0) {
-      router.push("/");
+    if (!email) {
+      router.replace("/(auth)/login");
+      return;
     }
-  }, [requiredFields]);
+  }, [email]);
 
-  // Define the initial form data using only missing fields
-  const initialFormData = requiredFields.reduce((acc, field) => {
-    acc[field.key] = "";
+  // If not authenticated, show nothing while redirecting
+  if (!email) {
+    return null;
+  }
+
+  // Filter out fields that already have data
+  const missingFields = Object.entries(signupForm)
+    .filter(([key, field]) => {
+      const value = user[key];
+      return !value || value === "" || value === null ||
+        (Array.isArray(value) && value.length === 0);
+    })
+    .map(([_, field]) => field);
+
+  // If no missing fields, redirect to home
+  useEffect(() => {
+    if (missingFields.length === 0) {
+      router.replace("/");
+    }
+  }, [missingFields.length]);
+
+  // Initialize form data with missing fields
+  const initialFormData: FormData = Object.entries(signupForm).reduce((acc: FormData, [key, field]) => {
+    const existingValue = user[key];
+    console.log(`Field ${key}:`, { existingValue, fieldType: field.type });
+
+    // Special handling for fields that might come from backend in a different format
+    if (field.type === "multi-select") {
+      // Handle all multi-select fields (including pronouns and selfIdentification)
+      acc[key] = existingValue
+        ? (Array.isArray(existingValue) ? existingValue : [existingValue]).filter(Boolean)
+        : [];
+    } else {
+      // Handle single value fields
+      acc[key] = existingValue ? String(existingValue) : "";
+    }
+
     return acc;
   }, {});
+
+  console.log("Initial Form Data:", initialFormData);
+  console.log("Missing Fields:", missingFields.map(f => f.key));
 
   const fieldsToValidate = ['firstName', 'lastName', 'pronouns'];
 
   // Group form-related state together
-  const [formData, setFormData] = useState(initialFormData);
+  const [formData, setFormData] = useState<FormData>(initialFormData);
   const [loading, setLoading] = useState(false);
   const [touchedFields, setTouchedFields] = useState<Record<string, boolean>>({});
   const [hasSubmitAttempt, setHasSubmitAttempt] = useState(false);
@@ -89,13 +151,18 @@ const Signup = () => {
       console.log("Submitting signup with email:", email);
       console.log("Form data:", formData);
 
-      const response = await axios.post(`${DEV_URL}/auth/signup`, {
+      // Prepare data for backend
+      const backendData = {
         email,
-        fields: {
-          ...formData,
-          pronouns: [formData.pronouns],
-        },
-      });
+        ...formData,
+        // Always send arrays for multi-select fields
+        pronouns: Array.isArray(formData.pronouns) ? formData.pronouns : [formData.pronouns].filter(Boolean),
+        selfIdentification: Array.isArray(formData.selfIdentification)
+          ? formData.selfIdentification
+          : [formData.selfIdentification].filter(Boolean),
+      };
+
+      const response = await axios.post(`${DEV_URL}/auth/signup`, backendData);
 
       if (response.status === 200) {
         console.log("Signup response:", response.data);
@@ -107,8 +174,8 @@ const Signup = () => {
     } catch (error) {
       console.error("Signup error:", error);
       Alert.alert(
-        "Signup Error",
-        "Please check your details and try again."
+        "Update Error",
+        "There was an error updating your profile. Please try again."
       );
     } finally {
       setLoading(false);
@@ -125,35 +192,24 @@ const Signup = () => {
           <View key={field.key}>
             <Text style={tw`text-lg font-montserratBold mb-2`}>
               {field.label}
-              {isFieldInvalid(field.key) && (
-                <Text style={tw`text-red-500 text-sm ml-1`}> *Required</Text>
-              )}
             </Text>
             {field.type === "text" || field.type === "numeric" ? (
               <TextInput
-                style={[
-                  tw`border p-3 rounded mb-3`,
-                  isFieldInvalid(field.key) && tw`border-red-500`,
-                ]}
+                style={tw`border p-3 rounded mb-3`}
                 placeholder={field.placeholder}
                 keyboardType={field.type === "numeric" ? "numeric" : "default"}
                 value={formData[field.key]}
                 onChangeText={(value) => handleInputChange(field.key, value)}
-                onBlur={() => setTouchedFields(prev => ({ ...prev, [field.key]: true }))}
               />
             ) : (
               <Dropdown
-                style={[
-                  tw`border p-3 rounded mb-3`,
-                  isFieldInvalid(field.key) && tw`border-red-500`,
-                ]}
+                style={tw`border p-3 rounded mb-3`}
                 data={field.options}
                 labelField="label"
                 valueField="value"
                 placeholder="Select an option"
                 value={formData[field.key]}
                 onChange={(item) => handleInputChange(field.key, item.value)}
-                onBlur={() => setTouchedFields(prev => ({ ...prev, [field.key]: true }))}
               />
             )}
           </View>
@@ -165,17 +221,17 @@ const Signup = () => {
             </View>
           ) : (
             <TouchableOpacity
-              style={tw`bg-blue-500 p-3 rounded mt-5`}
+              style={tw`bg-blue-500 p-3 rounded mt-5 mb-5`}
               onPress={handleSignup}
             >
               <Text style={tw`text-white text-center font-montserratBold`}>
                 Update Profile
               </Text>
             </TouchableOpacity>
-          )
-        }
-      </ScrollView>
-    </SafeAreaView>
+          )}
+        </ScrollView>
+      </SafeAreaView>
+    </KeyboardAvoidingView>
   );
 };
 
