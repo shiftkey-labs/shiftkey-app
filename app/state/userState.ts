@@ -85,4 +85,15 @@ const initializeUser = async (userId: string) => {
   }
 };
 
-export { userState, initializeUser, initializeAuth };
+// Function to check if required user fields are filled
+const hasRequiredFields = (user: any) => {
+  const requiredFields = ["firstName", "lastName", "pronouns", "isStudent"];
+
+  // Check if all required fields have values
+  return requiredFields.every(field => {
+    const value = user[field];
+    return value && value !== "" && (!Array.isArray(value) || value.length > 0);
+  });
+};
+
+export { userState, initializeUser, initializeAuth, hasRequiredFields };
