@@ -30,6 +30,7 @@ const EditProfile = () => {
         program: user.program || "",
         year: user.year || "",
         isInternational: user.isInternational || false,
+        isStudent: user.isStudent || false,
     });
 
     const handleSave = async () => {
