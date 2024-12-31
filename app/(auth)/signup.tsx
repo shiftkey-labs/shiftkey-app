@@ -104,16 +104,48 @@ const Signup = () => {
   console.log("Initial Form Data:", initialFormData);
   console.log("Missing Fields:", missingFields.map(f => f.key));
 
-  const fieldsToValidate = ['firstName', 'lastName', 'pronouns'];
+  // Define all possible required fields from backend schema
+  const backendRequiredFields = [
+    'firstName',
+    'lastName',
+    'pronouns',
+    'isStudent',
+    'currentDegree',
+    'school',
+  ];
 
-  // Group form-related state together
-  const [formData, setFormData] = useState<FormData>(initialFormData);
-  const [loading, setLoading] = useState(false);
+  // Get the fields that are both required by backend and currently showing on screen
+  const fieldsToValidate = missingFields
+    .map(field => field.key)
+    .filter(key => backendRequiredFields.includes(key));
+
+  // Add validation states
   const [touchedFields, setTouchedFields] = useState<Record<string, boolean>>({});
   const [hasSubmitAttempt, setHasSubmitAttempt] = useState(false);
 
+  // Validation helper functions
+  const isFieldInvalid = (key: string) => {
+    const shouldValidate = fieldsToValidate.includes(key);
+    const value = formData[key];
+    const isEmpty = Array.isArray(value) 
+      ? value.length === 0  // For multi-select fields
+      : !value || value === "";
+    const isFieldTouched = touchedFields[key] || hasSubmitAttempt;
 
-  const handleInputChange = (key: string, value: string) => {
+    return shouldValidate && isEmpty && isFieldTouched;
+  };
+
+  const hasEmptyRequiredFields = () => {
+    return fieldsToValidate.some(key => {
+      const value = formData[key];
+      return Array.isArray(value) 
+        ? value.length === 0
+        : !value || value === "";
+    });
+  };
+
+  // Update handleInputChange to track touched fields
+  const handleInputChange = (key: string, value: string | string[]) => {
     setFormData((prevFormData) => ({
       ...prevFormData,
       [key]: value,
@@ -124,25 +156,14 @@ const Signup = () => {
     }));
   };
 
-  // Clear validation logic
-  const isFieldInvalid = (key: string) => {
-    const shouldValidate = fieldsToValidate.includes(key);
-    const isEmpty = !formData[key as keyof typeof formData] || formData[key as keyof typeof formData] === "";
-    const isFieldTouched = touchedFields[key as keyof typeof touchedFields] || hasSubmitAttempt;
-
-    return shouldValidate && isEmpty && isFieldTouched;
-  };
+  // Group form-related state together
+  const [formData, setFormData] = useState<FormData>(initialFormData);
+  const [loading, setLoading] = useState(false);
 
   const handleSignup = async () => {
     setHasSubmitAttempt(true);
     
-    // Check for empty required fields
-    const hasEmptyRequiredFields = fieldsToValidate.some(key => 
-      !formData[key as keyof typeof formData] || formData[key as keyof typeof formData] === ""
-    );
-
-    if (hasEmptyRequiredFields) {
-      // user gets alerted that they need to fill in the required fields
+    if (hasEmptyRequiredFields()) {
       return;
     }
 
@@ -168,6 +189,10 @@ const Signup = () => {
         console.log("Signup response:", response.data);
         // Update userState with the full user details including the fields structure
         state.user.userState.set(response.data.user);
+
+        // Store updated user data in AsyncStorage
+        await AsyncStorage.setItem("user", JSON.stringify(response.data.user));
+
         Alert.alert("Signup Successful", "Your account has been created.");
         router.push("/"); // Navigate to the main app
       }
@@ -188,50 +213,88 @@ const Signup = () => {
         <Text style={tw`text-3xl font-montserratBold text-center mb-5`}>
           Complete Your Profile
         </Text>
-        {requiredFields.map((field) => (
+        {missingFields.map((field) => (
           <View key={field.key}>
             <Text style={tw`text-lg font-montserratBold mb-2`}>
               {field.label}
+              {isFieldInvalid(field.key) && (
+                <Text style={tw`text-red-500 text-sm ml-1`}> *Required</Text>
+              )}
             </Text>
             {field.type === "text" || field.type === "numeric" ? (
               <TextInput
-                style={tw`border p-3 rounded mb-3`}
+                style={[
+                  tw`border p-3 rounded mb-3`,
+                  isFieldInvalid(field.key) && tw`border-red-500`,
+                ]}
                 placeholder={field.placeholder}
                 keyboardType={field.type === "numeric" ? "numeric" : "default"}
                 value={formData[field.key]}
                 onChangeText={(value) => handleInputChange(field.key, value)}
+                onBlur={() => setTouchedFields(prev => ({ ...prev, [field.key]: true }))}
               />
+            ) : field.type === "multi-select" ? (
+              <View style={[
+                tw`mb-3`,
+                isFieldInvalid(field.key) && tw`border-red-500`,
+              ]}>
+                {field.options?.map((option) => (
+                  <View key={option.value} style={tw`flex-row items-center mb-2`}>
+                    <Checkbox
+                      value={(formData[field.key] as string[])?.includes(option.value)}
+                      onValueChange={(checked) => {
+                        const currentValues = (formData[field.key] as string[]) || [];
+                        const newValues = checked
+                          ? [...currentValues, option.value]
+                          : currentValues.filter((v) => v !== option.value);
+                        handleInputChange(field.key, newValues);
+                      }}
+                      style={tw`mr-2`}
+                    />
+                    <Text style={tw`text-base font-montserrat`}>{option.label}</Text>
+                  </View>
+                ))}
+              </View>
             ) : (
               <Dropdown
-                style={tw`border p-3 rounded mb-3`}
-                data={field.options}
+                style={[
+                  tw`border p-3 rounded mb-3`,
+                  isFieldInvalid(field.key) && tw`border-red-500`,
+                ]}
+                data={field.options || []}
                 labelField="label"
                 valueField="value"
                 placeholder="Select an option"
                 value={formData[field.key]}
                 onChange={(item) => handleInputChange(field.key, item.value)}
+                onBlur={() => setTouchedFields(prev => ({ ...prev, [field.key]: true }))}
               />
             )}
           </View>
         ))}
-        {
-          loading ? (
-            <View style={tw`flex-1 items-center justify-center`}>
-              <ActivityIndicator size="large" color="#0000ff" />
-            </View>
-          ) : (
+        {loading ? (
+          <View style={tw`flex-1 items-center justify-center`}>
+            <ActivityIndicator size="large" color="#0000ff" />
+          </View>
+        ) : (
+          <>
+            {hasSubmitAttempt && hasEmptyRequiredFields() && (
+              <Text style={tw`text-red-500 text-center mt-5 mb-2 font-montserratBold`}>
+                Please fill in all required fields
+              </Text>
+            )}
             <TouchableOpacity
-              style={tw`bg-blue-500 p-3 rounded mt-5 mb-5`}
+              style={tw`bg-blue-500 p-3 rounded mb-10`}
               onPress={handleSignup}
             >
               <Text style={tw`text-white text-center font-montserratBold`}>
                 Update Profile
               </Text>
             </TouchableOpacity>
-          )}
-        </ScrollView>
-      </SafeAreaView>
-    </KeyboardAvoidingView>
+          </>
+        )}
+      </ScrollView>
+    </SafeAreaView>
   );
 };
 
