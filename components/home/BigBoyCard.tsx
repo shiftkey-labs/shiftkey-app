@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, Image, TouchableOpacity, ActivityIndicator } from "react-native";
+import { View, Text, Image, TouchableOpacity, ActivityIndicator, Pressable } from "react-native";
 import { FontAwesome } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import tw from "@/app/styles/tailwind";
@@ -57,7 +57,7 @@ const BigBoyCard: React.FC<BigBoyCardProps> = ({
   const imageUrl = images.length > 0 ? images[0].url : dummyImageUrl;
 
   return (
-    <TouchableOpacity
+    <Pressable
       onPress={onPressShow}
       style={tw`mr-4 bg-white rounded-lg overflow-hidden w-80 ${style}`}
       disabled={isLoading}
@@ -69,17 +69,17 @@ const BigBoyCard: React.FC<BigBoyCardProps> = ({
       ) : null}
       <View style={tw`relative w-full`}>
         <Image source={{ uri: imageUrl }} style={tw`w-full h-48`} />
-        <TouchableOpacity
+        <Pressable
           style={tw`absolute top-2 left-2 bg-white rounded p-1`}
         >
           <Text style={tw`text-sm font-bold`}>{category}</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
+        </Pressable>
+        {/* <TouchableOpacity
           style={tw`absolute top-2 right-2 bg-white p-1 rounded-full`}
           onPress={onPressFavorite}
         >
           <FontAwesome name="heart-o" size={20} color="red" />
-        </TouchableOpacity>
+        </TouchableOpacity> */}
         <LinearGradient
           colors={["transparent", "rgba(0,0,0,1)"]}
           style={tw`absolute bottom-0 left-0 right-0 h-24`}
@@ -91,7 +91,7 @@ const BigBoyCard: React.FC<BigBoyCardProps> = ({
           </Text>
         </View>
       </View>
-    </TouchableOpacity>
+    </Pressable>
   );
 };
 
