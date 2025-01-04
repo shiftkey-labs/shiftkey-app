@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import { View, Text, TouchableOpacity, Alert, TextInput, KeyboardAvoidingView, ScrollView, Platform, ActivityIndicator } from "react-native";
+import { View, Text, TouchableOpacity, Alert, TextInput, KeyboardAvoidingView, ScrollView, Platform, ActivityIndicator, Pressable } from "react-native";
 import { useRouter } from "expo-router";
 import tw from "../styles/tailwind";
 import Logo from "@/components/common/Logo";
@@ -149,12 +149,15 @@ const Login = () => {
       >
         <View style={tw`flex-1 justify-center`}>
           <Logo />
-          <Text style={tw`text-3xl font-montserratBold text-center mb-5`}>
-            Login
+          <Text style={tw`text-3xl font-poppinsBold text-center mt-5`}>
+            Let's sign you in
+          </Text>
+          <Text style={tw`text-lg font-poppins text-center mb-10`}>
+            {otpSent ? 'Check your email for the verification code' : 'Please enter your email to continue'}
           </Text>
           {!otpSent && (
             <TextInput
-              style={tw`border p-3 rounded mb-5`}
+              style={tw`border border-gray p-5 rounded-lg mb-5`}
               placeholder="Email"
               value={email.toLowerCase()}
               onChangeText={setEmail}
@@ -165,13 +168,13 @@ const Login = () => {
           )}
           {otpSent && (
             <View style={tw`mb-5`}>
-              <Text style={tw`text-center mb-3 text-gray-600`}>Enter verification code</Text>
+              <Text style={tw`text-center mb-3 text-gray-600 font-poppins`}>Enter the 6-digit code we sent to your email</Text>
               <View style={tw`flex-row justify-between px-2`}>
                 {otp.map((digit, index) => (
                   <TextInput
                     key={index}
                     ref={ref => inputRefs.current[index] = ref}
-                    style={tw`border w-12 h-12 rounded text-center text-lg font-montserratMedium mx-1`}
+                    style={tw`border border-gray w-12 h-12 rounded text-center text-lg font-poppinsMedium mx-1`}
                     maxLength={1}
                     keyboardType="numeric"
                     value={digit}
@@ -188,21 +191,31 @@ const Login = () => {
             </View>
           )}
           {!otpSent ? (
-            <TouchableOpacity
-              style={tw`bg-primary p-4 rounded mb-3`}
+            <Pressable
+              style={tw`bg-primary p-4 rounded-lg mb-3 flex-row justify-center items-center`}
               onPress={requestOtp}
               disabled={loading}
             >
-              <Text style={tw`text-white text-center`}>Request OTP</Text>
-            </TouchableOpacity>
+              {loading ? (
+                <ActivityIndicator color="white" style={tw`mr-2`} />
+              ) : null}
+              <Text style={tw`text-white text-center font-poppinsBold`}>
+                {loading ? "Sending Code..." : "Send Code"}
+              </Text>
+            </Pressable>
           ) : (
-            <TouchableOpacity
-              style={tw`bg-primary p-4 rounded mb-3`}
+            <Pressable
+              style={tw`bg-primary p-4 rounded-lg mb-3 flex-row justify-center items-center`}
               onPress={verifyOtp}
-              disabled={loading || otp.some(digit => !digit)}
+              disabled={verifying || otp.some(digit => !digit)}
             >
-              <Text style={tw`text-white text-center`}>Verify OTP</Text>
-            </TouchableOpacity>
+              {verifying ? (
+                <ActivityIndicator color="white" style={tw`mr-2`} />
+              ) : null}
+              <Text style={tw`text-white text-center font-poppinsBold`}>
+                {verifying ? "Verifying..." : "Verify Code"}
+              </Text>
+            </Pressable>
           )}
         </View>
       </ScrollView>
