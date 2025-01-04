@@ -214,7 +214,7 @@ const Signup = () => {
             {field.type === "text" || field.type === "numeric" ? (
               <TextInput
                 style={[
-                  tw`border border-lightGray p-5 rounded-lg mb-5 font-poppins`,
+                  tw`border border-gray p-5 rounded-lg mb-5 font-poppins`,
                   isFieldInvalid(field.key) && tw`border-red-500`,
                 ]}
                 placeholder={field.placeholder}
@@ -250,7 +250,7 @@ const Signup = () => {
             ) : (
               <Dropdown
                 style={[
-                  tw`border border-lightGray p-5 rounded-lg mb-5 bg-white min-h-[60px]`,
+                  tw`border border-gray p-5 rounded-lg mb-5 bg-white min-h-[60px]`,
                   isFieldInvalid(field.key) && tw`border-red-500`,
                 ]}
                 data={field.options || []}
