@@ -21,8 +21,9 @@ module.exports = {
       },
       fontFamily: {
         sans: ["OpenSans", "sans-serif"],
-        montserrat: ["MontserratRegular", "sans-serif"],
-        montserratBold: ["MontserratBold", "sans-serif"],
+        poppins: ["PoppinsRegular", "sans-serif"],
+        poppinsBold: ["PoppinsBold", "sans-serif"],
+        poppinsMedium: ["PoppinsMedium", "sans-serif"],
         spaceMono: ["SpaceMono", "monospace"],
       },
       boxShadow: {

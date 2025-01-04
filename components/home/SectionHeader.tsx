@@ -14,9 +14,9 @@ const SectionHeader: React.FC<SectionHeaderProps> = ({
   return (
     <View style={tw`flex-row justify-between items-center mt-5 mb-3`}>
       <Text style={tw`font-bold text-lg`}>{title}</Text>
-      <TouchableOpacity onPress={onPressSeeAll}>
+      {/* <TouchableOpacity onPress={onPressSeeAll}>
         <Text style={tw`text-primary`}>See All</Text>
-      </TouchableOpacity>
+      </TouchableOpacity> */}
     </View>
   );
 };
