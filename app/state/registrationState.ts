@@ -1,6 +1,5 @@
 import { observable } from "@legendapp/state";
 import { getUserRegistrations } from "@/api/registrationApi";
-import axios from "axios";
 import server from "@/config/axios";
 
 const registrationState = observable({
