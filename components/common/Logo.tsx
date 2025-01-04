@@ -5,10 +5,10 @@ import { Image, View } from "react-native";
 
 const Logo = () => {
   return (
-    <View style={tw`items-center mt-10`}>
+    <View style={tw`items-center mb-10`}>
       <Image
         source={require("../../assets/images/icon.png")}
-        style={tw`w-80 h-35`}
+        style={tw`w-70 h-30`}
       />
     </View>
   );

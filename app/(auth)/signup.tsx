@@ -10,6 +10,7 @@ import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
+  Pressable,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { Dropdown } from "react-native-element-dropdown";
@@ -127,7 +128,7 @@ const Signup = () => {
   const isFieldInvalid = (key: string) => {
     const shouldValidate = fieldsToValidate.includes(key);
     const value = formData[key];
-    const isEmpty = Array.isArray(value) 
+    const isEmpty = Array.isArray(value)
       ? value.length === 0  // For multi-select fields
       : !value || value === "";
     const isFieldTouched = touchedFields[key] || hasSubmitAttempt;
@@ -138,7 +139,7 @@ const Signup = () => {
   const hasEmptyRequiredFields = () => {
     return fieldsToValidate.some(key => {
       const value = formData[key];
-      return Array.isArray(value) 
+      return Array.isArray(value)
         ? value.length === 0
         : !value || value === "";
     });
@@ -162,7 +163,7 @@ const Signup = () => {
 
   const handleSignup = async () => {
     setHasSubmitAttempt(true);
-    
+
     if (hasEmptyRequiredFields()) {
       return;
     }
@@ -210,21 +211,21 @@ const Signup = () => {
   return (
     <SafeAreaView style={tw`flex-1 bg-white`}>
       <ScrollView style={tw`flex-1 p-5 bg-white`}>
-        <Text style={tw`text-3xl font-montserratBold text-center mb-5`}>
+        <Text style={tw`text-3xl font-poppinsBold text-center mb-5`}>
           Complete Your Profile
         </Text>
         {missingFields.map((field) => (
           <View key={field.key}>
-            <Text style={tw`text-lg font-montserratBold mb-2`}>
+            <Text style={tw`text-lg font-poppinsBold mb-2`}>
               {field.label}
               {isFieldInvalid(field.key) && (
-                <Text style={tw`text-red-500 text-sm ml-1`}> *Required</Text>
+                <Text style={tw`text-red-500 text-sm ml-1 font-poppins`}> *Required</Text>
               )}
             </Text>
             {field.type === "text" || field.type === "numeric" ? (
               <TextInput
                 style={[
-                  tw`border p-3 rounded mb-3`,
+                  tw`border border-gray p-5 rounded-lg mb-5 font-poppins`,
                   isFieldInvalid(field.key) && tw`border-red-500`,
                 ]}
                 placeholder={field.placeholder}
@@ -235,7 +236,7 @@ const Signup = () => {
               />
             ) : field.type === "multi-select" ? (
               <View style={[
-                tw`mb-3`,
+                tw`mb-5`,
                 isFieldInvalid(field.key) && tw`border-red-500`,
               ]}>
                 {field.options?.map((option) => (
@@ -251,14 +252,14 @@ const Signup = () => {
                       }}
                       style={tw`mr-2`}
                     />
-                    <Text style={tw`text-base font-montserrat`}>{option.label}</Text>
+                    <Text style={tw`text-base font-poppins`}>{option.label}</Text>
                   </View>
                 ))}
               </View>
             ) : (
               <Dropdown
                 style={[
-                  tw`border p-3 rounded mb-3`,
+                  tw`border border-gray p-5 rounded-lg mb-5 bg-white min-h-[60px]`,
                   isFieldInvalid(field.key) && tw`border-red-500`,
                 ]}
                 data={field.options || []}
@@ -266,31 +267,45 @@ const Signup = () => {
                 valueField="value"
                 placeholder="Select an option"
                 value={formData[field.key]}
-                onChange={(item) => handleInputChange(field.key, item.value)}
+                onChange={(item: any) => handleInputChange(field.key, item.value)}
                 onBlur={() => setTouchedFields(prev => ({ ...prev, [field.key]: true }))}
+                placeholderStyle={tw`font-poppins text-gray-500`}
+                selectedTextStyle={tw`font-poppins text-black`}
+                containerStyle={tw`rounded-lg border-0 shadow-none`}
+                activeColor={tw.color('primary/10')}
+                itemTextStyle={tw`font-poppins text-black`}
+                itemContainerStyle={tw`border-b border-lightGray`}
+                maxHeight={300}
               />
             )}
           </View>
         ))}
         {loading ? (
           <View style={tw`flex-1 items-center justify-center`}>
-            <ActivityIndicator size="large" color="#0000ff" />
+            <ActivityIndicator color="#3498db" style={tw`mr-2`} />
           </View>
         ) : (
           <>
             {hasSubmitAttempt && hasEmptyRequiredFields() && (
-              <Text style={tw`text-red-500 text-center mt-5 mb-2 font-montserratBold`}>
+              <Text style={tw`text-red-500 text-center mt-5 mb-2 font-poppins`}>
                 Please fill in all required fields
               </Text>
             )}
-            <TouchableOpacity
-              style={tw`bg-blue-500 p-3 rounded mb-10`}
+            <Pressable
+              style={[
+                tw`p-4 rounded-lg mb-10 flex-row justify-center items-center`,
+                hasEmptyRequiredFields() ? tw`bg-primary/50` : tw`bg-primary`
+              ]}
               onPress={handleSignup}
+              disabled={loading || hasEmptyRequiredFields()}
             >
-              <Text style={tw`text-white text-center font-montserratBold`}>
-                Update Profile
+              {loading ? (
+                <ActivityIndicator color="white" style={tw`mr-2`} />
+              ) : null}
+              <Text style={tw`text-white text-center font-poppinsBold`}>
+                {loading ? "Updating..." : "Update Profile"}
               </Text>
-            </TouchableOpacity>
+            </Pressable>
           </>
         )}
       </ScrollView>

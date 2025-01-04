@@ -4,7 +4,7 @@ const tintColorDark = "#fff";
 
 const Colors = {
   light: {
-    primary: "#3498db",
+    primary: "#0455BF",
     secondary: "#2ecc71",
     accent: "#e74c3c",
     background: "#f5f5f5",
