@@ -14,7 +14,7 @@ import SectionHeader from "@/components/home/SectionHeader";
 import { useRouter } from "expo-router";
 import { FontAwesome5 } from "@expo/vector-icons";
 import state from "../state";
-import { initializeAuth } from "../state/userState";
+import { initializeAuth, userState } from "../state/userState";
 
 // Type definitions
 type EventFields = {
@@ -70,15 +70,16 @@ type Event = {
 const Home: React.FC = () => {
   const router = useRouter();
   const events = state.event;
+  const user = state.user.userState.get();
   const [eventsList, setEventsList] = useState<Event[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const dummyImageUrl = "https://example.com/dummy-image.png";
 
   const handlePressEvent = async (eventId: string) => {
-    router.push(`/event/${eventId}`);
     try {
       await events.fetchEventDetails(eventId);
+      router.push(`/event/${eventId}`);
     } catch (error) {
       console.error("Failed to load event details:", error);
     }
@@ -117,7 +118,7 @@ const Home: React.FC = () => {
     <SafeAreaView style={tw`flex-1 bg-background`}>
       <ScrollView style={tw`flex-1 bg-background p-5`}>
         <View style={tw`flex-row pt-5 justify-between items-center`}>
-          <Text style={tw`text-4xl font-bold`}>Hi Vansh</Text>
+          <Text style={tw`text-4xl font-bold`}>Hi {user.firstName ?? "there!"}</Text>
           <TouchableOpacity onPress={() => console.log("Profile pressed")}>
             <FontAwesome5 name="moon" size={24} color="black" />
           </TouchableOpacity>

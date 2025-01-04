@@ -12,6 +12,7 @@ import tw from "../styles/tailwind";
 import { useRouter } from "expo-router";
 import state from "../state";
 import { Picker } from "@react-native-picker/picker";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const EditProfile = () => {
     const user = state.user.userState.get();
@@ -29,6 +30,7 @@ const EditProfile = () => {
         program: user.program || "",
         year: user.year || "",
         isInternational: user.isInternational || false,
+        isStudent: user.isStudent || false,
     });
 
     const handleSave = async () => {
@@ -38,6 +40,9 @@ const EditProfile = () => {
                 ...user,
                 ...formData,
             });
+
+            // Store user data in AsyncStorage
+            await AsyncStorage.setItem("user", JSON.stringify(formData));
 
             // Here you would typically also update the user data in your backend
 

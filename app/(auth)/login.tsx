@@ -7,7 +7,7 @@ import axios from "axios";
 import Toast from "react-native-toast-message";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import state from "../state";
-import { DEV_URL } from "@/config/axios";
+import server, { DEV_URL } from "@/config/axios";
 import { SafeAreaView } from "react-native";
 
 const Login = () => {
@@ -41,7 +41,7 @@ const Login = () => {
     try {
       console.log("email", email);
 
-      const response = await axios.post(`${DEV_URL}/auth/send-otp`, {
+      const response = await server.post(`/auth/send-otp`, {
         email,
       });
       if (response.status === 200) {
@@ -67,7 +67,7 @@ const Login = () => {
     setVerifying(true);
     try {
       const otpString = otp.join("");
-      const response = await axios.post(`${DEV_URL}/auth/verify-otp`, {
+      const response = await server.post(`/auth/verify-otp`, {
         email,
         otp: otpString,
       });
@@ -75,7 +75,7 @@ const Login = () => {
         const userData = response.data.user;
         console.log("Received userData:", userData);
 
-        // Update userState with the user data
+        // Update userState with the user data 
         state.user.userState.set(userData);
 
         // Store user data in AsyncStorage
@@ -156,7 +156,7 @@ const Login = () => {
             <TextInput
               style={tw`border p-3 rounded mb-5`}
               placeholder="Email"
-              value={email}
+              value={email.toLowerCase()}
               onChangeText={setEmail}
               keyboardType="email-address"
               autoCapitalize="none"
