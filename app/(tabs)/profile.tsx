@@ -13,6 +13,7 @@ import { useRouter } from "expo-router";
 import state from "../state";
 import { roleSettingsOptions } from "@/config/roleSettingsOptions";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { deleteUserById } from "@/api/userApi";
 
 const Profile = () => {
   const user = state.user.userState.get();
@@ -44,6 +45,39 @@ const Profile = () => {
     }
   };
 
+  const handleDeleteAccount = async () => {
+    try {
+      if (user.id) {
+        await deleteUserById(user.id);
+      }
+
+      state.user.userState.set({
+        id: null,
+        firstName: "",
+        lastName: "",
+        email: "",
+        pronouns: "",
+        isStudent: "",
+        currentDegree: "",
+        faculty: "",
+        school: "",
+        hours: 0,
+        university: "",
+        program: "",
+        year: "",
+        isInternational: false,
+        role: "STUDENT"
+      });
+
+
+      await AsyncStorage.removeItem("user");
+      router.push("/(auth)/login");
+     
+    } catch (error) {
+      Alert.alert("Delete Account Error", error.message);
+    }
+  };
+  console.log(user.id)
   console.log("user", user);
 
   if (!user) {
@@ -97,7 +131,7 @@ const Profile = () => {
         >
           <Text style={tw`text-white text-center`}>Logout</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={tw`p-4 rounded mb-3`} onPress={handleLogout}>
+        <TouchableOpacity style={tw`p-4 rounded mb-3`} onPress={handleDeleteAccount}>
           <Text style={tw`text-red-600 text-center`}>Delete Account</Text>
         </TouchableOpacity>
       </ScrollView>
