@@ -16,32 +16,44 @@ import { FontAwesome } from "@expo/vector-icons";
 import state from "../state";
 import { addBooking } from "@/helpers/userHelpers";
 
+type Registration = {
+  id: string;
+  // add other registration fields as needed
+};
+
+type Event = {
+  id: string;
+  fields: {
+    eventName?: string;
+    location?: string;
+    startDate?: string;
+    eventDetails?: string;
+    volunteerCount?: number;
+    shiftsScheduled?: number;
+    images?: Array<{ url: string }>;
+  };
+};
+
 const EventDetails = () => {
-  const { id } = useLocalSearchParams();
+  const params = useLocalSearchParams();
+  const eventId = Array.isArray(params.id) ? params.id[0] : params.id;
   const router = useRouter();
   const [modalVisible, setModalVisible] = useState(false);
-  const curr = state.event.eventState.currentEvent.get();
-  const currentEvent = curr.fields;
+  const curr: Event = state.event.eventState.currentEvent.get();
+  const currentEvent = curr?.fields;
 
   const [isEventRegistered, setIsEventRegistered] = useState(false);
-
   const [loading, setLoading] = useState(true);
   const user = state.user.userState.get();
-  console.log("++++++++===========");
 
-  console.log("user", user.role);
-
-  const userRegistrations =
-    state.registration.registrationState.userRegistrations.get();
+  const userRegistrations: Registration[][] = state.registration.registrationState.userRegistrations.get();
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        await state.event.fetchEventDetails(id);
-        console.log("user", user);
-
-        await state.registration.fetchUserRegistrations(user.email);
+        await state.event.fetchEventDetails(eventId);
+        await state.registration.fetchUserRegistrations(user.email || '');
       } catch (error) {
         console.error("Failed to fetch event details:", error);
       } finally {
@@ -49,14 +61,15 @@ const EventDetails = () => {
       }
     };
     fetchData();
-  }, [id]);
+  }, [eventId]);
 
   useEffect(() => {
-    const bb = userRegistrations[0].some(
-      (registration) => registration.id === curr.id
-    );
-    setIsEventRegistered(bb);
-  }, [userRegistrations]);
+    const isRegistered = userRegistrations &&
+      userRegistrations[0] &&
+      Array.isArray(userRegistrations[0]) &&
+      userRegistrations[0].some((registration: Registration) => registration.id === curr?.id);
+    setIsEventRegistered(!!isRegistered);
+  }, [userRegistrations, curr]);
 
   console.log("currentEvent", currentEvent);
 
@@ -77,8 +90,9 @@ const EventDetails = () => {
   }
 
   const handleConfirm = async () => {
+    if (!user.id || !eventId) return;
     try {
-      await state.registration.registerForEvent(user.id, id);
+      await state.registration.registerForEvent(user.id, eventId);
       setModalVisible(true);
     } catch (error) {
       Alert.alert("Error", "Failed to confirm registration.");
@@ -96,8 +110,9 @@ const EventDetails = () => {
   };
 
   const handleVolunteer = async () => {
+    if (!user.id || !eventId) return;
     try {
-      await state.volunteer.volunteerForEvent(user.id, id);
+      await state.volunteer.volunteerForEvent(user.id, eventId);
       Alert.alert("Success", "You have successfully signed up as a volunteer", [
         {
           text: "OK",
@@ -115,15 +130,17 @@ const EventDetails = () => {
     router.back();
   };
 
-  const eventImage =
-    currentEvent.images && currentEvent.images.length > 0
-      ? currentEvent.images[0].url
-      : "https://via.placeholder.com/500"; // Dummy image URL if no image is provided
-
   return (
     <SafeAreaView style={tw`flex-1 bg-background`}>
       <View style={tw`flex-1`}>
-        <Image source={{ uri: eventImage }} style={tw`absolute w-full h-84`} />
+        <Image
+          source={{
+            uri: currentEvent?.images && currentEvent.images.length > 0
+              ? currentEvent.images[0].url
+              : "https://via.placeholder.com/500"
+          }}
+          style={tw`absolute w-full h-84`}
+        />
         <TouchableOpacity
           onPress={handleBack}
           style={tw`absolute top-5 left-5 z-10 bg-white p-3 rounded-md shadow-md`}
@@ -133,30 +150,27 @@ const EventDetails = () => {
         <ScrollView style={tw`flex-1`} contentContainerStyle={tw`pt-72`}>
           <View style={tw`p-5 bg-white rounded-t-lg mt-[-10]`}>
             <Text style={tw`text-3xl font-bold mt-2`}>
-              {currentEvent.eventName || "Event Name"}
+              {currentEvent?.eventName || "Event Name"}
             </Text>
             <View style={tw`flex-row items-center mt-3`}>
-              <FontAwesome
-                name="map-marker"
-                size={24}
-                style={tw`text-primary`}
-              />
+              <FontAwesome name="map-marker" size={24} style={tw`text-primary`} />
               <Text style={tw`text-gray-600 ml-5 text-lg my-3`}>
-                {currentEvent.location || "No location specified"}
+                {currentEvent?.location || "No location specified"}
               </Text>
             </View>
 
             <View style={tw`flex-row items-center mt-3`}>
               <FontAwesome name="calendar" size={24} style={tw`text-primary`} />
               <Text style={tw`text-gray-600 ml-4 text-lg`}>
-                {new Date(currentEvent.startDate).toLocaleString() ||
-                  "No date provided"}
+                {currentEvent?.startDate
+                  ? new Date(currentEvent.startDate).toLocaleString()
+                  : "No date provided"}
               </Text>
             </View>
 
             <Text style={tw`text-lg font-bold mt-5`}>About Event</Text>
             <Text style={tw`text-gray-600 mt-2`}>
-              {currentEvent.eventDetails || "No event details provided"}
+              {currentEvent?.eventDetails || "No event details provided"}
             </Text>
             <View style={tw`flex-row justify-between mt-5`}>
               {isEventRegistered ? (
@@ -171,12 +185,12 @@ const EventDetails = () => {
                   style={tw`bg-primary p-4 rounded-lg flex-1 mr-2`}
                   onPress={handleConfirm}
                 >
-                  <Text style={tw`text-white text-center`}>
-                    Confirm Attendance
-                  </Text>
+                  <Text style={tw`text-white text-center`}>Confirm Attendance</Text>
                 </TouchableOpacity>
               )}
               {user.role === "VOLUNTEER" &&
+                currentEvent?.volunteerCount &&
+                currentEvent?.shiftsScheduled &&
                 currentEvent.volunteerCount > currentEvent.shiftsScheduled && (
                   <TouchableOpacity
                     style={tw`bg-white p-4 rounded-lg flex-1 ml-2 border border-primary`}
