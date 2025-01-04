@@ -7,7 +7,7 @@ const Colors = {
     primary: "#0455BF",
     secondary: "#2ecc71",
     accent: "#e74c3c",
-    background: "#f5f5f5",
+    background: "#f8f8f8",
     text: "#333333",
     white: "#ffffff",
     black: "#000000",

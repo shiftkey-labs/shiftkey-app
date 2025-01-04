@@ -156,7 +156,7 @@ const Home: React.FC = () => {
         </ScrollView>
 
         <SectionHeader
-          title="Recommendations for you"
+          title="Some events you might like"
           onPressSeeAll={() => handlePressSeeAll("Recommendations for you")}
         />
         {eventsList.slice(eventsList.length / 2).map((event) => (
