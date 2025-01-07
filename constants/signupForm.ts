@@ -47,6 +47,26 @@ export const signupForm = {
       { label: "No", value: "No" },
     ],
   },
+  occupation: {
+    label: "What is your occupational status or current position?",
+    key: "occupation",
+    type: "text",
+    placeholder: "Enter your current position",
+  },
+  organization: {
+    label: "What type of organization do you work for?",
+    key: "organization",
+    type: "dropdown",
+    options: [
+      { label: "Community", value: "Government" },
+      { label: "Non-Profit", value: "Non-Profit" },
+      { label: "Private Sector", value: "Private Sector" },
+      { label: "Municipal Government", value: "Municipal Government" },
+      {label: "Provincial Government", value: "Provincial Government"},
+      { label: "Federal Government", value: "Federal Government" },
+      { label: "Faculty/Staff", value: "Faculty/Staff"}
+    ],
+  },
   currentDegree: {
     label: "Are you currently completing:",
     key: "currentDegree",
@@ -54,9 +74,9 @@ export const signupForm = {
     options: [
       { label: "Diploma", value: "Diploma" },
       { label: "Undergraduate degree", value: "Undergraduate degree" },
-      { label: "Masters degree", value: "Masters degree" },
+      { label: "Masters Degree", value: "Masters Degree" },
       { label: "PhD", value: "PhD" },
-      { label: "Post-doc", value: "Post-doc" },
+      { label: "Postdoc", value: "Postdoc" },
     ],
   },
   faculty: {
