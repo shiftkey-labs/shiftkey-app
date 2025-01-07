@@ -103,19 +103,28 @@ const Signup = () => {
   }, [user]);
 
   // Define all possible required fields from backend schema
-  const backendRequiredFields = [
-    'firstName',
-    'lastName',
-    'pronouns',
-    'isStudent',
-    'currentDegree',
-    'school',
-  ];
+  const getRequiredFields = () => {
+    const baseRequiredFields = [
+      'firstName',
+      'lastName',
+      'pronouns',
+      'isStudent',
+    ];
 
-  // Get the fields that are both required by backend and currently showing on screen
+    // Add additional required fields based on student status
+    if (formData.isStudent === "Yes") {
+      return [...baseRequiredFields, 'currentDegree', 'faculty', 'school'];
+    } else if (formData.isStudent === "No") {
+      return [...baseRequiredFields, 'organization', 'occupation'];
+    }
+
+    return baseRequiredFields;
+  };
+
+  // Get the fields that are both required and currently showing on screen
   const fieldsToValidate = missingFields
     .map(field => field.key)
-    .filter(key => backendRequiredFields.includes(key));
+    .filter(key => getRequiredFields().includes(key));
 
   // Validation helper functions
   const isFieldInvalid = (key: string) => {
@@ -171,6 +180,9 @@ const Signup = () => {
         selfIdentification: Array.isArray(formData.selfIdentification)
           ? formData.selfIdentification
           : [formData.selfIdentification].filter(Boolean),
+        organization: Array.isArray(formData.organization)
+          ? formData.organization
+          : [formData.organization].filter(Boolean),
       };
 
       const response = await axios.post(`${DEV_URL}/auth/signup`, backendData);
@@ -197,13 +209,36 @@ const Signup = () => {
     }
   };
 
+  // Add this helper function to determine if a field should be shown
+  const shouldShowField = (fieldKey: string) => {
+    // Always show these fields
+    const alwaysShowFields = ['firstName', 'lastName', 'pronouns', 'selfIdentification', 'isStudent'];
+    if (alwaysShowFields.includes(fieldKey)) return true;
+
+    // Show student-specific fields only if isStudent is "Yes"
+    const studentFields = ['currentDegree', 'faculty', 'school'];
+    if (studentFields.includes(fieldKey)) {
+      return formData.isStudent === "Yes";
+    }
+
+    // Show non-student fields only if isStudent is "No"
+    const nonStudentFields = ['organization', 'occupation'];
+    if (nonStudentFields.includes(fieldKey)) {
+      return formData.isStudent === "No";
+    }
+
+    return true;
+  };
+
   return (
     <SafeAreaView style={tw`flex-1 bg-white`}>
       <ScrollView style={tw`flex-1 p-5 bg-white`}>
         <Text style={tw`text-3xl font-poppinsBold text-center mb-5`}>
           Complete Your Profile
         </Text>
-        {missingFields.map((field) => (
+        {missingFields
+          .filter(field => shouldShowField(field.key)) // Filter fields based on conditions
+          .map((field) => (
           <View key={field.key}>
             <Text style={tw`text-lg font-poppinsBold mb-2`}>
               {field.label}
