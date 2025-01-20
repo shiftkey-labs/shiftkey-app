@@ -41,7 +41,7 @@ const EventDetails = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const curr: Event = state.event.eventState.currentEvent.get();
   const currentEvent = curr?.fields;
-
+  const shiftsScheduled = currentEvent?.shiftsScheduled || 0;
   const [isEventRegistered, setIsEventRegistered] = useState(false);
   const [loading, setLoading] = useState(true);
   const user = state.user.userState.get();
@@ -88,6 +88,10 @@ const EventDetails = () => {
       </View>
     );
   }
+  console.log("user", user.role === "VOLUNTEER");
+  console.log("crgr", currentEvent?.volunteerCount);
+  console.log("crgs", shiftsScheduled);
+
 
   const handleConfirm = async () => {
     if (!user.id || !eventId) return;
@@ -113,7 +117,7 @@ const EventDetails = () => {
     if (!user.id || !eventId) return;
     try {
       await state.volunteer.volunteerForEvent(user.id, eventId);
-      Alert.alert("Success", "You have successfully signed up as a volunteer", [
+      Alert.alert("Success", "You have successfully booked a shift", [
         {
           text: "OK",
           onPress: () => {
@@ -190,13 +194,12 @@ const EventDetails = () => {
               )}
               {user.role === "VOLUNTEER" &&
                 currentEvent?.volunteerCount &&
-                currentEvent?.shiftsScheduled &&
-                currentEvent.volunteerCount > currentEvent.shiftsScheduled && (
+                currentEvent.volunteerCount > shiftsScheduled && (
                   <TouchableOpacity
                     style={tw`bg-white p-4 rounded-lg flex-1 ml-2 border border-primary`}
                     onPress={handleVolunteer}
                   >
-                    <Text style={tw`text-primary text-center`}>Volunteer</Text>
+                    <Text style={tw`text-primary text-center`}>Book Shift</Text>
                   </TouchableOpacity>
                 )}
             </View>
