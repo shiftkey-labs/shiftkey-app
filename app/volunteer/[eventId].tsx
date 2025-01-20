@@ -32,7 +32,7 @@ const EventAttendance = () => {
     }
   }, [eventId]);
 
-  console.log("attendees", attendees);
+
 
   useEffect(() => {
     (async () => {
@@ -91,7 +91,7 @@ const EventAttendance = () => {
     setScanning(false);
     try {
       console.log("qr,", data);
-      
+
       markAttendance(data.split("~")[0]);
       Alert.alert("Success", "Attendance marked via QR code.");
     } catch (error) {
