@@ -78,7 +78,7 @@ const EventAttendance = () => {
       // Update the attendee's attendance status in the state
       setAttendees((prevAttendees) =>
         prevAttendees.map((attendee) =>
-          attendee.id === userId ? { ...attendee, attended: true } : attendee
+          attendee.id === userId ? { ...attendee, attended: !attendee.attended } : attendee
         )
       );
     } catch (error) {
