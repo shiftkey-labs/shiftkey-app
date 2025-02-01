@@ -35,7 +35,6 @@ interface BigBoyCardProps {
   category: string;
   images: Image[];
   onPressShow: () => void;
-  onPressFavorite: () => void;
   style?: any;
   isLoading?: boolean;
 }
@@ -49,7 +48,6 @@ const BigBoyCard: React.FC<BigBoyCardProps> = ({
   category,
   images,
   onPressShow,
-  onPressFavorite,
   style,
   isLoading = false
 }) => {
