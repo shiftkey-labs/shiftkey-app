@@ -98,7 +98,7 @@ const EventDetails = () => {
   console.log("crgs", shiftsScheduled);
 
 
-  const handleConfirm = async () => {
+  const handleRegistration = async () => {
     if (!user.id || !eventId) return;
     try {
       await state.registration.registerForEvent(user.id, eventId);
@@ -192,9 +192,9 @@ const EventDetails = () => {
               ) : (
                 <TouchableOpacity
                   style={tw`bg-primary p-4 rounded-lg flex-1 mr-2`}
-                  onPress={handleConfirm}
+                  onPress={handleRegistration}
                 >
-                  <Text style={tw`text-white text-center`}>Confirm Attendance</Text>
+                  <Text style={tw`text-white text-center`}>Register</Text>
                 </TouchableOpacity>
               )}
               {user.role === "VOLUNTEER" &&
