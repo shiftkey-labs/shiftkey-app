@@ -1,4 +1,4 @@
-const colors = require("./constants/Colors").default.light;
+const colors = require("./constants/Colors").default;
 
 module.exports = {
   content: [
@@ -6,18 +6,28 @@ module.exports = {
     "./components/**/*.{js,jsx,ts,tsx}",
     "./constants/**/*.{js,jsx,ts,tsx}",
   ],
+  darkMode: "media",
   theme: {
     extend: {
       colors: {
-        primary: colors.primary,
-        secondary: colors.secondary,
-        accent: colors.accent,
-        background: colors.background,
-        text: colors.text,
-        white: colors.white,
-        black: colors.black,
-        gray: colors.gray,
-        lightGray: colors.lightGray,
+        primary: colors.light.primary,
+        secondary: colors.light.secondary,
+        accent: colors.light.accent,
+        background: colors.light.background,
+        text: colors.light.text,
+        white: colors.light.white,
+        black: colors.light.black,
+        gray: colors.light.gray,
+        lightGray: colors.light.lightGray,
+        dark: {
+          primary: colors.dark.primary,
+          secondary: colors.dark.secondary,
+          accent: colors.dark.accent,
+          background: colors.dark.background,
+          text: colors.dark.text,
+          gray: colors.dark.gray,
+          lightGray: colors.dark.lightGray,
+        },
       },
       fontFamily: {
         sans: ["OpenSans", "sans-serif"],

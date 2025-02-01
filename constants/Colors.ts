@@ -13,18 +13,19 @@ const Colors = {
     black: "#000000",
     gray: "#95a5a6",
     lightGray: "#ecf0f1",
+    error: "#ff0000",
   },
-  // need to add dark mode colors
   dark: {
-    primary: "#3498db",
-    secondary: "#2ecc71",
-    accent: "#e74c3c",
-    background: "#f5f5f5",
-    text: "#333333",
+    primary: "#2196F3",    // Brighter blue for dark mode
+    secondary: "#4ade80",  // Brighter green for dark mode
+    accent: "#f87171",     // Brighter red for dark mode
+    background: "#121212", // Material dark theme background
+    text: "#ffffff",       // White text for dark mode
     white: "#ffffff",
     black: "#000000",
-    gray: "#95a5a6",
-    lightGray: "#ecf0f1",
+    gray: "#9ca3af",       // Lighter gray for dark mode
+    lightGray: "#1f2937",  // Darker gray for dark backgrounds
+    error: "#ff0000",
   },
 };
 

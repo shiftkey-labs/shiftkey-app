@@ -3,22 +3,21 @@ import FontAwesome from "@expo/vector-icons/FontAwesome";
 import {
   DarkTheme,
   DefaultTheme,
-  ThemeProvider,
+  ThemeProvider as NavigationThemeProvider,
 } from "@react-navigation/native";
 import { useFonts } from "expo-font";
 import { Stack, useRouter } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect, useState } from "react";
 import "react-native-reanimated";
-import { ActivityIndicator, View } from "react-native";
+import { ActivityIndicator, View, useColorScheme as useNativeColorScheme } from "react-native";
 import tw from "./styles/tailwind";
-
-import { useColorScheme } from "@/components/useColorScheme";
 import { observer } from "@legendapp/state/react";
 import { initializeEvents } from "./state/eventState";
 import { initializeAuth, hasRequiredFields } from "./state/userState";
 import state from "./state";
 import Toast from "react-native-toast-message";
+import { ThemeProvider, useTheme } from "@/context/ThemeContext";
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -34,7 +33,7 @@ export const unstable_settings = {
 SplashScreen.preventAutoHideAsync();
 
 const RootLayoutNav = observer(() => {
-  const colorScheme = useColorScheme();
+  const systemColorScheme = useNativeColorScheme();
   const router = useRouter();
   const user = state.user.userState.get();
   const [isInitializing, setIsInitializing] = useState(true);
@@ -68,64 +67,80 @@ const RootLayoutNav = observer(() => {
   // Show loading screen while initializing
   if (isInitializing) {
     return (
-      <View style={tw`flex-1 justify-center items-center bg-white`}>
-        <ActivityIndicator size="large" color="#0000ff" />
+      <View style={tw`flex-1 justify-center items-center bg-background dark:bg-dark-background`}>
+        <ActivityIndicator size="large" color={systemColorScheme === 'dark' ? '#ffffff' : '#0000ff'} />
       </View>
     );
   }
 
   return (
-    <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-      <Toast />
-      <Stack>
-        <Stack.Screen
-          name="(auth)"
-          options={{ headerShown: false, gestureEnabled: false }}
-        />
-        <Stack.Screen
-          name="(tabs)"
-          options={{ headerShown: false, gestureEnabled: false }}
-        />
-        <Stack.Screen
-          name="event"
-          options={{ headerShown: false, gestureEnabled: false }}
-        />
-        <Stack.Screen
-          name="volunteer"
-          options={{ headerShown: false, gestureEnabled: false }}
-        />
-        <Stack.Screen
-          name="modal"
-          options={{ presentation: "modal", headerShown: false }}
-        />
-      </Stack>
+    <ThemeProvider>
+      <AppContent />
     </ThemeProvider>
   );
 });
 
-export default function RootLayout() {
-  const [loaded, error] = useFonts({
-    SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
-    PoppinsRegular: require("../assets/fonts/Poppins-Regular.ttf"),
-    PoppinsBold: require("../assets/fonts/Poppins-Bold.ttf"),
-    PoppinsMedium: require("../assets/fonts/Poppins-Medium.ttf"),
-    ...FontAwesome.font,
-  });
+const AppContent = () => {
+  const { isDarkMode, colors } = useTheme();
+  const navigationTheme = isDarkMode ? {
+    ...DarkTheme,
+    colors: {
+      ...DarkTheme.colors,
+      background: colors.background,
+      text: colors.text,
+      border: colors.lightGray,
+      card: colors.lightGray,
+    },
+  } : {
+    ...DefaultTheme,
+    colors: {
+      ...DefaultTheme.colors,
+      background: colors.background,
+      text: colors.text,
+      border: colors.lightGray,
+      card: colors.white,
+    },
+  };
 
-  // Expo Router uses Error Boundaries to catch errors in the navigation tree.
-  useEffect(() => {
-    if (error) throw error;
-  }, [error]);
+  return (
+    <NavigationThemeProvider value={navigationTheme}>
+      <View style={tw`flex-1 bg-background dark:bg-dark-background`}>
+        <Toast />
+        <Stack
+          screenOptions={{
+            headerStyle: {
+              backgroundColor: isDarkMode ? colors.lightGray : colors.white,
+            },
+            headerTintColor: colors.text,
+            contentStyle: {
+              backgroundColor: colors.background,
+            },
+          }}
+        >
+          <Stack.Screen
+            name="(auth)"
+            options={{ headerShown: false, gestureEnabled: false }}
+          />
+          <Stack.Screen
+            name="(tabs)"
+            options={{ headerShown: false, gestureEnabled: false }}
+          />
+          <Stack.Screen
+            name="event"
+            options={{ headerShown: false, gestureEnabled: false }}
+          />
+          <Stack.Screen
+            name="volunteer"
+            options={{ headerShown: false, gestureEnabled: false }}
+          />
+          <Stack.Screen
+            name="modal"
+            options={{ presentation: "modal", headerShown: false }}
+          />
+        </Stack>
+      </View>
+    </NavigationThemeProvider>
+  );
+};
 
-  useEffect(() => {
-    if (loaded) {
-      SplashScreen.hideAsync();
-    }
-  }, [loaded]);
-
-  if (!loaded) {
-    return null;
-  }
-
-  return <RootLayoutNav />;
-}
+export default RootLayoutNav;
