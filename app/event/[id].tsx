@@ -30,6 +30,7 @@ type Event = {
     eventDetails?: string;
     volunteerCount?: number;
     shiftsScheduled?: number;
+    staffShiftCount?: number;
     images?: Array<{ url: string }>;
   };
 };
@@ -45,6 +46,7 @@ const EventDetails = () => {
   const [isEventRegistered, setIsEventRegistered] = useState(false);
   const [loading, setLoading] = useState(true);
   const user = state.user.userState.get();
+  const userVolunteeredEvents: Event[] = state.volunteer.volunteerState.userVolunteeredEvents.get();
 
   const userRegistrations: Registration[][] = state.registration.registrationState.userRegistrations.get();
 
@@ -54,6 +56,9 @@ const EventDetails = () => {
       try {
         await state.event.fetchEventDetails(eventId);
         await state.registration.fetchUserRegistrations(user.email || '');
+        if (user.email) {
+          await state.volunteer.fetchUserVolunteeredEvents(user.email);
+        }
       } catch (error) {
         console.error("Failed to fetch event details:", error);
       } finally {
@@ -193,8 +198,9 @@ const EventDetails = () => {
                 </TouchableOpacity>
               )}
               {user.role === "VOLUNTEER" &&
-                currentEvent?.volunteerCount &&
-                currentEvent.volunteerCount > shiftsScheduled && (
+                currentEvent?.staffShiftCount &&
+                currentEvent.staffShiftCount > shiftsScheduled &&
+                !userVolunteeredEvents.some(event => event.id === curr?.id) && (
                   <TouchableOpacity
                     style={tw`bg-white p-4 rounded-lg flex-1 ml-2 border border-primary`}
                     onPress={handleVolunteer}

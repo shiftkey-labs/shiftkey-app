@@ -64,7 +64,7 @@ const Volunteer = observer(() => {
     );
   }
 
-  if (role === "VOLUNTEER") {
+  if (role === "STAFF" || role === "VOLUNTEER") {
     return (
       <SafeAreaView style={tw`flex-1 bg-background`}>
         <VolunteerEventsList events={volunteerEvents} />
@@ -74,12 +74,11 @@ const Volunteer = observer(() => {
     return (
       <SafeAreaView style={tw`flex-1 bg-background`}>
         <View style={tw`p-5`}>
-          <Text style={tw`text-3xl font-bold mb-5`}>Volunteer Signup Form</Text>
+          <Text style={tw`text-3xl font-bold mb-5`}>Volunteer Dashboard</Text>
           <Text style={tw`text-lg mb-5`}>
-            By clicking submit you agree to the terms and conditions of
-            volunteering with ShiftKey
+            This is where you will be able to view your shifts when you are selected as a volunteer.
           </Text>
-          <Pressable
+          {/* <Pressable
             style={tw`bg-primary p-4 rounded-lg`}
             onPress={handleSubmitVolunteerRequest}
             disabled={isSubmitting}
@@ -89,7 +88,7 @@ const Volunteer = observer(() => {
             ) : (
               <Text style={tw`text-white text-center`}>Submit</Text>
             )}
-          </Pressable>
+          </Pressable> */}
         </View>
       </SafeAreaView>
     );
