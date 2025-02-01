@@ -1,34 +1,41 @@
 import tw from "@/app/styles/tailwind";
 import { Link, useRouter } from "expo-router";
-import React from "react";
-import { View, Text, ScrollView, Pressable } from "react-native";
+import React, { useState } from "react";
+import { View, Text, ScrollView, Pressable, RefreshControl } from "react-native";
 import EventCard from "./home/EventCard";
 import BigBoyCard from "./home/BigBoyCard";
 import { useTheme } from "@/context/ThemeContext";
+import { Image as ImageType } from "@/types/event";
 
 interface VolunteerEvent {
   id: string;
   eventName?: string;
   startDate?: string;
   category?: string;
-  images?: Array<{
-    url: string;
-    id?: string;
-    filename?: string;
-    size?: number;
-    type?: string;
-    thumbnails?: any;
-  }>;
+  images?: ImageType[];
 }
 
 interface VolunteerEventsListProps {
   events: VolunteerEvent[];
+  onRefresh?: () => Promise<void>;
 }
 
-const VolunteerEventsList: React.FC<VolunteerEventsListProps> = ({ events }) => {
+const VolunteerEventsList: React.FC<VolunteerEventsListProps> = ({ events, onRefresh }) => {
   const router = useRouter();
   const { isDarkMode, colors } = useTheme();
-  const dummyImageUrl = "https://example.com/dummy-image.png";
+  const dummyImage: ImageType = {
+    id: "dummy",
+    url: "https://shiftkeylabs.ca/wp-content/uploads/2022/12/Shiftkey-Labs-Logo-01-e1487284025704-1200x515-1.png",
+    filename: "dummy.png",
+    size: 0,
+    type: "image/png",
+    thumbnails: {
+      small: { url: "https://example.com/dummy-image.png", width: 100, height: 100 },
+      large: { url: "https://example.com/dummy-image.png", width: 300, height: 300 },
+      full: { url: "https://example.com/dummy-image.png", width: 500, height: 500 }
+    }
+  };
+  const [refreshing, setRefreshing] = useState(false);
 
   const handlePressEvent = async (eventId: string) => {
     try {
@@ -38,8 +45,28 @@ const VolunteerEventsList: React.FC<VolunteerEventsListProps> = ({ events }) => 
     }
   };
 
+  const handleRefresh = async () => {
+    if (onRefresh) {
+      setRefreshing(true);
+      try {
+        await onRefresh();
+      } finally {
+        setRefreshing(false);
+      }
+    }
+  };
+
   return (
-    <ScrollView style={[tw`p-5`, { backgroundColor: isDarkMode ? colors.background : colors.background }]}>
+    <ScrollView
+      style={[tw`p-5`, { backgroundColor: isDarkMode ? colors.background : colors.background }]}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={handleRefresh}
+          tintColor={isDarkMode ? colors.text : colors.primary}
+        />
+      }
+    >
       <Text style={{
         color: isDarkMode ? colors.text : colors.text,
         fontSize: 30,
@@ -56,9 +83,7 @@ const VolunteerEventsList: React.FC<VolunteerEventsListProps> = ({ events }) => 
               title={event.eventName || "No Title"}
               date={event.startDate || "No Date"}
               style={"w-full my-2"}
-              images={
-                event.images?.length ? event.images : [{ url: dummyImageUrl }]
-              }
+              images={event.images?.length ? event.images : [dummyImage]}
               onPressShow={() => handlePressEvent(event.id)}
               category={event.category || "Event"}
             />

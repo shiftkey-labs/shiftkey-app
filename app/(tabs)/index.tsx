@@ -76,7 +76,7 @@ const Home: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const { isDarkMode, colors, toggleTheme } = useTheme();
 
-  const dummyImageUrl = "https://example.com/dummy-image.png";
+  const dummyImageUrl = "https://shiftkeylabs.ca/wp-content/uploads/2022/12/Shiftkey-Labs-Logo-01-e1487284025704-1200x515-1.png";
 
   const handlePressEvent = async (eventId: string) => {
     try {
