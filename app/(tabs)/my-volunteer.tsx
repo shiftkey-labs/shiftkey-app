@@ -25,7 +25,7 @@ const Volunteer = observer(() => {
 
   useEffect(() => {
     const loadVolunteerEvents = async () => {
-      if (role === "VOLUNTEER" && user.email) {
+      if (user.email) {
         try {
           setIsLoading(true);
           await fetchUserVolunteeredEvents(user.email);
@@ -40,7 +40,20 @@ const Volunteer = observer(() => {
     };
 
     loadVolunteerEvents();
-  }, [role, user.email]);
+  }, [user.email]);
+
+  const handleRefresh = async () => {
+    if (user.email) {
+      try {
+        setIsLoading(true);
+        await fetchUserVolunteeredEvents(user.email);
+      } catch (error) {
+        console.error("Failed to refresh volunteer events:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+  };
 
   const handleSubmitVolunteerRequest = async () => {
     try {
@@ -70,7 +83,7 @@ const Volunteer = observer(() => {
   if (role === "STAFF" || role === "VOLUNTEER") {
     return (
       <SafeAreaView style={[tw`flex-1`, { backgroundColor: colors.background }]}>
-        <VolunteerEventsList events={volunteerEvents} />
+        <VolunteerEventsList events={volunteerEvents} onRefresh={handleRefresh} />
       </SafeAreaView>
     );
   } else if (role === "STUDENT") {

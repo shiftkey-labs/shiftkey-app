@@ -59,9 +59,8 @@ const BigBoyCard: React.FC<BigBoyCardProps> = ({
     <Pressable
       onPress={onPressShow}
       style={[
-        tw`mr-4 rounded-lg overflow-hidden w-80`,
+        tw`mr-4 rounded-lg overflow-hidden w-80 my-2 ${style}`,
         { backgroundColor: isDarkMode ? colors.lightGray : colors.white },
-        style
       ]}
       disabled={isLoading}
     >

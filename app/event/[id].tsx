@@ -79,8 +79,6 @@ const EventDetails = () => {
     setIsEventRegistered(!!isRegistered);
   }, [userRegistrations, curr]);
 
-  console.log("currentEvent", currentEvent);
-
   if (loading) {
     return (
       <View style={tw`flex-1 items-center justify-center`}>
@@ -96,10 +94,6 @@ const EventDetails = () => {
       </View>
     );
   }
-  console.log("user", user.role === "VOLUNTEER");
-  console.log("crgr", currentEvent?.volunteerCount);
-  console.log("crgs", shiftsScheduled);
-
 
   const handleRegistration = async () => {
     if (!user.id || !eventId) return;
@@ -149,7 +143,7 @@ const EventDetails = () => {
           source={{
             uri: currentEvent?.images && currentEvent.images.length > 0
               ? currentEvent.images[0].url
-              : "https://via.placeholder.com/500"
+              : "https://shiftkeylabs.ca/wp-content/uploads/2022/12/Shiftkey-Labs-Logo-01-e1487284025704-1200x515-1.png"
           }}
           style={tw`absolute w-full h-84`}
         />
