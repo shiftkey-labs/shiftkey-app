@@ -26,11 +26,12 @@ const VolunteerEventsList = ({ events }) => {
               key={event.id}
               title={event.eventName || "No Title"}
               date={event.startDate || "No Date"}
-              style={"w-full"}
+              style={"w-full my-2"}
               images={
                 event.images?.length ? event.images : [{ url: dummyImageUrl }]
               }
               onPressShow={() => handlePressEvent(event.id)}
+              category={event.category || "Event"}
             />
           ))}
         </View>
