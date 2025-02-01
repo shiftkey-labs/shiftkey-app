@@ -1,48 +1,42 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { useColorScheme } from 'react-native';
+import { useColorScheme as useNativeColorScheme } from 'react-native';
+import Colors from '@/constants/Colors';
 
 type ThemeContextType = {
     isDarkMode: boolean;
     toggleTheme: () => void;
-    colors: typeof lightColors | typeof darkColors;
-};
-
-const lightColors = {
-    background: '#FFFFFF',
-    text: '#000000',
-    primary: '#007AFF',
-    secondary: '#5856D6',
-    card: '#F2F2F2',
-    border: '#E5E5E5',
-};
-
-const darkColors = {
-    background: '#000000',
-    text: '#FFFFFF',
-    primary: '#0A84FF',
-    secondary: '#5E5CE6',
-    card: '#1C1C1E',
-    border: '#38383A',
+    colors: typeof Colors.light | typeof Colors.dark;
+    setManualTheme: (isDark: boolean) => void;
 };
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-    const systemColorScheme = useColorScheme();
+    const systemColorScheme = useNativeColorScheme();
+    const [isManuallySet, setIsManuallySet] = useState(false);
     const [isDarkMode, setIsDarkMode] = useState(systemColorScheme === 'dark');
 
     useEffect(() => {
-        setIsDarkMode(systemColorScheme === 'dark');
-    }, [systemColorScheme]);
+        if (!isManuallySet) {
+            setIsDarkMode(systemColorScheme === 'dark');
+        }
+    }, [systemColorScheme, isManuallySet]);
 
     const toggleTheme = () => {
+        setIsManuallySet(true);
         setIsDarkMode(prev => !prev);
+    };
+
+    const setManualTheme = (isDark: boolean) => {
+        setIsManuallySet(true);
+        setIsDarkMode(isDark);
     };
 
     const value = {
         isDarkMode,
         toggleTheme,
-        colors: isDarkMode ? darkColors : lightColors,
+        setManualTheme,
+        colors: isDarkMode ? Colors.dark : Colors.light,
     };
 
     return (

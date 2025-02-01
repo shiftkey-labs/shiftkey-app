@@ -4,11 +4,32 @@ import React from "react";
 import { View, Text, ScrollView, Pressable } from "react-native";
 import EventCard from "./home/EventCard";
 import BigBoyCard from "./home/BigBoyCard";
+import { useTheme } from "@/context/ThemeContext";
 
-const VolunteerEventsList = ({ events }) => {
-  console.log("events", events);
+interface VolunteerEvent {
+  id: string;
+  eventName?: string;
+  startDate?: string;
+  category?: string;
+  images?: Array<{
+    url: string;
+    id?: string;
+    filename?: string;
+    size?: number;
+    type?: string;
+    thumbnails?: any;
+  }>;
+}
+
+interface VolunteerEventsListProps {
+  events: VolunteerEvent[];
+}
+
+const VolunteerEventsList: React.FC<VolunteerEventsListProps> = ({ events }) => {
   const router = useRouter();
+  const { isDarkMode, colors } = useTheme();
   const dummyImageUrl = "https://example.com/dummy-image.png";
+
   const handlePressEvent = async (eventId: string) => {
     try {
       router.push(`/volunteer/${eventId}`);
@@ -16,12 +37,20 @@ const VolunteerEventsList = ({ events }) => {
       console.error("Failed to load event details:", error);
     }
   };
+
   return (
-    <ScrollView style={tw`p-5`}>
-      <Text style={tw`text-3xl font-bold mb-5`}>Volunteered Events</Text>
+    <ScrollView style={[tw`p-5`, { backgroundColor: isDarkMode ? colors.background : colors.background }]}>
+      <Text style={{
+        color: isDarkMode ? colors.text : colors.text,
+        fontSize: 30,
+        fontWeight: 'bold',
+        marginBottom: 20
+      }}>
+        Volunteered Events
+      </Text>
       {events.length > 0 ? (
         <View>
-          {events.map((event) => (
+          {events.map((event: VolunteerEvent) => (
             <BigBoyCard
               key={event.id}
               title={event.eventName || "No Title"}
@@ -36,7 +65,9 @@ const VolunteerEventsList = ({ events }) => {
           ))}
         </View>
       ) : (
-        <Text style={tw`text-lg text-gray-600`}>No volunteered events</Text>
+        <Text style={{ color: isDarkMode ? colors.gray : colors.gray, fontSize: 16 }}>
+          No volunteered events
+        </Text>
       )}
     </ScrollView>
   );

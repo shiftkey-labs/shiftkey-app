@@ -15,6 +15,7 @@ import tw from "../styles/tailwind";
 import { FontAwesome } from "@expo/vector-icons";
 import state from "../state";
 import { addBooking } from "@/helpers/userHelpers";
+import { useTheme } from "@/context/ThemeContext";
 
 type Registration = {
   id: string;
@@ -49,6 +50,8 @@ const EventDetails = () => {
   const userVolunteeredEvents: Event[] = state.volunteer.volunteerState.userVolunteeredEvents.get();
 
   const userRegistrations: Registration[][] = state.registration.registrationState.userRegistrations.get();
+
+  const { isDarkMode, colors } = useTheme();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -140,7 +143,7 @@ const EventDetails = () => {
   };
 
   return (
-    <SafeAreaView style={tw`flex-1 bg-background`}>
+    <SafeAreaView style={[tw`flex-1`, { backgroundColor: colors.background }]}>
       <View style={tw`flex-1`}>
         <Image
           source={{
@@ -152,49 +155,63 @@ const EventDetails = () => {
         />
         <TouchableOpacity
           onPress={handleBack}
-          style={tw`absolute top-5 left-5 z-10 bg-white p-3 rounded-md shadow-md`}
+          style={[
+            tw`absolute top-5 left-5 z-10 p-3 rounded-md shadow-md`,
+            { backgroundColor: isDarkMode ? colors.lightGray : colors.white }
+          ]}
         >
-          <FontAwesome name="chevron-left" size={20} color="black" />
+          <FontAwesome name="chevron-left" size={20} color={colors.text} />
         </TouchableOpacity>
         <ScrollView style={tw`flex-1`} contentContainerStyle={tw`pt-72`}>
-          <View style={tw`p-5 bg-white rounded-t-lg mt-[-10]`}>
-            <Text style={tw`text-3xl font-bold mt-2`}>
+          <View style={[
+            tw`p-5 rounded-t-lg mt-[-10]`,
+            { backgroundColor: isDarkMode ? colors.lightGray : colors.white }
+          ]}>
+            <Text style={{ color: colors.text, fontSize: 30, fontWeight: 'bold', marginTop: 8 }}>
               {currentEvent?.eventName || "Event Name"}
             </Text>
             <View style={tw`flex-row items-center mt-3`}>
-              <FontAwesome name="map-marker" size={24} style={tw`text-primary`} />
-              <Text style={tw`text-gray-600 ml-5 text-lg my-3`}>
+              <FontAwesome name="map-marker" size={24} color={colors.primary} />
+              <Text style={{ color: colors.gray, fontSize: 18, marginLeft: 20, marginVertical: 12 }}>
                 {currentEvent?.location || "No location specified"}
               </Text>
             </View>
 
             <View style={tw`flex-row items-center mt-3`}>
-              <FontAwesome name="calendar" size={24} style={tw`text-primary`} />
-              <Text style={tw`text-gray-600 ml-4 text-lg`}>
+              <FontAwesome name="calendar" size={24} color={colors.primary} />
+              <Text style={{ color: colors.gray, fontSize: 18, marginLeft: 16 }}>
                 {currentEvent?.startDate
                   ? new Date(currentEvent.startDate).toLocaleString()
                   : "No date provided"}
               </Text>
             </View>
 
-            <Text style={tw`text-lg font-bold mt-5`}>About Event</Text>
-            <Text style={tw`text-gray-600 mt-2`}>
+            <Text style={{ color: colors.text, fontSize: 18, fontWeight: 'bold', marginTop: 20 }}>
+              About Event
+            </Text>
+            <Text style={{ color: colors.gray, marginTop: 8 }}>
               {currentEvent?.eventDetails || "No event details provided"}
             </Text>
             <View style={tw`flex-row justify-between mt-5`}>
               {isEventRegistered ? (
                 <TouchableOpacity
-                  style={tw`bg-primary p-4 rounded-lg flex-1 mr-2`}
+                  style={[
+                    tw`p-4 rounded-lg flex-1 mr-2`,
+                    { backgroundColor: colors.primary }
+                  ]}
                   onPress={handleViewTicket}
                 >
-                  <Text style={tw`text-white text-center`}>View Ticket</Text>
+                  <Text style={{ color: colors.white, textAlign: 'center' }}>View Ticket</Text>
                 </TouchableOpacity>
               ) : (
                 <TouchableOpacity
-                  style={tw`bg-primary p-4 rounded-lg flex-1 mr-2`}
+                  style={[
+                    tw`p-4 rounded-lg flex-1 mr-2`,
+                    { backgroundColor: colors.primary }
+                  ]}
                   onPress={handleRegistration}
                 >
-                  <Text style={tw`text-white text-center`}>Register</Text>
+                  <Text style={{ color: colors.white, textAlign: 'center' }}>Register</Text>
                 </TouchableOpacity>
               )}
               {user.role === "VOLUNTEER" &&
@@ -202,10 +219,17 @@ const EventDetails = () => {
                 currentEvent.staffShiftCount > shiftsScheduled &&
                 !userVolunteeredEvents.some(event => event.id === curr?.id) && (
                   <TouchableOpacity
-                    style={tw`bg-white p-4 rounded-lg flex-1 ml-2 border border-primary`}
+                    style={[
+                      tw`p-4 rounded-lg flex-1 ml-2`,
+                      {
+                        backgroundColor: isDarkMode ? colors.lightGray : colors.white,
+                        borderWidth: 1,
+                        borderColor: colors.primary
+                      }
+                    ]}
                     onPress={handleVolunteer}
                   >
-                    <Text style={tw`text-primary text-center`}>Book Shift</Text>
+                    <Text style={{ color: colors.primary, textAlign: 'center' }}>Book Shift</Text>
                   </TouchableOpacity>
                 )}
             </View>
@@ -220,31 +244,37 @@ const EventDetails = () => {
           setModalVisible(!modalVisible);
         }}
       >
-        <View
-          style={tw`flex-1 justify-center items-center bg-black bg-opacity-50`}
-        >
-          <View style={tw`bg-white rounded-lg p-5 w-4/5`}>
+        <View style={tw`flex-1 justify-center items-center bg-black bg-opacity-50`}>
+          <View style={[
+            tw`rounded-lg p-5 w-4/5`,
+            { backgroundColor: isDarkMode ? colors.lightGray : colors.white }
+          ]}>
             <View style={tw`items-center mb-5`}>
-              <FontAwesome name="check-circle" size={50} color="green" />
-              <Text style={tw`text-2xl font-montserratBold mb-2`}>
+              <FontAwesome name="check-circle" size={50} color={isDarkMode ? colors.secondary : "green"} />
+              <Text style={{ color: colors.text, fontSize: 24, fontWeight: 'bold', marginBottom: 8 }}>
                 Congratulations!
               </Text>
-              <Text style={tw`text-center text-gray-600 mb-5`}>
-                You have successfully placed an order for this event. Enjoy the
-                event!
+              <Text style={{ color: colors.gray, textAlign: 'center', marginBottom: 20 }}>
+                You have successfully placed an order for this event. Enjoy the event!
               </Text>
             </View>
             <TouchableOpacity
-              style={tw`bg-primary p-4 rounded-lg mb-3`}
+              style={[
+                tw`p-4 rounded-lg mb-3`,
+                { backgroundColor: colors.primary }
+              ]}
               onPress={handleViewTicket}
             >
-              <Text style={tw`text-white text-center`}>View E-Ticket</Text>
+              <Text style={{ color: colors.white, textAlign: 'center' }}>View E-Ticket</Text>
             </TouchableOpacity>
             <TouchableOpacity
-              style={tw`bg-gray p-4 rounded-lg`}
+              style={[
+                tw`p-4 rounded-lg`,
+                { backgroundColor: colors.gray }
+              ]}
               onPress={handleGoHome}
             >
-              <Text style={tw`text-center`}>Go to Home</Text>
+              <Text style={{ color: colors.text, textAlign: 'center' }}>Go to Home</Text>
             </TouchableOpacity>
           </View>
         </View>
