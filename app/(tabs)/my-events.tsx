@@ -18,7 +18,6 @@ import { useTheme } from "@/context/ThemeContext";
 import { Registration, DisplayEvent } from "@/types/event";
 import { dummyImage } from "@/constants/statics";
 
-
 const MyEvents = observer(() => {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("upcoming");
