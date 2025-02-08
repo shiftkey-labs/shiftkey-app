@@ -54,12 +54,10 @@ const EventAttendance = () => {
 
   const fetchAttendees = async () => {
     try {
-      console.log("eventId", eventId);
 
       const response = await server.get(
         `/registration/event/${eventId}/attendees`
       );
-      console.log("response", response.data.attendees);
 
       setAttendees(response.data.attendees);
     } catch (error) {
@@ -90,7 +88,6 @@ const EventAttendance = () => {
   const handleBarCodeScanned = async ({ type, data }) => {
     setScanning(false);
     try {
-      console.log("qr,", data);
 
       markAttendance(data.split("~")[0]);
       Alert.alert("Success", "Attendance marked via QR code.");

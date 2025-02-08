@@ -1,7 +1,7 @@
 import tw from "@/app/styles/tailwind";
 import { Link, useRouter } from "expo-router";
 import React, { useState } from "react";
-import { View, Text, ScrollView, Pressable, RefreshControl } from "react-native";
+import { View, Text, ScrollView, Pressable, RefreshControl, Alert } from "react-native";
 import EventCard from "./home/EventCard";
 import BigBoyCard from "./home/BigBoyCard";
 import { useTheme } from "@/context/ThemeContext";
@@ -13,6 +13,7 @@ interface VolunteerEvent {
   startDate?: string;
   category?: string;
   images?: ImageType[];
+  registration?: boolean;
 }
 
 interface VolunteerEventsListProps {
@@ -84,7 +85,7 @@ const VolunteerEventsList: React.FC<VolunteerEventsListProps> = ({ events, onRef
               date={event.startDate || "No Date"}
               style={"w-full my-2"}
               images={event.images?.length ? event.images : [dummyImage]}
-              onPressShow={() => handlePressEvent(event.id)}
+              onPressShow={() => event.registration ? handlePressEvent(event.id) : Alert.alert("Event is not active")}
               category={event.category || "Event"}
             />
           ))}

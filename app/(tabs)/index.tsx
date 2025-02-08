@@ -17,7 +17,7 @@ import state from "../state";
 import { initializeAuth, userState } from "../state/userState";
 import { useTheme } from "@/context/ThemeContext";
 import { Event } from "@/types/event";
-
+import { dummyImageUrl } from "@/constants/statics";
 const Home: React.FC = () => {
   const router = useRouter();
   const events = state.event;
@@ -26,7 +26,6 @@ const Home: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const { isDarkMode, colors, toggleTheme } = useTheme();
 
-  const dummyImageUrl = "https://shiftkeylabs.ca/wp-content/uploads/2022/12/Shiftkey-Labs-Logo-01-e1487284025704-1200x515-1.png";
 
   const handlePressEvent = async (eventId: string) => {
     try {

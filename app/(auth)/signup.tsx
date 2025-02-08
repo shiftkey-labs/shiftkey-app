@@ -168,9 +168,6 @@ const Signup = () => {
 
     setLoading(true);
     try {
-      console.log("Submitting signup with email:", email);
-      console.log("Form data:", formData);
-
       // Prepare data for backend
       const backendData = {
         email,
@@ -191,7 +188,6 @@ const Signup = () => {
       const response = await server.post(`/auth/signup`, backendData);
 
       if (response.status === 200) {
-        console.log("Signup response:", response.data);
         // Update userState with the full user details including the fields structure
         state.user.userState.set(response.data.user);
 
@@ -202,7 +198,6 @@ const Signup = () => {
         router.push("/"); // Navigate to the main app
       }
     } catch (error) {
-      console.error("Signup error:", error);
       Alert.alert(
         "Update Error",
         "There was an error updating your profile. Please try again."

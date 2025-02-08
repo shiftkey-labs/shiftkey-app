@@ -4,6 +4,7 @@ import { FontAwesome } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import tw from "@/app/styles/tailwind";
 import { useTheme } from "@/context/ThemeContext";
+import { dummyImageUrl } from "@/constants/statics";
 
 interface ImageType {
   id: string;
@@ -39,9 +40,6 @@ interface BigBoyCardProps {
   style?: any;
   isLoading?: boolean;
 }
-
-const dummyImageUrl =
-  "https://shiftkeylabs.ca/wp-content/uploads/2022/12/Shiftkey-Labs-Logo-01-e1487284025704-1200x515-1.png";
 
 const BigBoyCard: React.FC<BigBoyCardProps> = ({
   title,

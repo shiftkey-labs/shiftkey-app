@@ -16,25 +16,7 @@ import { FontAwesome } from "@expo/vector-icons";
 import state from "../state";
 import { addBooking } from "@/helpers/userHelpers";
 import { useTheme } from "@/context/ThemeContext";
-
-type Registration = {
-  id: string;
-  // add other registration fields as needed
-};
-
-type Event = {
-  id: string;
-  fields: {
-    eventName?: string;
-    location?: string;
-    startDate?: string;
-    eventDetails?: string;
-    volunteerCount?: number;
-    shiftsScheduled?: number;
-    staffShiftCount?: number;
-    images?: Array<{ url: string }>;
-  };
-};
+import { Event, Registration } from "@/types/event";
 
 const EventDetails = () => {
   const params = useLocalSearchParams();
@@ -46,10 +28,11 @@ const EventDetails = () => {
   const shiftsScheduled = currentEvent?.shiftsScheduled || 0;
   const [isEventRegistered, setIsEventRegistered] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [canTakeShift, setCanTakeShift] = useState(false);
   const user = state.user.userState.get();
   const userVolunteeredEvents: Event[] = state.volunteer.volunteerState.userVolunteeredEvents.get();
 
-  const userRegistrations: Registration[][] = state.registration.registrationState.userRegistrations.get();
+  const userRegistrations: Registration[] = state.registration.registrationState.userRegistrations.get();
 
   const { isDarkMode, colors } = useTheme();
 
@@ -58,8 +41,8 @@ const EventDetails = () => {
       setLoading(true);
       try {
         await state.event.fetchEventDetails(eventId);
-        await state.registration.fetchUserRegistrations(user.email || '');
-        if (user.email) {
+        if (user?.email) {
+          await state.registration.fetchUserRegistrations(user.email, "UPCOMING");
           await state.volunteer.fetchUserVolunteeredEvents(user.email);
         }
       } catch (error) {
@@ -69,15 +52,26 @@ const EventDetails = () => {
       }
     };
     fetchData();
-  }, [eventId]);
+  }, [eventId, user?.email]);
 
   useEffect(() => {
     const isRegistered = userRegistrations &&
-      userRegistrations[0] &&
-      Array.isArray(userRegistrations[0]) &&
-      userRegistrations[0].some((registration: Registration) => registration.id === curr?.id);
+      Array.isArray(userRegistrations) &&
+      userRegistrations.length > 0 &&
+      userRegistrations.some((registration: Registration) =>
+        registration?.eventId?.[0] === curr?.id
+      );
     setIsEventRegistered(!!isRegistered);
   }, [userRegistrations, curr]);
+
+  useEffect(() => {
+    const canTake = user?.role === "STAFF" &&
+      currentEvent?.staffShiftCount != null &&
+      currentEvent.staffShiftCount > shiftsScheduled &&
+      Array.isArray(userVolunteeredEvents) &&
+      !userVolunteeredEvents.some(event => event?.id === curr?.id);
+    setCanTakeShift(canTake);
+  }, [user?.role, currentEvent?.staffShiftCount, shiftsScheduled, userVolunteeredEvents, curr?.id]);
 
   if (loading) {
     return (
@@ -99,6 +93,7 @@ const EventDetails = () => {
     if (!user.id || !eventId) return;
     try {
       await state.registration.registerForEvent(user.id, eventId);
+      await state.registration.fetchUserRegistrations(user.email || '');
       setModalVisible(true);
     } catch (error) {
       Alert.alert("Error", "Failed to confirm registration.");
@@ -197,7 +192,7 @@ const EventDetails = () => {
                 >
                   <Text style={{ color: colors.white, textAlign: 'center' }}>View Ticket</Text>
                 </TouchableOpacity>
-              ) : (
+              ) : currentEvent?.registration && (
                 <TouchableOpacity
                   style={[
                     tw`p-4 rounded-lg flex-1 mr-2`,
@@ -208,24 +203,21 @@ const EventDetails = () => {
                   <Text style={{ color: colors.white, textAlign: 'center' }}>Register</Text>
                 </TouchableOpacity>
               )}
-              {user.role === "VOLUNTEER" &&
-                currentEvent?.staffShiftCount &&
-                currentEvent.staffShiftCount > shiftsScheduled &&
-                !userVolunteeredEvents.some(event => event.id === curr?.id) && (
-                  <TouchableOpacity
-                    style={[
-                      tw`p-4 rounded-lg flex-1 ml-2`,
-                      {
-                        backgroundColor: isDarkMode ? colors.lightGray : colors.white,
-                        borderWidth: 1,
-                        borderColor: colors.primary
-                      }
-                    ]}
-                    onPress={handleVolunteer}
-                  >
-                    <Text style={{ color: colors.primary, textAlign: 'center' }}>Book Shift</Text>
-                  </TouchableOpacity>
-                )}
+              {canTakeShift && (
+                <TouchableOpacity
+                  style={[
+                    tw`p-4 rounded-lg flex-1 ml-2`,
+                    {
+                      backgroundColor: isDarkMode ? colors.lightGray : colors.white,
+                      borderWidth: 1,
+                      borderColor: colors.primary
+                    }
+                  ]}
+                  onPress={handleVolunteer}
+                >
+                  <Text style={{ color: colors.primary, textAlign: 'center' }}>Book Shift</Text>
+                </TouchableOpacity>
+              )}
             </View>
           </View>
         </ScrollView>
