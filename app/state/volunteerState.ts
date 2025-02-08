@@ -16,13 +16,14 @@ const fetchUserVolunteeredEvents = async (uid: string) => {
   }
 };
 
-const volunteerForEvent = async (userId: string, eventId: string) => {
+const volunteerForEvent = async (userId: string, eventId: string, shifts: string) => {
   try {
     userState.role.set("VOLUNTEER");
 
     const response = await assignVolunteerToEvent({
       userId,
       eventId,
+      shifts,
     });
   } catch (error) {
     console.error("Failed to volunteer for event:", error);

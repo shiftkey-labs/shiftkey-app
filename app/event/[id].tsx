@@ -137,7 +137,7 @@ const EventDetails = () => {
     if (!user.id || !eventId) return;
     const shiftsScheduled = selectedShifts.join(", ");
     try {
-      await state.volunteer.volunteerForEvent(user.id, eventId);
+      await state.volunteer.volunteerForEvent(user.id, eventId, shiftsScheduled);
       setSelectedShifts([]);
       setShiftModalVisible(false);
       Alert.alert("Success", "You have successfully booked a shift", [
