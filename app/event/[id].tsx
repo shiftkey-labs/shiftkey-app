@@ -29,12 +29,35 @@ const EventDetails = () => {
   const [isEventRegistered, setIsEventRegistered] = useState(false);
   const [loading, setLoading] = useState(true);
   const [canTakeShift, setCanTakeShift] = useState(false);
+  const [shiftModalVisible, setShiftModalVisible] = useState(false);
+  const [selectedShifts, setSelectedShifts] = useState<string[]>([]);
   const user = state.user.userState.get();
   const userVolunteeredEvents: Event[] = state.volunteer.volunteerState.userVolunteeredEvents.get();
 
   const userRegistrations: Registration[] = state.registration.registrationState.userRegistrations.get();
 
   const { isDarkMode, colors } = useTheme();
+
+  const getDefaultShift = () => {
+    if (!currentEvent?.startDate || !currentEvent?.endDate) return [];
+
+    const startDate = new Date(currentEvent.startDate);
+    const endDate = new Date(currentEvent.endDate);
+
+    // If dates are invalid, return empty array
+    if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) return [];
+
+    // Format the time slot as "HH:MM AM/PM - HH:MM AM/PM"
+    const formatTime = (date: Date) => {
+      return date.toLocaleTimeString('en-US', {
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
+      });
+    };
+
+    return [`${formatTime(startDate)} - ${formatTime(endDate)}`];
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -112,8 +135,11 @@ const EventDetails = () => {
 
   const handleVolunteer = async () => {
     if (!user.id || !eventId) return;
+    const shiftsScheduled = selectedShifts.join(", ");
     try {
       await state.volunteer.volunteerForEvent(user.id, eventId);
+      setSelectedShifts([]);
+      setShiftModalVisible(false);
       Alert.alert("Success", "You have successfully booked a shift", [
         {
           text: "OK",
@@ -127,8 +153,21 @@ const EventDetails = () => {
       console.error("Failed to sign up as a volunteer:", error);
     }
   };
+
   const handleBack = () => {
     router.back();
+  };
+
+  const showShiftModal = () => {
+    setShiftModalVisible(true);
+  };
+
+  const toggleShiftSelection = (shift: string) => {
+    setSelectedShifts(prev =>
+      prev.includes(shift)
+        ? prev.filter(s => s !== shift)
+        : [...prev, shift]
+    );
   };
 
   return (
@@ -213,7 +252,7 @@ const EventDetails = () => {
                       borderColor: colors.primary
                     }
                   ]}
-                  onPress={handleVolunteer}
+                  onPress={showShiftModal}
                 >
                   <Text style={{ color: colors.primary, textAlign: 'center' }}>Book Shift</Text>
                 </TouchableOpacity>
@@ -264,6 +303,85 @@ const EventDetails = () => {
             </TouchableOpacity>
           </View>
         </View>
+      </Modal>
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={shiftModalVisible}
+        onRequestClose={() => {
+          setShiftModalVisible(!shiftModalVisible);
+        }}
+      >
+        <TouchableOpacity
+          style={tw`flex-1 justify-center items-center bg-black bg-opacity-50`}
+          activeOpacity={1}
+          onPress={() => setShiftModalVisible(false)}
+        >
+          <TouchableOpacity
+            activeOpacity={1}
+            onPress={e => e.stopPropagation()}
+            style={[
+              tw`rounded-lg p-5 w-4/5`,
+              { backgroundColor: isDarkMode ? colors.lightGray : colors.white }
+            ]}
+          >
+            <Text style={{ color: colors.text, fontSize: 24, fontWeight: 'bold', marginBottom: 8 }}>
+              Book a Shift
+            </Text>
+            <Text style={{ color: colors.gray, marginBottom: 20 }}>
+              Please select a shift from the list below.
+            </Text>
+
+            <View style={tw`flex-col w-full`}>
+              {(currentEvent?.shiftsAvailable && currentEvent.shiftsAvailable.length > 0
+                ? currentEvent.shiftsAvailable
+                : getDefaultShift()
+              ).map((shift: string) => (
+                <TouchableOpacity
+                  key={shift}
+                  style={[
+                    tw`p-4 rounded-lg mb-2 flex-row justify-between items-center`,
+                    {
+                      backgroundColor: selectedShifts.includes(shift)
+                        ? colors.primary
+                        : isDarkMode ? colors.lightGray : colors.white,
+                      borderWidth: 1,
+                      borderColor: colors.primary
+                    }
+                  ]}
+                  onPress={() => toggleShiftSelection(shift)}
+                >
+                  <Text
+                    style={{
+                      color: selectedShifts.includes(shift) ? colors.white : colors.text,
+                      fontSize: 16
+                    }}
+                  >
+                    {shift}
+                  </Text>
+                  {selectedShifts.includes(shift) && (
+                    <FontAwesome name="check" size={16} color={colors.white} />
+                  )}
+                </TouchableOpacity>
+              ))}
+            </View>
+            <TouchableOpacity
+              style={[
+                tw`p-4 rounded-lg mt-4`,
+                {
+                  backgroundColor: selectedShifts.length > 0 ? colors.primary : colors.gray,
+                  opacity: selectedShifts.length > 0 ? 1 : 0.5
+                }
+              ]}
+              onPress={handleVolunteer}
+              disabled={selectedShifts.length === 0}
+            >
+              <Text style={{ color: colors.white, textAlign: 'center' }}>
+                Book {selectedShifts.length} Shift{selectedShifts.length !== 1 ? 's' : ''}
+              </Text>
+            </TouchableOpacity>
+          </TouchableOpacity>
+        </TouchableOpacity>
       </Modal>
     </SafeAreaView>
   );

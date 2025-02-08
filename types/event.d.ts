@@ -9,6 +9,7 @@ export type EventFields = {
   startDate?: string | null;
   volunteer?: any[] | null;
   volunteerShifts?: any[] | null;
+  shiftsAvailable?: string[];
   images?: any[] | null;
   uid: number | null;
   registration?: boolean;
