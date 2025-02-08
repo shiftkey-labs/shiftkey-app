@@ -40,8 +40,8 @@ export type EventFields = {
   volunteer?: any[] | null;
   volunteerShifts?: any[] | null;
   images?: any[] | null;
+  uid: number | null;
 };
-
 export type Event = {
   id: string;
   fields: EventFields;
