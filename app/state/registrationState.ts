@@ -8,8 +8,8 @@ const registrationState = observable({
 
 const fetchUserRegistrations = async (uid: string, type: string = "ALL") => {
   try {
-    const registrations = type === "UPCOMING" ? await getUserUpcomingRegistrations(uid) : await getUserRegistrations(uid);
-    registrationState.userRegistrations.set(Object.values(registrations));
+    const registrations = await getUserRegistrations(uid);
+    registrationState.userRegistrations.set(Object.values(registrations.records));
   } catch (error) {
     console.error("Failed to fetch user registrations:", error);
   }
