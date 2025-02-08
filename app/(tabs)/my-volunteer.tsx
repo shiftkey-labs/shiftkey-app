@@ -16,7 +16,6 @@ const Volunteer = observer(() => {
 
   const role = user.role;
 
-  console.log("role", user);
 
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -83,7 +82,7 @@ const Volunteer = observer(() => {
   if (role === "STAFF" || role === "VOLUNTEER") {
     return (
       <SafeAreaView style={[tw`flex-1`, { backgroundColor: colors.background }]}>
-        <VolunteerEventsList events={volunteerEvents} onRefresh={handleRefresh} />
+        <VolunteerEventsList events={volunteerEvents.sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime())} onRefresh={handleRefresh} />
       </SafeAreaView>
     );
   } else if (role === "STUDENT") {

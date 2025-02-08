@@ -39,7 +39,6 @@ const Login = () => {
   const requestOtp = async () => {
     setLoading(true);
     try {
-      console.log("email", email);
 
       const response = await server.post(`/auth/send-otp`, {
         email,
@@ -73,7 +72,6 @@ const Login = () => {
       });
       if (response.status === 200) {
         const userData = response.data.user;
-        console.log("Received userData:", userData);
 
         // Update userState with the user data 
         state.user.userState.set(userData);
@@ -89,11 +87,9 @@ const Login = () => {
 
         if (!hasRequiredFields) {
           // If basic required fields are missing, redirect to signup
-          console.log("Missing required fields, redirecting to signup");
           router.push("/(auth)/signup");
         } else {
           // If all required fields are present, redirect to home
-          console.log("All required fields present, redirecting to home");
           router.push("/");
         }
       }

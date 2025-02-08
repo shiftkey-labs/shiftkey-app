@@ -15,18 +15,20 @@ import state from "../state";
 import { fetchUserRegistrations } from "../state/registrationState";
 import { fetchEventDetails } from "../state/eventState";
 import { useTheme } from "@/context/ThemeContext";
+import { Registration, DisplayEvent } from "@/types/event";
+import { dummyImage } from "@/constants/statics";
+
 
 const MyEvents = observer(() => {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("upcoming");
   const user = state.user.userState.get();
   const events = state.event.eventState.get();
-  const userRegistrations =
-    state.registration.registrationState.userRegistrations.get();
+  const userRegistrations: Registration[] = state.registration.registrationState.userRegistrations.get();
   const { isDarkMode, colors } = useTheme();
 
-  const [upcomingEvents, setUpcomingEvents] = useState([]);
-  const [pastEvents, setPastEvents] = useState([]);
+  const [upcomingEvents, setUpcomingEvents] = useState<DisplayEvent[]>([]);
+  const [pastEvents, setPastEvents] = useState<DisplayEvent[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -36,16 +38,33 @@ const MyEvents = observer(() => {
   }, [user]);
 
   useEffect(() => {
-    if (userRegistrations.length > 0) {
-      console.log("userRegistrations", userRegistrations);
+    console.log("userRegistrations", userRegistrations);
+    if (userRegistrations && userRegistrations.length > 0) {
+      const upcoming = userRegistrations
+        .filter((registration) => {
+          const eventDate = registration.endTime?.[0];
+          return eventDate && new Date(eventDate) >= new Date();
+        })
+        .map((registration) => ({
+          id: registration.eventId[0],
+          eventName: registration.eventName[0],
+          location: registration.event?.[0] || "No location",
+          startDate: registration.endTime[0],
+          images: [dummyImage]
+        }));
 
-      const upcoming = userRegistrations[0].filter((event) => {
-        return new Date(event.startDate) >= new Date();
-      });
-
-      const past = userRegistrations[0].filter((event) => {
-        return new Date(event.startDate) < new Date();
-      });
+      const past = userRegistrations
+        .filter((registration) => {
+          const eventDate = registration.endTime?.[0];
+          return eventDate && new Date(eventDate) < new Date();
+        })
+        .map((registration) => ({
+          id: registration.eventId[0],
+          eventName: registration.eventName[0],
+          location: registration.event?.[0] || "No location",
+          startDate: registration.endTime[0],
+          images: [dummyImage]
+        }));
 
       setUpcomingEvents(upcoming);
       setPastEvents(past);
@@ -64,7 +83,6 @@ const MyEvents = observer(() => {
   };
 
   const handlePressEvent = async (eventId: string) => {
-    console.log("eventId", eventId);
 
     try {
       await fetchEventDetails(eventId);

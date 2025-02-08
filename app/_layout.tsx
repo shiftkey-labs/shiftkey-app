@@ -54,10 +54,8 @@ const RootLayoutNav = observer(() => {
     if (isInitializing) return; // Don't navigate while initializing
 
     if (!user.email) {
-      console.log("user", user.email);
       router.replace("/(auth)/login");
     } else if (!hasRequiredFields(user)) {
-      console.log("user", user);
       router.replace("/(auth)/signup");
     } else {
       router.replace("/(tabs)");
