@@ -11,10 +11,8 @@ export const createEvent = async (eventData: any) => {
 
 export const getEventById = async (eventId: string) => {
   try {
-    console.log("getEventById");
 
     const response = await server.get(`/event/read/${eventId}`);
-    console.log("response", response.data);
 
     return response.data;
   } catch (error) {
@@ -24,7 +22,6 @@ export const getEventById = async (eventId: string) => {
 
 export const getAllEvents = async () => {
   try {
-    console.log("getAllEvents");
 
     const response = await server.get("/event/read");
 

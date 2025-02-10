@@ -32,7 +32,7 @@ const EventAttendance = () => {
     }
   }, [eventId]);
 
-  console.log("attendees", attendees);
+
 
   useEffect(() => {
     (async () => {
@@ -54,12 +54,10 @@ const EventAttendance = () => {
 
   const fetchAttendees = async () => {
     try {
-      console.log("eventId", eventId);
 
       const response = await server.get(
         `/registration/event/${eventId}/attendees`
       );
-      console.log("response", response.data.attendees);
 
       setAttendees(response.data.attendees);
     } catch (error) {
@@ -78,7 +76,7 @@ const EventAttendance = () => {
       // Update the attendee's attendance status in the state
       setAttendees((prevAttendees) =>
         prevAttendees.map((attendee) =>
-          attendee.id === userId ? { ...attendee, attended: true } : attendee
+          attendee.id === userId ? { ...attendee, attended: !attendee.attended } : attendee
         )
       );
     } catch (error) {
@@ -90,8 +88,7 @@ const EventAttendance = () => {
   const handleBarCodeScanned = async ({ type, data }) => {
     setScanning(false);
     try {
-      console.log("qr,", data);
-      
+
       markAttendance(data.split("~")[0]);
       Alert.alert("Success", "Attendance marked via QR code.");
     } catch (error) {
@@ -119,24 +116,19 @@ const EventAttendance = () => {
   }
 
   return (
-    <SafeAreaView style={tw`flex-1 bg-white`}>
+    <SafeAreaView style={tw`flex-1 bg-background`}>
       <Stack.Screen
         options={{
-          title: "My home",
-          headerStyle: { backgroundColor: "#f4511e" },
-          headerTintColor: "#fff",
-          headerTitleStyle: {
-            fontWeight: "bold",
-          },
+          headerShown: false,
         }}
       />
-      <View style={tw`flex-row items-center justify-between p-4 bg-gray-200`}>
-        <TouchableOpacity onPress={() => router.back()}>
-          <AntDesign name="arrowleft" size={24} color="black" />
+      <View style={tw`flex-row items-center justify-between p-5 bg-white shadow-sm`}>
+        <TouchableOpacity onPress={() => router.back()} style={tw`p-2`}>
+          <AntDesign name="arrowleft" size={24} style={tw`text-primary`} />
         </TouchableOpacity>
-        <Text style={tw`text-lg font-bold`}>{eventTitle}</Text>
-        <TouchableOpacity onPress={openScanner}>
-          <AntDesign name="qrcode" size={24} color="black" />
+        <Text style={tw`text-xl font-bold`}>{eventTitle}</Text>
+        <TouchableOpacity onPress={openScanner} style={tw`p-2`}>
+          <AntDesign name="qrcode" size={24} style={tw`text-primary`} />
         </TouchableOpacity>
       </View>
 
@@ -144,18 +136,24 @@ const EventAttendance = () => {
       <FlatList
         data={attendees}
         keyExtractor={(item: any) => item.id.toString()}
+        contentContainerStyle={tw`p-4`}
         renderItem={({ item }) => (
           <TouchableOpacity
-            style={tw`flex-row justify-between items-center p-4 border-b`}
+            style={tw`flex-row justify-between items-center p-4 mb-3 bg-white rounded-lg shadow-sm`}
             onPress={() => markAttendance(item.id)}
           >
-            <Text>
-              {item.firstName} {item.lastName}
-            </Text>
+            <View>
+              <Text style={tw`text-lg font-semibold`}>
+                {item.firstName} {item.lastName}
+              </Text>
+              <Text style={tw`text-gray-500 text-sm mt-1`}>
+                {item.attended ? 'Present' : 'Not checked in'}
+              </Text>
+            </View>
             {item.attended ? (
-              <AntDesign name="checkcircle" size={24} color="green" />
+              <AntDesign name="checkcircle" size={24} style={tw`text-primary`} />
             ) : (
-              <AntDesign name="checkcircleo" size={24} color="gray" />
+              <AntDesign name="checkcircleo" size={24} style={tw`text-gray-400`} />
             )}
           </TouchableOpacity>
         )}
@@ -178,10 +176,10 @@ const EventAttendance = () => {
           >
             <View style={tw`flex-1 justify-end p-5`}>
               <TouchableOpacity
-                style={tw`bg-white p-4 rounded`}
+                style={tw`bg-primary p-4 rounded-lg mb-10`}
                 onPress={() => setScanning(false)}
               >
-                <Text style={tw`text-center`}>Close Scanner</Text>
+                <Text style={tw`text-white text-center font-semibold`}>Close Scanner</Text>
               </TouchableOpacity>
             </View>
           </CameraView>

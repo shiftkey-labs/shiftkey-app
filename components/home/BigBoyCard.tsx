@@ -1,10 +1,12 @@
 import React from "react";
-import { View, Text, Image, TouchableOpacity, ActivityIndicator, Pressable } from "react-native";
+import { View, Text, Image as RNImage, TouchableOpacity, ActivityIndicator, Pressable, StyleSheet } from "react-native";
 import { FontAwesome } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import tw from "@/app/styles/tailwind";
+import { useTheme } from "@/context/ThemeContext";
+import { dummyImageUrl } from "@/constants/statics";
 
-interface Image {
+interface ImageType {
   id: string;
   url: string;
   filename: string;
@@ -33,15 +35,11 @@ interface BigBoyCardProps {
   title: string;
   date: string;
   category: string;
-  images: Image[];
+  images: ImageType[];
   onPressShow: () => void;
-  onPressFavorite: () => void;
   style?: any;
   isLoading?: boolean;
 }
-
-const dummyImageUrl =
-  "https://shiftkeylabs.ca/wp-content/uploads/2022/12/Shiftkey-Labs-Logo-01-e1487284025704-1200x515-1.png";
 
 const BigBoyCard: React.FC<BigBoyCardProps> = ({
   title,
@@ -49,17 +47,19 @@ const BigBoyCard: React.FC<BigBoyCardProps> = ({
   category,
   images,
   onPressShow,
-  onPressFavorite,
   style,
   isLoading = false
 }) => {
-  // Extract the first image URL if available, otherwise use a dummy image URL
+  const { isDarkMode, colors } = useTheme();
   const imageUrl = images.length > 0 ? images[0].url : dummyImageUrl;
 
   return (
     <Pressable
       onPress={onPressShow}
-      style={tw`mr-4 bg-white rounded-lg overflow-hidden w-80 ${style}`}
+      style={[
+        tw`mr-4 rounded-lg overflow-hidden w-80 my-2 ${style}`,
+        { backgroundColor: isDarkMode ? colors.lightGray : colors.white },
+      ]}
       disabled={isLoading}
     >
       {isLoading ? (
@@ -68,11 +68,14 @@ const BigBoyCard: React.FC<BigBoyCardProps> = ({
         </View>
       ) : null}
       <View style={tw`relative w-full`}>
-        <Image source={{ uri: imageUrl }} style={tw`w-full h-48`} />
+        <RNImage source={{ uri: imageUrl }} style={tw`w-full h-48`} />
         <Pressable
-          style={tw`absolute top-2 left-2 bg-white rounded p-1`}
+          style={[
+            tw`absolute top-2 left-2 rounded p-1`,
+            { backgroundColor: isDarkMode ? colors.lightGray : colors.white }
+          ]}
         >
-          <Text style={tw`text-sm font-bold`}>{category}</Text>
+          <Text style={{ color: isDarkMode ? colors.text : colors.text }}>{category}</Text>
         </Pressable>
         {/* <TouchableOpacity
           style={tw`absolute top-2 right-2 bg-white p-1 rounded-full`}

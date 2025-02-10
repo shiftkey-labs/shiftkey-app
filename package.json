@@ -7,7 +7,15 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "test": "jest --watchAll"
+    "test": "jest --watchAll",
+    "start:dev": "cross-env NODE_ENV=dev expo start",
+    "start:prod": "cross-env NODE_ENV=prod expo start",
+    "web:dev": "cross-env NODE_ENV=dev expo start --web",
+    "web:prod": "cross-env NODE_ENV=prod expo start --web",
+    "ios:dev": "cross-env NODE_ENV=dev expo start --ios",
+    "ios:prod": "cross-env NODE_ENV=prod expo start --ios",
+    "android:dev": "cross-env NODE_ENV=dev expo start --android",
+    "android:prod": "cross-env NODE_ENV=prod expo start --android"
   },
   "jest": {
     "preset": "jest-expo"
@@ -22,6 +30,7 @@
     "axios": "^1.7.2",
     "dotenv": "^16.4.5",
     "expo": "~52.0.18",
+    "cross-env": "^7.0.3",
     "expo-camera": "~16.0.9",
     "expo-checkbox": "~4.0.0",
     "expo-font": "~13.0.1",

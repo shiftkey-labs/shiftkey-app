@@ -2,13 +2,12 @@ import React from "react";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome";
 import { Link, Tabs } from "expo-router";
 import { Pressable } from "react-native";
-
 import Colors from "@/constants/Colors";
 import { useColorScheme } from "@/components/useColorScheme";
 import { useClientOnlyValue } from "@/components/useClientOnlyValue";
 import Ionicons from "@expo/vector-icons/Ionicons";
-
 import state from "../state";
+import { useTheme } from "@/context/ThemeContext";
 
 // You can explore the built-in icon families and icons on the web at https://icons.expo.fyi/
 function TabBarIcon(props: {
@@ -19,20 +18,21 @@ function TabBarIcon(props: {
 }
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
+  const { isDarkMode, colors } = useTheme();
   const user = state.user.userState.get();
   const role = user.role;
 
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors["light"].primary,
-        tabBarInactiveTintColor: Colors["light"].text,
+        tabBarActiveTintColor: colors.primary,
+        tabBarInactiveTintColor: colors.text,
         headerShown: false,
         tabBarStyle: {
           height: 90,
           paddingVertical: 10,
-          backgroundColor: "#fff",
+          backgroundColor: colors.background,
+          borderTopColor: colors.lightGray,
         },
         tabBarShowLabel: false,
       }}
@@ -64,7 +64,7 @@ export default function TabLayout() {
         name="my-events"
         options={{
           title: "My Events",
-          tabBarIcon: ({ color, size }) => (
+          tabBarIcon: ({ color }) => (
             <Ionicons name="calendar-outline" color={color} size={24} />
           ),
         }}
@@ -73,7 +73,7 @@ export default function TabLayout() {
         name="my-volunteer"
         options={{
           title: "Volunteer",
-          tabBarIcon: ({ color, size }) => (
+          tabBarIcon: ({ color }) => (
             <Ionicons name="people-outline" color={color} size={24} />
           ),
         }}
@@ -82,7 +82,7 @@ export default function TabLayout() {
         name="profile"
         options={{
           title: "Profile",
-          tabBarIcon: ({ color, size }) => (
+          tabBarIcon: ({ color }) => (
             <Ionicons name="settings-outline" color={color} size={24} />
           ),
         }}

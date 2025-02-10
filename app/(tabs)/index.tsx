@@ -15,66 +15,17 @@ import { useRouter } from "expo-router";
 import { FontAwesome5 } from "@expo/vector-icons";
 import state from "../state";
 import { initializeAuth, userState } from "../state/userState";
-
-// Type definitions
-type EventFields = {
-  category1?: string[];
-  category2?: string[];
-  endDate?: string | null;
-  eventDetails?: string | null;
-  eventName?: string | null;
-  location?: string | null;
-  manualTotalAttendees?: number | null;
-  manualTotalInternationalStudents?: number | null;
-  manualTotalNonDalFCSStudents?: number | null;
-  manualTotalNonStudentsCommunity?: number | null;
-  manualTotalNonStudentsFacultyStaff?: number | null;
-  manualTotalNonStudentsFederalGov?: number | null;
-  manualTotalNonStudentsMunicipalGov?: number | null;
-  manualTotalNonStudentsNonProfit?: number | null;
-  manualTotalNonStudentsPrivateSector?: number | null;
-  manualTotalNonStudentsProvincialGov?: number | null;
-  manualTotalNovaScotianStudents?: number | null;
-  manualTotalOutOfProvinceStudents?: number | null;
-  manualTotalPOC?: number | null;
-  manualTotalWomenNonBinary?: number | null;
-  manualTotalYouthP12?: number | null;
-  notes?: string | null;
-  startDate?: string | null;
-  totalAttendees?: number | null;
-  totalInternationalStudents?: number | null;
-  totalNonDalFCSStudents?: number | null;
-  totalNonStudentsCommunity?: number | null;
-  totalNonStudentsFacultyStaff?: number | null;
-  totalNonStudentsFederalGov?: number | null;
-  totalNonStudentsMunicipalGov?: number | null;
-  totalNonStudentsNonProfit?: number | null;
-  totalNonStudentsPrivateSector?: number | null;
-  totalNonStudentsProvincialGov?: number | null;
-  totalNovaScotianStudents?: number | null;
-  totalOutOfProvinceStudents?: number | null;
-  totalPOC?: number | null;
-  totalWomenNonBinary?: number | null;
-  totalYouthP12?: number | null;
-  volunteer?: any[] | null;
-  volunteerShifts?: any[] | null;
-  images?: any[] | null;
-  uid: number | null;
-};
-
-type Event = {
-  id: string;
-  fields: EventFields;
-};
-
+import { useTheme } from "@/context/ThemeContext";
+import { Event } from "@/types/event";
+import { dummyImageUrl } from "@/constants/statics";
 const Home: React.FC = () => {
   const router = useRouter();
   const events = state.event;
   const user = state.user.userState.get();
   const [eventsList, setEventsList] = useState<Event[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const { isDarkMode, colors, toggleTheme } = useTheme();
 
-  const dummyImageUrl = "https://example.com/dummy-image.png";
 
   const handlePressEvent = async (eventId: string) => {
     try {
@@ -110,22 +61,34 @@ const Home: React.FC = () => {
 
   if (isLoading) {
     return (
-      <SafeAreaView style={tw`flex-1 bg-background justify-center items-center`}>
-        <ActivityIndicator size="large" color="#0000ff" />
+      <SafeAreaView style={[tw`flex-1 justify-center items-center`, { backgroundColor: colors.background }]}>
+        <ActivityIndicator size="large" color={isDarkMode ? colors.text : colors.primary} />
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={tw`flex-1 bg-background`}>
-      <ScrollView style={tw`flex-1 bg-background p-5`}>
+    <SafeAreaView style={[tw`flex-1`, { backgroundColor: colors.background }]}>
+      <ScrollView style={[tw`flex-1 p-5`, { backgroundColor: colors.background }]}>
         <View style={tw`flex-row pt-5 justify-between items-center`}>
-          <Text style={tw`text-4xl font-bold`}>Hi {user.firstName }</Text>
-          <TouchableOpacity onPress={() => console.log("Profile pressed")}>
-            <FontAwesome5 name="moon" size={24} color="black" />
+          <Text style={{ color: colors.text, fontSize: 36, fontWeight: 'bold' }}>
+            Hi {user.firstName}
+          </Text>
+          <TouchableOpacity
+            onPress={toggleTheme}
+            style={[
+              tw`p-2 rounded-full`,
+              { backgroundColor: isDarkMode ? colors.lightGray : colors.lightGray }
+            ]}
+          >
+            <FontAwesome5
+              name={isDarkMode ? "sun" : "moon"}
+              size={24}
+              color={colors.text}
+            />
           </TouchableOpacity>
         </View>
-        <Text style={tw`text-lg text-gray-500`}>
+        <Text style={{ color: colors.gray, fontSize: 18, marginTop: 4 }}>
           Let's find you something to do
         </Text>
 
@@ -150,9 +113,6 @@ const Home: React.FC = () => {
                   : [{ url: dummyImageUrl }]
               }
               onPressShow={() => handlePressEvent(event.id)}
-              onPressFavorite={() =>
-                console.log("Favorite pressed for event:", event.id)
-              }
             />
           ))}
         </ScrollView>

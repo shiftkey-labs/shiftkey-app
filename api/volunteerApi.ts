@@ -12,6 +12,7 @@ export const createVolunteer = async (userId: string) => {
 export const assignVolunteerToEvent = async (assignmentData: {
   userId: string;
   eventId: string;
+  shifts: string;
 }) => {
   try {
     const response = await server.post("/volunteer/assign", assignmentData);

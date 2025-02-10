@@ -7,6 +7,7 @@ import state from "../state";
 import VolunteerEventsList from "@/components/VolunteerEventsList";
 import server from "@/config/axios";
 import { fetchUserVolunteeredEvents } from "../state/volunteerState";
+import { useTheme } from "@/context/ThemeContext";
 
 const Volunteer = observer(() => {
   const user = state.user.userState.get();
@@ -15,14 +16,15 @@ const Volunteer = observer(() => {
 
   const role = user.role;
 
-  console.log("role", user);
 
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const { isDarkMode, colors } = useTheme();
+
   useEffect(() => {
     const loadVolunteerEvents = async () => {
-      if (role === "VOLUNTEER" && user.email) {
+      if (user.email) {
         try {
           setIsLoading(true);
           await fetchUserVolunteeredEvents(user.email);
@@ -37,7 +39,20 @@ const Volunteer = observer(() => {
     };
 
     loadVolunteerEvents();
-  }, [role, user.email]);
+  }, [user.email]);
+
+  const handleRefresh = async () => {
+    if (user.email) {
+      try {
+        setIsLoading(true);
+        await fetchUserVolunteeredEvents(user.email);
+      } catch (error) {
+        console.error("Failed to refresh volunteer events:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+  };
 
   const handleSubmitVolunteerRequest = async () => {
     try {
@@ -58,45 +73,35 @@ const Volunteer = observer(() => {
 
   if (isLoading) {
     return (
-      <SafeAreaView style={tw`flex-1 bg-background justify-center items-center`}>
-        <ActivityIndicator size="large" color="#0000ff" />
+      <SafeAreaView style={[tw`flex-1 justify-center items-center`, { backgroundColor: colors.background }]}>
+        <ActivityIndicator size="large" color={isDarkMode ? colors.text : colors.primary} />
       </SafeAreaView>
     );
   }
 
-  if (role === "VOLUNTEER") {
+  if (role === "STAFF" || role === "VOLUNTEER") {
     return (
-      <SafeAreaView style={tw`flex-1 bg-background`}>
-        <VolunteerEventsList events={volunteerEvents} />
+      <SafeAreaView style={[tw`flex-1`, { backgroundColor: colors.background }]}>
+        <VolunteerEventsList events={volunteerEvents.sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime())} onRefresh={handleRefresh} />
       </SafeAreaView>
     );
   } else if (role === "STUDENT") {
     return (
-      <SafeAreaView style={tw`flex-1 bg-background`}>
+      <SafeAreaView style={[tw`flex-1`, { backgroundColor: colors.background }]}>
         <View style={tw`p-5`}>
-          <Text style={tw`text-3xl font-bold mb-5`}>Volunteer Signup Form</Text>
-          <Text style={tw`text-lg mb-5`}>
-            By clicking submit you agree to the terms and conditions of
-            volunteering with ShiftKey
+          <Text style={{ color: colors.text, fontSize: 30, fontWeight: 'bold', marginBottom: 20 }}>
+            Volunteer Dashboard
           </Text>
-          <Pressable
-            style={tw`bg-primary p-4 rounded-lg`}
-            onPress={handleSubmitVolunteerRequest}
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? (
-              <ActivityIndicator color="white" />
-            ) : (
-              <Text style={tw`text-white text-center`}>Submit</Text>
-            )}
-          </Pressable>
+          <Text style={{ color: colors.text, fontSize: 18, marginBottom: 20 }}>
+            This is where you will be able to view your shifts when you are selected as a volunteer.
+          </Text>
         </View>
       </SafeAreaView>
     );
   } else {
     return (
-      <View style={tw`flex-1 items-center justify-center`}>
-        <Text style={tw`text-xl`}>Invalid role</Text>
+      <View style={[tw`flex-1 items-center justify-center`, { backgroundColor: colors.background }]}>
+        <Text style={{ color: colors.text, fontSize: 20 }}>Invalid role</Text>
       </View>
     );
   }

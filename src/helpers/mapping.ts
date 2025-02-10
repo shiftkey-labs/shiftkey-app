@@ -1,6 +1,3 @@
-// Add proper type definitions
-import { FieldSet } from '@airtable/blocks/models';
-
 interface FieldMapping {
     [key: string]: string;
 }

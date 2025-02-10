@@ -4,7 +4,7 @@ export const PROD_URL = process.env.BACKEND_URL;
 
 
 const server = axios.create({
-  baseURL: "",
+  baseURL: "http://localhost:3000/",
   headers: {
     "Content-Type": "application/json",
   },

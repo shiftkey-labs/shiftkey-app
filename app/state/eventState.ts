@@ -17,10 +17,8 @@ const initializeEvents = async () => {
 
 const fetchEventDetails = async (id: string) => {
   try {
-    console.log("fetching event details for id:", id);
 
     const event = await getEventById(id);
-    console.log("fetched event details:", event);
 
     eventState.currentEvent.set(event);
     return event;

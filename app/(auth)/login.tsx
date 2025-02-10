@@ -7,7 +7,7 @@ import axios from "axios";
 import Toast from "react-native-toast-message";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import state from "../state";
-import server, { DEV_URL } from "@/config/axios";
+import server from "@/config/axios";
 import { SafeAreaView } from "react-native";
 
 const Login = () => {
@@ -39,7 +39,6 @@ const Login = () => {
   const requestOtp = async () => {
     setLoading(true);
     try {
-      console.log("email", email);
 
       const response = await server.post(`/auth/send-otp`, {
         email,
@@ -73,7 +72,6 @@ const Login = () => {
       });
       if (response.status === 200) {
         const userData = response.data.user;
-        console.log("Received userData:", userData);
 
         // Update userState with the user data 
         state.user.userState.set(userData);
@@ -89,11 +87,9 @@ const Login = () => {
 
         if (!hasRequiredFields) {
           // If basic required fields are missing, redirect to signup
-          console.log("Missing required fields, redirecting to signup");
           router.push("/(auth)/signup");
         } else {
           // If all required fields are present, redirect to home
-          console.log("All required fields present, redirecting to home");
           router.push("/");
         }
       }
@@ -164,10 +160,28 @@ const Login = () => {
               keyboardType="email-address"
               autoCapitalize="none"
               editable={!loading}
+              placeholderTextColor="#666666"
             />
           )}
           {otpSent && (
             <View style={tw`mb-5`}>
+              <View style={tw`flex-row items-center mb-5`}>
+                <TextInput
+                  style={tw`flex-1 border border-gray p-5 rounded-lg bg-gray-100`}
+                  value={email.toLowerCase()}
+                  editable={false}
+                  placeholderTextColor="#666666"
+                />
+                <Pressable
+                  onPress={() => {
+                    setOtpSent(false);
+                    setOtp(["", "", "", "", "", ""]);
+                  }}
+                  style={tw`ml-2 p-3`}
+                >
+                  <Text style={tw`text-primary font-poppinsBold`}>Edit</Text>
+                </Pressable>
+              </View>
               <Text style={tw`text-center mb-3 text-gray-600 font-poppins`}>Enter the 6-digit code we sent to your email</Text>
               <View style={tw`flex-row justify-between px-2`}>
                 {otp.map((digit, index) => (

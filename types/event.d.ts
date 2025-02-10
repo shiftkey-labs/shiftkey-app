@@ -5,43 +5,18 @@ export type EventFields = {
   eventDetails?: string | null;
   eventName?: string | null;
   location?: string | null;
-  manualTotalAttendees?: number | null;
-  manualTotalInternationalStudents?: number | null;
-  manualTotalNonDalFCSStudents?: number | null;
-  manualTotalNonStudentsCommunity?: number | null;
-  manualTotalNonStudentsFacultyStaff?: number | null;
-  manualTotalNonStudentsFederalGov?: number | null;
-  manualTotalNonStudentsMunicipalGov?: number | null;
-  manualTotalNonStudentsNonProfit?: number | null;
-  manualTotalNonStudentsPrivateSector?: number | null;
-  manualTotalNonStudentsProvincialGov?: number | null;
-  manualTotalNovaScotianStudents?: number | null;
-  manualTotalOutOfProvinceStudents?: number | null;
-  manualTotalPOC?: number | null;
-  manualTotalWomenNonBinary?: number | null;
-  manualTotalYouthP12?: number | null;
   notes?: string | null;
   startDate?: string | null;
-  totalAttendees?: number | null;
-  totalInternationalStudents?: number | null;
-  totalNonDalFCSStudents?: number | null;
-  totalNonStudentsCommunity?: number | null;
-  totalNonStudentsFacultyStaff?: number | null;
-  totalNonStudentsFederalGov?: number | null;
-  totalNonStudentsMunicipalGov?: number | null;
-  totalNonStudentsNonProfit?: number | null;
-  totalNonStudentsPrivateSector?: number | null;
-  totalNonStudentsProvincialGov?: number | null;
-  totalNovaScotianStudents?: number | null;
-  totalOutOfProvinceStudents?: number | null;
-  totalPOC?: number | null;
-  totalWomenNonBinary?: number | null;
-  totalYouthP12?: number | null;
   volunteer?: any[] | null;
   volunteerShifts?: any[] | null;
+  shiftsAvailable?: string[];
   images?: any[] | null;
+  uid: number | null;
+  registration?: boolean;
+  volunteerCount?: number;
+  shiftsScheduled?: number;
+  staffShiftCount?: number;
 };
-
 export type Event = {
   id: string;
   fields: EventFields;
@@ -76,6 +51,47 @@ export interface EventCardProps {
   title: string;
   location: string;
   date: string;
-  images: Image[];
+  images?: Image[];
   onPress: () => void;
+  isLoading?: boolean;
 }
+
+
+export type Registration = {
+  id: string;
+  attendance: boolean | null;
+  email: string[];
+  endTime: string[];
+  event: string[];
+  eventId: string[];
+  eventName: string[];
+  status: string | null;
+  uid: number;
+  user: string[];
+  userId: string[];
+  userName: string[];
+  registration: string[];
+};
+
+export type Event = {
+  id: string;
+  fields: {
+    eventName?: string;
+    location?: string;
+    startDate?: string;
+    eventDetails?: string;
+    volunteerCount?: number;
+    shiftsScheduled?: number;
+    staffShiftCount?: number;
+    images?: Array<{ url: string }>;
+    registration?: boolean;
+  };
+};
+
+export type DisplayEvent = {
+  id: string;
+  eventName: string;
+  location: string;
+  startDate: string;
+  images?: Image[];
+};

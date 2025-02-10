@@ -19,7 +19,7 @@ import tw from "../styles/tailwind";
 import axios from "axios";
 import state from "../state";
 import { signupForm } from "@/constants/signupForm";
-import { DEV_URL } from "@/config/axios";
+import server, { DEV_URL } from "@/config/axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 type SignupFormType = typeof signupForm;
@@ -103,19 +103,28 @@ const Signup = () => {
   }, [user]);
 
   // Define all possible required fields from backend schema
-  const backendRequiredFields = [
-    'firstName',
-    'lastName',
-    'pronouns',
-    'isStudent',
-    'currentDegree',
-    'school',
-  ];
+  const getRequiredFields = () => {
+    const baseRequiredFields = [
+      'firstName',
+      'lastName',
+      'pronouns',
+      'isStudent',
+    ];
 
-  // Get the fields that are both required by backend and currently showing on screen
+    // Add additional required fields based on student status
+    if (formData.isStudent === "Yes") {
+      return [...baseRequiredFields, 'currentDegree', 'faculty', 'school'];
+    } else if (formData.isStudent === "No") {
+      return [...baseRequiredFields, 'organization', 'occupation'];
+    }
+
+    return baseRequiredFields;
+  };
+
+  // Get the fields that are both required and currently showing on screen
   const fieldsToValidate = missingFields
     .map(field => field.key)
-    .filter(key => backendRequiredFields.includes(key));
+    .filter(key => getRequiredFields().includes(key));
 
   // Validation helper functions
   const isFieldInvalid = (key: string) => {
@@ -159,9 +168,6 @@ const Signup = () => {
 
     setLoading(true);
     try {
-      console.log("Submitting signup with email:", email);
-      console.log("Form data:", formData);
-
       // Prepare data for backend
       const backendData = {
         email,
@@ -171,12 +177,17 @@ const Signup = () => {
         selfIdentification: Array.isArray(formData.selfIdentification)
           ? formData.selfIdentification
           : [formData.selfIdentification].filter(Boolean),
+        organization: Array.isArray(formData.organization)
+          ? formData.organization
+          : [formData.organization].filter(Boolean),
+        faculty: formData.faculty ? formData.faculty : null,
+        school: formData.school ? formData.school : null,
+        currentDegree: formData.currentDegree ? formData.currentDegree : null,
       };
 
-      const response = await axios.post(`${DEV_URL}/auth/signup`, backendData);
+      const response = await server.post(`/auth/signup`, backendData);
 
       if (response.status === 200) {
-        console.log("Signup response:", response.data);
         // Update userState with the full user details including the fields structure
         state.user.userState.set(response.data.user);
 
@@ -187,7 +198,6 @@ const Signup = () => {
         router.push("/"); // Navigate to the main app
       }
     } catch (error) {
-      console.error("Signup error:", error);
       Alert.alert(
         "Update Error",
         "There was an error updating your profile. Please try again."
@@ -197,105 +207,138 @@ const Signup = () => {
     }
   };
 
+  // Add this helper function to determine if a field should be shown
+  const shouldShowField = (fieldKey: string) => {
+    // Always show these fields
+    const alwaysShowFields = ['firstName', 'lastName', 'pronouns', 'selfIdentification', 'isStudent'];
+    if (alwaysShowFields.includes(fieldKey)) return true;
+
+    // Show student-specific fields only if isStudent is "Yes"
+    const studentFields = ['currentDegree', 'faculty', 'school'];
+    if (studentFields.includes(fieldKey)) {
+      return formData.isStudent === "Yes";
+    }
+
+    // Show non-student fields only if isStudent is "No"
+    const nonStudentFields = ['organization', 'occupation'];
+    if (nonStudentFields.includes(fieldKey)) {
+      return formData.isStudent === "No";
+    }
+
+    return true;
+  };
+
   return (
-    <SafeAreaView style={tw`flex-1 bg-white`}>
-      <ScrollView style={tw`flex-1 p-5 bg-white`}>
-        <Text style={tw`text-3xl font-poppinsBold text-center mb-5`}>
-          Complete Your Profile
-        </Text>
-        {missingFields.map((field) => (
-          <View key={field.key}>
-            <Text style={tw`text-lg font-poppinsBold mb-2`}>
-              {field.label}
-              {isFieldInvalid(field.key) && (
-                <Text style={tw`text-red-500 text-sm ml-1 font-poppins`}> *Required</Text>
-              )}
-            </Text>
-            {field.type === "text" || field.type === "numeric" ? (
-              <TextInput
-                style={[
-                  tw`border border-gray p-5 rounded-lg mb-5 font-poppins`,
-                  isFieldInvalid(field.key) && tw`border-red-500`,
-                ]}
-                placeholder={field.placeholder}
-                keyboardType={field.type === "numeric" ? "numeric" : "default"}
-                value={formData[field.key]}
-                onChangeText={(value) => handleInputChange(field.key, value)}
-                onBlur={() => setTouchedFields(prev => ({ ...prev, [field.key]: true }))}
-                editable={!loading}
-              />
-            ) : field.type === "multi-select" ? (
-              <View style={[
-                tw`mb-5`,
-                isFieldInvalid(field.key) && tw`border-red-500`,
-              ]}>
-                {field.options?.map((option) => (
-                  <View key={option.value} style={tw`flex-row items-center mb-2`}>
-                    <Checkbox
-                      value={(formData[field.key] as string[])?.includes(option.value)}
-                      onValueChange={(checked) => {
-                        const currentValues = (formData[field.key] as string[]) || [];
-                        const newValues = checked
-                          ? [...currentValues, option.value]
-                          : currentValues.filter((v) => v !== option.value);
-                        handleInputChange(field.key, newValues);
-                      }}
-                      style={tw`mr-2`}
-                      disabled={loading}
-                    />
-                    <Text style={tw`text-base font-poppins`}>{option.label}</Text>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      style={tw`flex-1`}
+    >
+      <SafeAreaView style={tw`flex-1 bg-white`}>
+        <ScrollView
+          style={tw`flex-1`}
+          contentContainerStyle={tw`p-5`}
+          keyboardShouldPersistTaps="handled"
+        >
+          <Text style={tw`text-3xl font-poppinsBold text-center mb-5`}>
+            Complete Your Profile
+          </Text>
+          {missingFields
+            .filter(field => shouldShowField(field.key)) // Filter fields based on conditions
+            .map((field) => (
+              <View key={field.key}>
+                <Text style={tw`text-lg font-poppinsBold mb-2`}>
+                  {field.label}
+                  {isFieldInvalid(field.key) && (
+                    <Text style={tw`text-red-500 text-sm ml-1 font-poppins`}> *Required</Text>
+                  )}
+                </Text>
+                {field.type === "text" || field.type === "numeric" ? (
+                  <TextInput
+                    style={[
+                      tw`border border-gray p-5 rounded-lg mb-5 font-poppins`,
+                      isFieldInvalid(field.key) && tw`border-red-500`,
+                    ]}
+                    placeholder={field.placeholder}
+                    keyboardType={field.type === "numeric" ? "numeric" : "default"}
+                    value={formData[field.key]}
+                    onChangeText={(value) => handleInputChange(field.key, value)}
+                    onBlur={() => setTouchedFields(prev => ({ ...prev, [field.key]: true }))}
+                    editable={!loading}
+                    placeholderTextColor="#666666"
+                  />
+                ) : field.type === "multi-select" ? (
+                  <View style={[
+                    tw`mb-5`,
+                    isFieldInvalid(field.key) && tw`border-red-500`,
+                  ]}>
+                    {field.options?.map((option) => (
+                      <View key={option.value} style={tw`flex-row items-center mb-2`}>
+                        <Checkbox
+                          value={(formData[field.key] as string[])?.includes(option.value)}
+                          onValueChange={(checked) => {
+                            const currentValues = (formData[field.key] as string[]) || [];
+                            const newValues = checked
+                              ? [...currentValues, option.value]
+                              : currentValues.filter((v) => v !== option.value);
+                            handleInputChange(field.key, newValues);
+                          }}
+                          style={tw`mr-2`}
+                          disabled={loading}
+                        />
+                        <Text style={tw`text-base font-poppins`}>{option.label}</Text>
+                      </View>
+                    ))}
                   </View>
-                ))}
+                ) : (
+                  <Dropdown
+                    style={[
+                      tw`border border-gray p-5 rounded-lg mb-5 bg-white min-h-[60px]`,
+                      isFieldInvalid(field.key) && tw`border-red-500`,
+                    ]}
+                    data={field.options || []}
+                    labelField="label"
+                    valueField="value"
+                    placeholder="Select an option"
+                    value={formData[field.key]}
+                    onChange={(item: any) => handleInputChange(field.key, item.value)}
+                    onBlur={() => setTouchedFields(prev => ({ ...prev, [field.key]: true }))}
+                    placeholderStyle={tw`font-poppins text-gray-500`}
+                    selectedTextStyle={tw`font-poppins text-black`}
+                    containerStyle={tw`rounded-lg border-0 shadow-none`}
+                    activeColor={tw.color('primary/10')}
+                    itemTextStyle={tw`font-poppins text-black`}
+                    itemContainerStyle={tw`border-b border-lightGray`}
+                    maxHeight={300}
+                    disable={loading}
+                  />
+                )}
               </View>
-            ) : (
-              <Dropdown
-                style={[
-                  tw`border border-gray p-5 rounded-lg mb-5 bg-white min-h-[60px]`,
-                  isFieldInvalid(field.key) && tw`border-red-500`,
-                ]}
-                data={field.options || []}
-                labelField="label"
-                valueField="value"
-                placeholder="Select an option"
-                value={formData[field.key]}
-                onChange={(item: any) => handleInputChange(field.key, item.value)}
-                onBlur={() => setTouchedFields(prev => ({ ...prev, [field.key]: true }))}
-                placeholderStyle={tw`font-poppins text-gray-500`}
-                selectedTextStyle={tw`font-poppins text-black`}
-                containerStyle={tw`rounded-lg border-0 shadow-none`}
-                activeColor={tw.color('primary/10')}
-                itemTextStyle={tw`font-poppins text-black`}
-                itemContainerStyle={tw`border-b border-lightGray`}
-                maxHeight={300}
-                disable={loading}
-              />
+            ))}
+          <>
+            {hasSubmitAttempt && hasEmptyRequiredFields() && (
+              <Text style={tw`text-red-500 text-center mt-5 mb-2 font-poppins`}>
+                Please fill in all required fields
+              </Text>
             )}
-          </View>
-        ))}
-        <>
-          {hasSubmitAttempt && hasEmptyRequiredFields() && (
-            <Text style={tw`text-red-500 text-center mt-5 mb-2 font-poppins`}>
-              Please fill in all required fields
-            </Text>
-          )}
-          <Pressable
-            style={[
-              tw`p-4 rounded-lg mb-10 flex-row justify-center items-center`,
-              hasEmptyRequiredFields() ? tw`bg-primary/50` : tw`bg-primary`
-            ]}
-            onPress={handleSignup}
-            disabled={loading || hasEmptyRequiredFields()}
-          >
-            {loading ? (
-              <ActivityIndicator color="white" style={tw`mr-2`} />
-            ) : null}
-            <Text style={tw`text-white text-center font-poppinsBold`}>
-              {loading ? "Updating..." : "Update Profile"}
-            </Text>
-          </Pressable>
-        </>
-      </ScrollView>
-    </SafeAreaView>
+            <Pressable
+              style={[
+                tw`p-4 rounded-lg mb-10 flex-row justify-center items-center`,
+                hasEmptyRequiredFields() ? tw`bg-primary/50` : tw`bg-primary`
+              ]}
+              onPress={handleSignup}
+              disabled={loading || hasEmptyRequiredFields()}
+            >
+              {loading ? (
+                <ActivityIndicator color="white" style={tw`mr-2`} />
+              ) : null}
+              <Text style={tw`text-white text-center font-poppinsBold`}>
+                {loading ? "Updating..." : "Update Profile"}
+              </Text>
+            </Pressable>
+          </>
+        </ScrollView>
+      </SafeAreaView>
+    </KeyboardAvoidingView>
   );
 };
 

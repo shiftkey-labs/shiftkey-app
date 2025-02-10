@@ -2,7 +2,7 @@
   "expo": {
     "name": "shiftkey-app",
     "slug": "shiftkey-app",
-    "version": "0.0.4",
+    "version": "0.0.7",
     "orientation": "portrait",
     "icon": "./assets/images/adaptive-icon.jpeg",
     "scheme": "myapp",
@@ -15,7 +15,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.shiftkey.app",
-      "buildNumber": "4",
+      "buildNumber": "7",
       "minVersion": "17.0",
       "infoPlist": {
         "NSCameraUsageDescription": "This app uses the camera to scan QR codes for events."
