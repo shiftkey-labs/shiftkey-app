@@ -8,21 +8,33 @@ import {
   Alert,
   SafeAreaView,
   Modal,
+  TextInput,
 } from "react-native";
 import { useRouter, useLocalSearchParams, Stack } from "expo-router";
 import { AntDesign } from "@expo/vector-icons";
 import { Camera, CameraView } from "expo-camera";
 import tw from "../styles/tailwind";
 import server from "@/config/axios";
+import { useTheme } from "@/context/ThemeContext";
+
+// Define the Attendee type to fix TypeScript errors
+interface Attendee {
+  id: string;
+  firstName: string;
+  lastName: string;
+  attended: boolean;
+}
 
 const EventAttendance = () => {
   const router = useRouter();
   const { eventId } = useLocalSearchParams();
-  const [attendees, setAttendees] = useState([]);
+  const [attendees, setAttendees] = useState<Attendee[]>([]);
   const [loading, setLoading] = useState(true);
   const [scanning, setScanning] = useState(false);
-  const [hasPermission, setHasPermission] = useState(null);
+  const [hasPermission, setHasPermission] = useState<boolean | null>(null);
   const [eventTitle, setEventTitle] = useState("Event");
+  const [searchQuery, setSearchQuery] = useState("");
+  const { isDarkMode, colors } = useTheme();
 
   useEffect(() => {
     if (eventId) {
@@ -30,8 +42,6 @@ const EventAttendance = () => {
       fetchAttendees();
     }
   }, [eventId]);
-
-
 
   useEffect(() => {
     (async () => {
@@ -53,7 +63,6 @@ const EventAttendance = () => {
 
   const fetchAttendees = async () => {
     try {
-
       const response = await server.get(
         `/registration/event/${eventId}/attendees`
       );
@@ -67,7 +76,7 @@ const EventAttendance = () => {
     }
   };
 
-  const markAttendance = async (userId) => {
+  const markAttendance = async (userId: string) => {
     try {
       await server.post(
         `/registration/event/${eventId}/attendees/${userId}/mark-attendance`
@@ -84,10 +93,9 @@ const EventAttendance = () => {
     }
   };
 
-  const handleBarCodeScanned = async ({ type, data }) => {
+  const handleBarCodeScanned = async ({ type, data }: { type: string; data: string }) => {
     setScanning(false);
     try {
-
       markAttendance(data.split("~")[0]);
       Alert.alert("Success", "Attendance marked via QR code.");
     } catch (error) {
@@ -106,84 +114,113 @@ const EventAttendance = () => {
     }
   };
 
+  // Filter attendees based on search query
+  const filteredAttendees = attendees.filter((attendee) => {
+    const fullName = `${attendee.firstName} ${attendee.lastName}`.toLowerCase();
+    return fullName.includes(searchQuery.toLowerCase());
+  });
+
   if (loading) {
     return (
-      <View style={tw`flex-1 justify-center items-center`}>
-        <ActivityIndicator size="large" color="#0000ff" />
+      <View style={[tw`flex-1 justify-center items-center`, { backgroundColor: colors.background }]}>
+        <ActivityIndicator size="large" color={isDarkMode ? colors.text : colors.primary} />
       </View>
     );
   }
 
   return (
-    <SafeAreaView style={tw`flex-1 bg-background`}>
+    <SafeAreaView style={[tw`flex-1`, { backgroundColor: isDarkMode ? colors.lightGray : colors.white }]}>
       <Stack.Screen
         options={{
           headerShown: false,
         }}
       />
-      <View style={tw`flex-row items-center justify-between p-5 bg-white shadow-sm`}>
+      <View style={[tw`flex-row items-center justify-between p-5 shadow-sm`, { backgroundColor: isDarkMode ? colors.lightGray : colors.white }]}>
         <TouchableOpacity onPress={() => router.back()} style={tw`p-2`}>
-          <AntDesign name="arrowleft" size={24} style={tw`text-primary`} />
+          <AntDesign name="arrowleft" size={24} color={colors.primary} />
         </TouchableOpacity>
-        <Text style={tw`text-xl font-bold`}>{eventTitle}</Text>
+        <Text style={{ color: colors.text, fontSize: 20, fontWeight: 'bold' }}>{eventTitle}</Text>
         <TouchableOpacity onPress={openScanner} style={tw`p-2`}>
-          <AntDesign name="qrcode" size={24} style={tw`text-primary`} />
+          <AntDesign name="qrcode" size={24} color={colors.primary} />
         </TouchableOpacity>
       </View>
 
-      {/* Attendees List */}
-      <FlatList
-        data={attendees}
-        keyExtractor={(item: any) => item.id.toString()}
-        contentContainerStyle={tw`p-4`}
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            style={tw`flex-row justify-between items-center p-4 mb-3 bg-white rounded-lg shadow-sm`}
-            onPress={() => markAttendance(item.id)}
-          >
-            <View>
-              <Text style={tw`text-lg font-semibold`}>
-                {item.firstName} {item.lastName}
-              </Text>
-              <Text style={tw`text-gray-500 text-sm mt-1`}>
-                {item.attended ? 'Present' : 'Not checked in'}
-              </Text>
-            </View>
-            {item.attended ? (
-              <AntDesign name="checkcircle" size={24} style={tw`text-primary`} />
-            ) : (
-              <AntDesign name="checkcircleo" size={24} style={tw`text-gray-400`} />
-            )}
-          </TouchableOpacity>
-        )}
-      />
-
-      {/* QR Code Scanner Modal */}
-      {scanning && (
-        <Modal
-          animationType="slide"
-          transparent={false}
-          visible={scanning}
-          onRequestClose={() => setScanning(false)}
-        >
-          <CameraView
-            style={tw`flex-1`}
-            onBarcodeScanned={handleBarCodeScanned}
-            barcodeScannerSettings={{
-              barcodeTypes: ["qr"],
-            }}
-          >
-            <View style={tw`flex-1 justify-end p-5`}>
-              <TouchableOpacity
-                style={tw`bg-primary p-4 rounded-lg mb-10`}
-                onPress={() => setScanning(false)}
-              >
-                <Text style={tw`text-white text-center font-semibold`}>Close Scanner</Text>
+      {/* Main content area with different background */}
+      <View style={[tw`flex-1`, { backgroundColor: colors.background }]}>
+        {/* Search Bar */}
+        <View style={[tw`px-4 py-3`, { backgroundColor: isDarkMode ? colors.lightGray : colors.white }]}>
+          <View style={[tw`flex-row items-center rounded-lg px-3 py-2`, { backgroundColor: isDarkMode ? colors.background : colors.lightGray }]}>
+            <AntDesign name="search1" size={20} color={colors.gray} style={tw`mr-2`} />
+            <TextInput
+              style={[tw`flex-1 text-base`, { color: colors.text }]}
+              placeholder="Search attendees..."
+              placeholderTextColor={colors.gray}
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              clearButtonMode="while-editing"
+            />
+            {searchQuery.length > 0 && (
+              <TouchableOpacity onPress={() => setSearchQuery("")}>
+                <AntDesign name="close" size={20} color={colors.gray} />
               </TouchableOpacity>
-            </View>
-          </CameraView>
-        </Modal>
-      )}
+            )}
+          </View>
+        </View>
+
+        {/* Attendees List */}
+        <FlatList
+          data={filteredAttendees}
+          keyExtractor={(item) => item.id.toString()}
+          contentContainerStyle={tw`p-4`}
+          renderItem={({ item }) => (
+            <TouchableOpacity
+              style={[tw`flex-row justify-between items-center p-4 mb-3 rounded-lg shadow-sm`, { backgroundColor: isDarkMode ? colors.lightGray : colors.white }]}
+              onPress={() => markAttendance(item.id)}
+            >
+              <View>
+                <Text style={{ color: colors.text, fontSize: 18, fontWeight: 'semibold' }}>
+                  {item.firstName} {item.lastName}
+                </Text>
+                <Text style={{ color: colors.gray, fontSize: 14, marginTop: 4 }}>
+                  {item.attended ? 'Present' : 'Not checked in'}
+                </Text>
+              </View>
+              {item.attended ? (
+                <AntDesign name="checkcircle" size={24} color={colors.primary} />
+              ) : (
+                <AntDesign name="checkcircleo" size={24} color={colors.gray} />
+              )}
+            </TouchableOpacity>
+          )}
+        />
+
+        {/* QR Code Scanner Modal */}
+        {scanning && (
+          <Modal
+            animationType="slide"
+            transparent={false}
+            visible={scanning}
+            onRequestClose={() => setScanning(false)}
+          >
+            <CameraView
+              style={tw`flex-1`}
+              onBarcodeScanned={handleBarCodeScanned}
+              barcodeScannerSettings={{
+                barcodeTypes: ["qr"],
+              }}
+            >
+              <View style={tw`flex-1 justify-end p-5`}>
+                <TouchableOpacity
+                  style={[tw`p-4 rounded-lg mb-10`, { backgroundColor: colors.primary }]}
+                  onPress={() => setScanning(false)}
+                >
+                  <Text style={{ color: colors.white, textAlign: 'center', fontWeight: 'semibold' }}>Close Scanner</Text>
+                </TouchableOpacity>
+              </View>
+            </CameraView>
+          </Modal>
+        )}
+      </View>
     </SafeAreaView>
   );
 };
