@@ -39,6 +39,7 @@ interface BigBoyCardProps {
   onPressShow: () => void;
   style?: any;
   isLoading?: boolean;
+  staffOnly?: boolean;
 }
 
 const BigBoyCard: React.FC<BigBoyCardProps> = ({
@@ -48,7 +49,8 @@ const BigBoyCard: React.FC<BigBoyCardProps> = ({
   images,
   onPressShow,
   style,
-  isLoading = false
+  isLoading = false,
+  staffOnly = false
 }) => {
   const { isDarkMode, colors } = useTheme();
   const imageUrl = images.length > 0 ? images[0].url : dummyImageUrl;
@@ -83,6 +85,16 @@ const BigBoyCard: React.FC<BigBoyCardProps> = ({
         >
           <FontAwesome name="heart-o" size={20} color="red" />
         </TouchableOpacity> */}
+        {staffOnly && (
+          <View
+            style={[
+              tw`absolute top-2 right-2 rounded p-1`,
+              { backgroundColor: colors.primary }
+            ]}
+          >
+            <Text style={{ color: 'white', fontWeight: 'bold' }}>Staff Only</Text>
+          </View>
+        )}
         <LinearGradient
           colors={["transparent", "rgba(0,0,0,1)"]}
           style={tw`absolute bottom-0 left-0 right-0 h-24`}

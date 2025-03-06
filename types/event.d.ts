@@ -16,10 +16,23 @@ export type EventFields = {
   volunteerCount?: number;
   shiftsScheduled?: number;
   staffShiftCount?: number;
+  staffOnly?: boolean;
+  isMultipleDays?: boolean;
 };
 export type Event = {
   id: string;
-  fields: EventFields;
+  fields: {
+    eventName?: string;
+    location?: string;
+    startDate?: string;
+    eventDetails?: string;
+    volunteerCount?: number;
+    shiftsScheduled?: number;
+    staffShiftCount?: number;
+    images?: Array<{ url: string }>;
+    registration?: boolean;
+    staffOnly?: boolean;
+  };
 };
 
 export interface Image {
@@ -54,6 +67,7 @@ export interface EventCardProps {
   images?: Image[];
   onPress: () => void;
   isLoading?: boolean;
+  staffOnly?: boolean;
 }
 
 
@@ -71,21 +85,6 @@ export type Registration = {
   userId: string[];
   userName: string[];
   registration: string[];
-};
-
-export type Event = {
-  id: string;
-  fields: {
-    eventName?: string;
-    location?: string;
-    startDate?: string;
-    eventDetails?: string;
-    volunteerCount?: number;
-    shiftsScheduled?: number;
-    staffShiftCount?: number;
-    images?: Array<{ url: string }>;
-    registration?: boolean;
-  };
 };
 
 export type DisplayEvent = {
