@@ -1,11 +1,11 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useColorScheme as useNativeColorScheme } from 'react-native';
-import Colors from '@/constants/Colors';
+import colors from '@/constants/colors';
 
 type ThemeContextType = {
     isDarkMode: boolean;
     toggleTheme: () => void;
-    colors: typeof Colors.light | typeof Colors.dark;
+    colors: typeof colors.light | typeof colors.dark;
     setManualTheme: (isDark: boolean) => void;
 };
 
@@ -36,7 +36,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         isDarkMode,
         toggleTheme,
         setManualTheme,
-        colors: isDarkMode ? Colors.dark : Colors.light,
+        colors: isDarkMode ? colors.dark : colors.light,
     };
 
     return (

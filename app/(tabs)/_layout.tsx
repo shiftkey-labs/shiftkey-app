@@ -2,7 +2,7 @@ import React from "react";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome";
 import { Link, Tabs } from "expo-router";
 import { Pressable } from "react-native";
-import Colors from "@/constants/Colors";
+import colors from "@/constants/colors";
 import { useColorScheme } from "@/components/useColorScheme";
 import { useClientOnlyValue } from "@/components/useClientOnlyValue";
 import Ionicons from "@expo/vector-icons/Ionicons";
@@ -51,7 +51,7 @@ export default function TabLayout() {
           //         <Ionicons
           //           name="home-outline"
           //           size={24}
-          //           color={Colors["light"].text}
+          //           color={colors["light"].text}
           //           style={{ marginRight: 15, opacity: pressed ? 0.5 : 1 }}
           //         />
           //       )}

@@ -1,4 +1,4 @@
-const colors = require("./constants/Colors").default;
+const colors = require("./constants/colors").default;
 
 module.exports = {
   content: [

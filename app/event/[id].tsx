@@ -14,9 +14,16 @@ import { useRouter, useLocalSearchParams } from "expo-router";
 import tw from "../styles/tailwind";
 import { FontAwesome } from "@expo/vector-icons";
 import state from "../state";
-import { addBooking } from "@/helpers/userHelpers";
 import { useTheme } from "@/context/ThemeContext";
 import { Event, Registration } from "@/types/event";
+import { checkUserCanTakeShift } from "../state/volunteerState";
+
+// Define a type for shift
+type Shift = {
+  id: string;
+  shiftTime: string;
+  isAvailable: boolean;
+};
 
 const EventDetails = () => {
   const params = useLocalSearchParams();
@@ -31,6 +38,7 @@ const EventDetails = () => {
   const [canTakeShift, setCanTakeShift] = useState(false);
   const [shiftModalVisible, setShiftModalVisible] = useState(false);
   const [selectedShifts, setSelectedShifts] = useState<string[]>([]);
+  const [allShifts, setAllShifts] = useState<Shift[]>([]);
   const user = state.user.userState.get();
   const userVolunteeredEvents: Event[] = state.volunteer.volunteerState.userVolunteeredEvents.get();
 
@@ -63,10 +71,18 @@ const EventDetails = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
+        console.log('Fetching event details for eventId:', eventId);
         await state.event.fetchEventDetails(eventId);
+        console.log('Current event after fetch:', curr);
+        console.log('Current event fields:', currentEvent);
+
         if (user?.email) {
+          console.log('Fetching user data for email:', user.email);
+          console.log('Current user state:', user);
           await state.registration.fetchUserRegistrations(user.email, "UPCOMING");
           await state.volunteer.fetchUserVolunteeredEvents(user.email);
+          console.log('User registrations after fetch:', userRegistrations);
+          console.log('User volunteered events after fetch:', userVolunteeredEvents);
         }
       } catch (error) {
         console.error("Failed to fetch event details:", error);
@@ -88,13 +104,23 @@ const EventDetails = () => {
   }, [userRegistrations, curr]);
 
   useEffect(() => {
-    const canTake = user?.role === "STAFF" &&
-      currentEvent?.staffShiftCount != null &&
-      currentEvent.staffShiftCount > shiftsScheduled &&
-      Array.isArray(userVolunteeredEvents) &&
-      !userVolunteeredEvents.some(event => event?.id === curr?.id);
-    setCanTakeShift(canTake);
-  }, [user?.role, currentEvent?.staffShiftCount, shiftsScheduled, userVolunteeredEvents, curr?.id]);
+    const checkShiftAvailability = async () => {
+      if (user?.id && curr?.id && user?.role === "STAFF") {
+        try {
+          const result = await checkUserCanTakeShift(user.id, curr.id);
+          setCanTakeShift(result.canTakeShift);
+          setAllShifts(result.allShifts || []);
+        } catch (error) {
+          console.error("Error checking shift availability:", error);
+          setCanTakeShift(false);
+        }
+      } else {
+        setCanTakeShift(false);
+      }
+    };
+
+    checkShiftAvailability();
+  }, [user?.id, curr?.id, user?.role]);
 
   if (loading) {
     return (
@@ -134,10 +160,13 @@ const EventDetails = () => {
   };
 
   const handleVolunteer = async () => {
-    if (!user.id || !eventId) return;
-    const shiftsScheduled = selectedShifts.join(", ");
+    if (!user.id || selectedShifts.length !== 1) return;
+
+    // Get the selected shift ID
+    const shiftId = selectedShifts[0];
+
     try {
-      await state.volunteer.volunteerForEvent(user.id, eventId, shiftsScheduled);
+      await state.volunteer.volunteerForEvent(user.id, shiftId);
       setSelectedShifts([]);
       setShiftModalVisible(false);
       Alert.alert("Success", "You have successfully booked a shift", [
@@ -159,15 +188,19 @@ const EventDetails = () => {
   };
 
   const showShiftModal = () => {
-    setShiftModalVisible(true);
+    if (canTakeShift) {
+      setShiftModalVisible(true);
+    } else {
+      Alert.alert("No Shifts Available", "There are no available shifts for this event.");
+    }
   };
 
-  const toggleShiftSelection = (shift: string) => {
-    setSelectedShifts(prev =>
-      prev.includes(shift)
-        ? prev.filter(s => s !== shift)
-        : [...prev, shift]
-    );
+  const toggleShiftSelection = (shiftId: string) => {
+    if (selectedShifts.includes(shiftId)) {
+      setSelectedShifts([]);
+    } else {
+      setSelectedShifts([shiftId]);
+    }
   };
 
   return (
@@ -242,19 +275,23 @@ const EventDetails = () => {
                   <Text style={{ color: colors.white, textAlign: 'center' }}>Register</Text>
                 </TouchableOpacity>
               )}
-              {canTakeShift && (
+              {user?.role === "STAFF" && (
                 <TouchableOpacity
                   style={[
                     tw`p-4 rounded-lg flex-1 ml-2`,
                     {
                       backgroundColor: isDarkMode ? colors.lightGray : colors.white,
                       borderWidth: 1,
-                      borderColor: colors.primary
+                      borderColor: colors.primary,
+                      opacity: canTakeShift ? 1 : 0.5
                     }
                   ]}
                   onPress={showShiftModal}
+                  disabled={!canTakeShift}
                 >
-                  <Text style={{ color: colors.primary, textAlign: 'center' }}>Book Shift</Text>
+                  <Text style={{ color: colors.primary, textAlign: 'center' }}>
+                    {canTakeShift ? "Book Shift" : "No Shifts Available"}
+                  </Text>
                 </TouchableOpacity>
               )}
             </View>
@@ -329,41 +366,55 @@ const EventDetails = () => {
               Book a Shift
             </Text>
             <Text style={{ color: colors.gray, marginBottom: 20 }}>
-              Please select a shift from the list below.
+              Please select an available shift from the list below.
             </Text>
 
             <View style={tw`flex-col w-full`}>
-              {(currentEvent?.shiftsAvailable && currentEvent.shiftsAvailable.length > 0
-                ? currentEvent.shiftsAvailable
-                : getDefaultShift()
-              ).map((shift: string) => (
-                <TouchableOpacity
-                  key={shift}
-                  style={[
-                    tw`p-4 rounded-lg mb-2 flex-row justify-between items-center`,
-                    {
-                      backgroundColor: selectedShifts.includes(shift)
-                        ? colors.primary
-                        : isDarkMode ? colors.lightGray : colors.white,
-                      borderWidth: 1,
-                      borderColor: colors.primary
-                    }
-                  ]}
-                  onPress={() => toggleShiftSelection(shift)}
-                >
-                  <Text
-                    style={{
-                      color: selectedShifts.includes(shift) ? colors.white : colors.text,
-                      fontSize: 16
-                    }}
-                  >
-                    {shift}
-                  </Text>
-                  {selectedShifts.includes(shift) && (
-                    <FontAwesome name="check" size={16} color={colors.white} />
-                  )}
-                </TouchableOpacity>
-              ))}
+              {allShifts.length > 0 ? (
+                allShifts.map((shift) => {
+                  return (
+                    <TouchableOpacity
+                      key={shift.id}
+                      style={[
+                        tw`p-4 rounded-lg mb-2 flex-row justify-between items-center`,
+                        {
+                          backgroundColor: selectedShifts.includes(shift.id)
+                            ? colors.primary
+                            : isDarkMode ? colors.lightGray : colors.white,
+                          borderWidth: 1,
+                          borderColor: colors.primary,
+                          opacity: shift.isAvailable ? 1 : 0.5
+                        }
+                      ]}
+                      onPress={() => shift.isAvailable && toggleShiftSelection(shift.id)}
+                      disabled={!shift.isAvailable}
+                    >
+                      <View style={tw`flex-1`}>
+                        <Text
+                          style={{
+                            color: selectedShifts.includes(shift.id) ? colors.white : colors.text,
+                            fontSize: 16
+                          }}
+                        >
+                          {shift.shiftTime}
+                        </Text>
+                        {!shift.isAvailable && (
+                          <Text style={{ color: colors.gray, fontSize: 12 }}>
+                            Already taken
+                          </Text>
+                        )}
+                      </View>
+                      {selectedShifts.includes(shift.id) && (
+                        <FontAwesome name="check" size={16} color={colors.white} />
+                      )}
+                    </TouchableOpacity>
+                  );
+                })
+              ) : (
+                <Text style={{ color: colors.gray, textAlign: 'center' }}>
+                  No shifts found for this event.
+                </Text>
+              )}
             </View>
             <TouchableOpacity
               style={[
@@ -377,7 +428,7 @@ const EventDetails = () => {
               disabled={selectedShifts.length === 0}
             >
               <Text style={{ color: colors.white, textAlign: 'center' }}>
-                Book {selectedShifts.length} Shift{selectedShifts.length !== 1 ? 's' : ''}
+                Book Selected Shift
               </Text>
             </TouchableOpacity>
           </TouchableOpacity>
