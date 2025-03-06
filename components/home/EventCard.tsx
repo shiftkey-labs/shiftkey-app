@@ -11,7 +11,8 @@ const EventCard: React.FC<EventCardProps> = ({
   date,
   images,
   onPress,
-  isLoading = false
+  isLoading = false,
+  staffOnly = false
 }) => {
   const { isDarkMode, colors } = useTheme();
   const imageUrl = images?.length ? images[0].url : dummyImageUrl;
@@ -31,7 +32,19 @@ const EventCard: React.FC<EventCardProps> = ({
           <ActivityIndicator size="large" color="#ffffff" />
         </View>
       ) : null}
-      <Image source={{ uri: imageUrl }} style={tw`w-24 h-24 rounded-lg`} />
+      <View style={tw`relative`}>
+        <Image source={{ uri: imageUrl }} style={tw`w-24 h-24 rounded-lg`} />
+        {staffOnly && (
+          <View
+            style={[
+              tw`absolute top-1 right-1 rounded px-1`,
+              { backgroundColor: colors.primary }
+            ]}
+          >
+            <Text style={{ color: 'white', fontSize: 10, fontWeight: 'bold' }}>Staff Only</Text>
+          </View>
+        )}
+      </View>
       <View style={tw`flex-1 ml-3 p-3`}>
         <Text style={{ color: colors.text, fontWeight: 'bold' }}>{title}</Text>
         <Text style={{ color: colors.gray, marginTop: 4 }}>{location}</Text>

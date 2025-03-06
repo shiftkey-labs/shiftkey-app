@@ -19,7 +19,7 @@ import tw from "../styles/tailwind";
 import axios from "axios";
 import state from "../state";
 import { signupForm } from "@/constants/signupForm";
-import server, { DEV_URL } from "@/config/axios";
+import server from "@/config/axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 type SignupFormType = typeof signupForm;
@@ -113,7 +113,7 @@ const Signup = () => {
 
     // Add additional required fields based on student status
     if (formData.isStudent === "Yes") {
-      return [...baseRequiredFields, 'currentDegree', 'faculty', 'school'];
+      return [...baseRequiredFields, 'currentDegree', 'faculty', 'school', 'year'];
     } else if (formData.isStudent === "No") {
       return [...baseRequiredFields, 'organization', 'occupation'];
     }
@@ -124,10 +124,10 @@ const Signup = () => {
   // Get the fields that are both required and currently showing on screen
   const fieldsToValidate = missingFields
     .map(field => field.key)
-    .filter(key => getRequiredFields().includes(key));
+    .filter(key => getRequiredFields().includes(key as FormFieldKey));
 
   // Validation helper functions
-  const isFieldInvalid = (key: string) => {
+  const isFieldInvalid = (key: FormFieldKey) => {
     const shouldValidate = fieldsToValidate.includes(key);
     const value = formData[key];
     const isEmpty = Array.isArray(value)
@@ -182,6 +182,7 @@ const Signup = () => {
           : [formData.organization].filter(Boolean),
         faculty: formData.faculty ? formData.faculty : null,
         school: formData.school ? formData.school : null,
+        year: formData.year ? formData.year : null,
         currentDegree: formData.currentDegree ? formData.currentDegree : null,
       };
 
@@ -208,19 +209,19 @@ const Signup = () => {
   };
 
   // Add this helper function to determine if a field should be shown
-  const shouldShowField = (fieldKey: string) => {
+  const shouldShowField = (fieldKey: FormFieldKey) => {
     // Always show these fields
-    const alwaysShowFields = ['firstName', 'lastName', 'pronouns', 'selfIdentification', 'isStudent'];
+    const alwaysShowFields: FormFieldKey[] = ['firstName', 'lastName', 'pronouns', 'selfIdentification', 'isStudent'];
     if (alwaysShowFields.includes(fieldKey)) return true;
 
     // Show student-specific fields only if isStudent is "Yes"
-    const studentFields = ['currentDegree', 'faculty', 'school'];
+    const studentFields: FormFieldKey[] = ['currentDegree', 'faculty', 'school', 'year'];
     if (studentFields.includes(fieldKey)) {
       return formData.isStudent === "Yes";
     }
 
     // Show non-student fields only if isStudent is "No"
-    const nonStudentFields = ['organization', 'occupation'];
+    const nonStudentFields: FormFieldKey[] = ['organization', 'occupation'];
     if (nonStudentFields.includes(fieldKey)) {
       return formData.isStudent === "No";
     }
