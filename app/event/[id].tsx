@@ -35,10 +35,11 @@ const EventDetails = () => {
   const shiftsScheduled = currentEvent?.shiftsScheduled || 0;
   const [isEventRegistered, setIsEventRegistered] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [canTakeShift, setCanTakeShift] = useState(false);
+  const [canTakeShift, setCanTakeShift] = useState<boolean | null>(null);
   const [shiftModalVisible, setShiftModalVisible] = useState(false);
   const [selectedShifts, setSelectedShifts] = useState<string[]>([]);
   const [allShifts, setAllShifts] = useState<Shift[]>([]);
+  const [loadingShifts, setLoadingShifts] = useState(false);
   const user = state.user.userState.get();
   const userVolunteeredEvents: Event[] = state.volunteer.volunteerState.userVolunteeredEvents.get();
 
@@ -103,24 +104,24 @@ const EventDetails = () => {
     setIsEventRegistered(!!isRegistered);
   }, [userRegistrations, curr]);
 
-  useEffect(() => {
-    const checkShiftAvailability = async () => {
-      if (user?.id && curr?.id && user?.role === "STAFF") {
-        try {
-          const result = await checkUserCanTakeShift(user.id, curr.id);
-          setCanTakeShift(result.canTakeShift);
-          setAllShifts(result.allShifts || []);
-        } catch (error) {
-          console.error("Error checking shift availability:", error);
-          setCanTakeShift(false);
-        }
-      } else {
+  const checkShiftAvailability = async () => {
+    if (user?.id && curr?.id && user?.role === "STAFF") {
+      setLoadingShifts(true);
+      try {
+        const result = await checkUserCanTakeShift(user.id, curr.id);
+        setCanTakeShift(result.canTakeShift);
+        setAllShifts(result.allShifts || []);
+      } catch (error) {
+        console.error("Error checking shift availability:", error);
         setCanTakeShift(false);
+      } finally {
+        setLoadingShifts(false);
       }
-    };
-
-    checkShiftAvailability();
-  }, [user?.id, curr?.id, user?.role]);
+    } else {
+      setCanTakeShift(false);
+      setLoadingShifts(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -187,10 +188,15 @@ const EventDetails = () => {
     router.back();
   };
 
-  const showShiftModal = () => {
+  const showShiftModal = async () => {
+    // Check shift availability when the user clicks the button
+    if (!canTakeShift && !loadingShifts) {
+      await checkShiftAvailability();
+    }
+
     if (canTakeShift) {
       setShiftModalVisible(true);
-    } else {
+    } else if (!loadingShifts && canTakeShift === false) {
       Alert.alert("No Shifts Available", "There are no available shifts for this event.");
     }
   };
@@ -287,11 +293,17 @@ const EventDetails = () => {
                     }
                   ]}
                   onPress={showShiftModal}
-                  disabled={!canTakeShift}
+                  disabled={loadingShifts || (canTakeShift === false)}
                 >
-                  <Text style={{ color: colors.primary, textAlign: 'center' }}>
-                    {canTakeShift ? "Book Shift" : "No Shifts Available"}
-                  </Text>
+                  {loadingShifts ? (
+                    <ActivityIndicator size="small" color={colors.primary} />
+                  ) : (
+                    <Text style={{ color: colors.primary, textAlign: 'center' }}>
+                      {canTakeShift === true ? "Book Shift" :
+                        canTakeShift === false ? "No Shifts Available" :
+                          "Check Shifts"}
+                    </Text>
+                  )}
                 </TouchableOpacity>
               )}
             </View>
@@ -370,7 +382,14 @@ const EventDetails = () => {
             </Text>
 
             <View style={tw`flex-col w-full`}>
-              {allShifts.length > 0 ? (
+              {loadingShifts ? (
+                <View style={tw`items-center justify-center py-8`}>
+                  <ActivityIndicator size="large" color={colors.primary} />
+                  <Text style={{ color: colors.gray, marginTop: 10 }}>
+                    Loading available shifts...
+                  </Text>
+                </View>
+              ) : allShifts.length > 0 ? (
                 allShifts.map((shift) => {
                   return (
                     <TouchableOpacity
@@ -425,11 +444,15 @@ const EventDetails = () => {
                 }
               ]}
               onPress={handleVolunteer}
-              disabled={selectedShifts.length === 0}
+              disabled={selectedShifts.length === 0 || loadingShifts}
             >
-              <Text style={{ color: colors.white, textAlign: 'center' }}>
-                Book Selected Shift
-              </Text>
+              {loadingShifts ? (
+                <ActivityIndicator size="small" color={colors.white} />
+              ) : (
+                <Text style={{ color: colors.white, textAlign: 'center' }}>
+                  Book Selected Shift
+                </Text>
+              )}
             </TouchableOpacity>
           </TouchableOpacity>
         </TouchableOpacity>
