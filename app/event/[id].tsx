@@ -125,15 +125,15 @@ const EventDetails = () => {
 
   if (loading) {
     return (
-      <View style={tw`flex-1 items-center justify-center`}>
-        <ActivityIndicator size="large" color="#0000ff" />
+      <View style={[tw`flex-1 items-center justify-center`, { backgroundColor: colors.background }]}>
+        <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
   }
 
   if (!currentEvent) {
     return (
-      <View style={tw`flex-1 items-center justify-center`}>
+      <View style={[tw`flex-1 items-center justify-center`, { backgroundColor: colors.background }]}>
         <Text style={tw`text-xl`}>Event not found</Text>
       </View>
     );

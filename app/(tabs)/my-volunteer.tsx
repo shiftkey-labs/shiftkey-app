@@ -54,23 +54,6 @@ const Volunteer = observer(() => {
     }
   };
 
-  const handleSubmitVolunteerRequest = async () => {
-    try {
-      setIsSubmitting(true);
-      const response = await server.post("/user/update-role-to-volunteer", {
-        userId: user.id,
-      });
-
-      Alert.alert("Success", "You have been registered as a volunteer.");
-      state.user.userState.role.set("VOLUNTEER");
-    } catch (error) {
-      console.error("Error updating role:", error);
-      Alert.alert("Error", "Failed to update role. Please try again.");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
   if (isLoading) {
     return (
       <SafeAreaView style={[tw`flex-1 justify-center items-center`, { backgroundColor: colors.background }]}>
@@ -93,7 +76,7 @@ const Volunteer = observer(() => {
             Volunteer Dashboard
           </Text>
           <Text style={{ color: colors.text, fontSize: 18, marginBottom: 20 }}>
-            This is where you will be able to view your shifts when you are selected as a volunteer.
+            This is where you will be able to view your shifts if you are selected as a volunteer.
           </Text>
         </View>
       </SafeAreaView>

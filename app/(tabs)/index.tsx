@@ -29,7 +29,7 @@ const Home: React.FC = () => {
 
   const handlePressEvent = async (eventId: string) => {
     try {
-      await events.fetchEventDetails(eventId);
+      events.fetchEventDetails(eventId);
       router.push(`/event/${eventId}`);
     } catch (error) {
       console.error("Failed to load event details:", error);
