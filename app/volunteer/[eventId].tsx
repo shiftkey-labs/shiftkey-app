@@ -53,6 +53,13 @@ const EventAttendance = () => {
     }
   }, [eventId]);
 
+  // Add a new useEffect to refetch attendees when selectedDay changes
+  useEffect(() => {
+    if (eventId && !loading) {
+      fetchAttendees();
+    }
+  }, [selectedDay]);
+
   useEffect(() => {
     (async () => {
       const { status } = await Camera.requestCameraPermissionsAsync();
@@ -81,12 +88,63 @@ const EventAttendance = () => {
   const fetchAttendees = async () => {
     try {
       setLoading(true);
+      // Fetch all attendees for the event
       const response = await server.get(
         `/registration/event/${eventId}/attendees`
       );
 
-      // Use the attendees data directly from the backend
-      setAttendees(response.data.attendees);
+      console.log("Response data:", JSON.stringify(response.data, null, 2));
+
+      const dayParam = selectedDay || "1";
+
+      // We need to fetch the attendance status for the selected day
+      // First, let's get all attendees
+      const allAttendees = response.data.attendees;
+
+      // Now, let's fetch the attendance status for the selected day
+      try {
+        const dayResponse = await server.get(
+          `/registration/event/${eventId}/attendees/${dayParam}`
+        );
+
+        console.log("Day response:", JSON.stringify(dayResponse.data, null, 2));
+
+        // Create a map of attendee IDs to their attendance status for the selected day
+        const attendanceMap = new Map();
+        if (dayResponse.data.attendees) {
+          dayResponse.data.attendees.forEach((attendee: Attendee) => {
+            attendanceMap.set(attendee.id, true);
+          });
+        }
+
+        // Update the attendance status for each attendee
+        const attendeesWithDayStatus = allAttendees.map((attendee: Attendee) => {
+          const updatedAttendee = { ...attendee };
+
+          // Set the day-specific attendance status
+          const dayKey = `day${dayParam}` as keyof Attendee;
+          if (dayKey === 'day1') {
+            updatedAttendee.day1 = attendanceMap.has(attendee.id);
+          } else if (dayKey === 'day2') {
+            updatedAttendee.day2 = attendanceMap.has(attendee.id);
+          } else if (dayKey === 'day3') {
+            updatedAttendee.day3 = attendanceMap.has(attendee.id);
+          } else if (dayKey === 'day4') {
+            updatedAttendee.day4 = attendanceMap.has(attendee.id);
+          }
+
+          return updatedAttendee;
+        });
+
+        console.log("Attendees with day status:", JSON.stringify(attendeesWithDayStatus, null, 2));
+
+        // Set the attendees with their day-specific attendance status
+        setAttendees(attendeesWithDayStatus);
+      } catch (error) {
+        console.error("Error fetching day-specific attendance:", error);
+        // If we can't fetch the day-specific attendance, just use the general attendance
+        setAttendees(allAttendees);
+      }
     } catch (error) {
       console.error(error);
       Alert.alert("Error", "Failed to fetch attendees.");
@@ -108,25 +166,8 @@ const EventAttendance = () => {
         { day: dayParam }
       );
 
-      // Update the attendee's attendance status in the state for the selected day
-      setAttendees((prevAttendees) =>
-        prevAttendees.map((attendee) => {
-          if (attendee.id === userId) {
-            const dayKey = `day${dayParam}` as keyof Attendee;
-            const currentStatus = attendee[dayKey] as boolean || false;
-
-            // If the selected day is "1", also update the main 'attended' field for backward compatibility
-            const updatedAttended = dayParam === "1" ? !currentStatus : attendee.attended;
-
-            return {
-              ...attendee,
-              attended: updatedAttended,
-              [dayKey]: !currentStatus
-            };
-          }
-          return attendee;
-        })
-      );
+      // Refetch attendees to ensure UI is updated with latest data from backend
+      await fetchAttendees();
     } catch (error) {
       console.error(error);
       Alert.alert("Error", "Failed to mark attendance.");
@@ -137,7 +178,7 @@ const EventAttendance = () => {
     setScanning(false);
     try {
       // Pass the user ID from the QR code to markAttendance
-      markAttendance(data.split("~")[0]);
+      await markAttendance(data.split("~")[0]);
       Alert.alert("Success", "Attendance marked via QR code.");
     } catch (error) {
       console.error(error);
