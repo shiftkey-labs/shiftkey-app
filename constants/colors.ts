@@ -1,7 +1,3 @@
-// constants/colors.ts
-const tintColorLight = "#2f95dc";
-const tintColorDark = "#fff";
-
 const colors = {
   light: {
     primary: "#0455BF",
