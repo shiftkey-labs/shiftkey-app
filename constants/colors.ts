@@ -1,8 +1,4 @@
-// constants/Colors.ts
-const tintColorLight = "#2f95dc";
-const tintColorDark = "#fff";
-
-const Colors = {
+const colors = {
   light: {
     primary: "#0455BF",
     secondary: "#2ecc71",
@@ -29,4 +25,4 @@ const Colors = {
   },
 };
 
-export default Colors;
+export default colors;

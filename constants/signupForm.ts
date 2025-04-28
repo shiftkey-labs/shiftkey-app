@@ -62,9 +62,9 @@ export const signupForm = {
       { label: "Non-Profit", value: "Non-Profit" },
       { label: "Private Sector", value: "Private Sector" },
       { label: "Municipal Government", value: "Municipal Government" },
-      {label: "Provincial Government", value: "Provincial Government"},
+      { label: "Provincial Government", value: "Provincial Government" },
       { label: "Federal Government", value: "Federal Government" },
-      { label: "Faculty/Staff", value: "Faculty/Staff"}
+      { label: "Faculty/Staff", value: "Faculty/Staff" }
     ],
   },
   currentDegree: {
@@ -84,6 +84,12 @@ export const signupForm = {
     key: "faculty",
     type: "text",
     placeholder: "Enter your faculty or department",
+  },
+  year: {
+    label: "What year of study are you in?",
+    key: "year",
+    type: "number",
+    placeholder: "Enter your year of study",
   },
   school: {
     label: "In which school are you currently enrolled?",

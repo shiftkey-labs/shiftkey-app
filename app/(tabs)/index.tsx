@@ -29,7 +29,7 @@ const Home: React.FC = () => {
 
   const handlePressEvent = async (eventId: string) => {
     try {
-      await events.fetchEventDetails(eventId);
+      events.fetchEventDetails(eventId);
       router.push(`/event/${eventId}`);
     } catch (error) {
       console.error("Failed to load event details:", error);
@@ -45,10 +45,17 @@ const Home: React.FC = () => {
       try {
         setIsLoading(true);
         await events.initializeEvents();
-        setEventsList(events.eventState.events.get());
+        const allEvents = events.eventState.events.get();
+
+        // Filter events based on user role
+        // If user is not STAFF, filter out staffOnly events
+        // If user is STAFF, show all events
+        const filteredEvents = user.role === "STAFF"
+          ? allEvents
+          : allEvents.filter(event => !event.fields.staffOnly);
+
+        setEventsList(filteredEvents);
         await initializeAuth();
-        // user = state.user.userState.get();
-        // console.log("final user data: ", user);
       } catch (error) {
         console.error("Failed to initialize:", error);
       } finally {
