@@ -60,6 +60,7 @@ const Signup = () => {
 
   // Redirect to login if not authenticated
   useEffect(() => {
+
     if (!email) {
       router.replace("/(auth)/login");
     }
@@ -182,7 +183,7 @@ const Signup = () => {
           : [formData.organization].filter(Boolean),
         faculty: formData.faculty ? formData.faculty : null,
         school: formData.school ? formData.school : null,
-        year: formData.year ? formData.year : null,
+        year: formData.year ? Number(formData.year) : null,
         currentDegree: formData.currentDegree ? formData.currentDegree : null,
       };
 
@@ -253,15 +254,15 @@ const Signup = () => {
                     <Text style={tw`text-red-500 text-sm ml-1 font-poppins`}> *Required</Text>
                   )}
                 </Text>
-                {field.type === "text" || field.type === "numeric" ? (
+                {field.type === "text" || field.type === "number" ? (
                   <TextInput
                     style={[
                       tw`border border-gray p-5 rounded-lg mb-5 font-poppins`,
                       isFieldInvalid(field.key) && tw`border-red-500`,
                     ]}
                     placeholder={field.placeholder}
-                    keyboardType={field.type === "numeric" ? "numeric" : "default"}
-                    value={formData[field.key]}
+                    keyboardType={field.type === "number" ? "numeric" : "default"}
+                    value={formData[field.key] as string}
                     onChangeText={(value) => handleInputChange(field.key, value)}
                     onBlur={() => setTouchedFields(prev => ({ ...prev, [field.key]: true }))}
                     editable={!loading}
@@ -300,7 +301,7 @@ const Signup = () => {
                     labelField="label"
                     valueField="value"
                     placeholder="Select an option"
-                    value={formData[field.key]}
+                    value={formData[field.key] as string}
                     onChange={(item: any) => handleInputChange(field.key, item.value)}
                     onBlur={() => setTouchedFields(prev => ({ ...prev, [field.key]: true }))}
                     placeholderStyle={tw`font-poppins text-gray-500`}
