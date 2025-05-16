@@ -27,8 +27,8 @@ ShiftKey Labs Events Application is a mobile platform built with React Native us
 1. Clone the repository:
 
    ```shell
-   git clone https://github.com/ShiftKeyLabs/ShiftKeyLabs-Events-App.git
-   cd ShiftKeyLabs-Events-App
+   git clone https://github.com/shiftkey-labs/shiftkey-app.git
+   cd shiftkey-app
    ```
 
 2. Install dependencies:
@@ -81,7 +81,7 @@ Contributions to the ShiftKey Labs Events Application are always welcome. See [C
 
 ## Support
 
-For support, bugs, and feature requests, please use the [issues](https://github.com/ShiftKeyLabs/ShiftKeyLabs-Events-App/issues) section in the GitHub repository.
+For support, bugs, and feature requests, please use the [issues](https://github.com/shiftkey-labs/shiftkey-app/issues) section in the GitHub repository.
 
 ## Acknowledgments
 

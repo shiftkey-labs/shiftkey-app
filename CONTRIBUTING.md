@@ -18,7 +18,7 @@ Before you begin, ensure you have the following installed:
 2. **Clone the Forked Repository:**
 
    ```bash
-   git clone https://github.com/your-username/ShiftkeyEvents.git
+   git clone https://github.com/your-username/shiftkey-app.git
    cd ShiftkeyEvents
    ```
 
@@ -27,7 +27,7 @@ Before you begin, ensure you have the following installed:
    This step ensures you can sync changes from the main repository.
 
    ```bash
-   git remote add upstream https://github.com/ShiftkeyLabs/ShiftkeyEvents.git
+   git remote add upstream https://github.com/shiftkey-labs/shiftkey-app.git
    ```
 
 4. **Install Dependencies:**
