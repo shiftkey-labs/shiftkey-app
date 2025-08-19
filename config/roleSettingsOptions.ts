@@ -9,25 +9,40 @@ export const roleSettingsOptions = {
       },
       {
         label: "Change Password",
-        action: () => console.log("Change Password pressed"),
+        action: () => {
+          // TODO: Implement password change functionality
+          console.log("Change Password - To be implemented");
+        },
       },
       {
         label: "Notifications",
-        action: () => console.log("Notifications pressed"),
+        action: () => {
+          // TODO: Implement notifications settings
+          console.log("Notifications - To be implemented");
+        },
       },
     ],
     moreOptions: [
       {
         label: "Privacy Policy",
-        action: () => console.log("Privacy Policy pressed"),
+        action: () => {
+          // TODO: Navigate to privacy policy
+          console.log("Privacy Policy - To be implemented");
+        },
       },
       {
         label: "Terms of Service",
-        action: () => console.log("Terms of Service pressed"),
+        action: () => {
+          // TODO: Navigate to terms of service
+          console.log("Terms of Service - To be implemented");
+        },
       },
       {
         label: "Help & Support",
-        action: () => console.log("Help & Support pressed"),
+        action: () => {
+          // TODO: Navigate to help & support
+          console.log("Help & Support - To be implemented");
+        },
       },
     ],
   },
@@ -35,25 +50,37 @@ export const roleSettingsOptions = {
     accountSettings: [
       {
         label: "Edit Profile",
-        action: () => console.log("Edit Profile pressed"),
+        action: () => router.push("/(settings)/edit-profile"),
       },
       {
         label: "Change Password",
-        action: () => console.log("Change Password pressed"),
+        action: () => {
+          // TODO: Implement password change functionality
+          console.log("Change Password - To be implemented");
+        },
       },
     ],
     moreOptions: [
       {
         label: "Privacy Policy",
-        action: () => console.log("Privacy Policy pressed"),
+        action: () => {
+          // TODO: Navigate to privacy policy
+          console.log("Privacy Policy - To be implemented");
+        },
       },
       {
         label: "Terms of Service",
-        action: () => console.log("Terms of Service pressed"),
+        action: () => {
+          // TODO: Navigate to terms of service
+          console.log("Terms of Service - To be implemented");
+        },
       },
       {
         label: "Help & Support",
-        action: () => console.log("Help & Support pressed"),
+        action: () => {
+          // TODO: Navigate to help & support
+          console.log("Help & Support - To be implemented");
+        },
       },
     ],
   },
@@ -61,29 +88,44 @@ export const roleSettingsOptions = {
     accountSettings: [
       {
         label: "Edit Profile",
-        action: () => console.log("Edit Profile pressed"),
+        action: () => router.push("/(settings)/edit-profile"),
       },
       {
         label: "Change Password",
-        action: () => console.log("Change Password pressed"),
+        action: () => {
+          // TODO: Implement password change functionality
+          console.log("Change Password - To be implemented");
+        },
       },
       {
         label: "User Management",
-        action: () => console.log("User Management pressed"),
+        action: () => {
+          // TODO: Navigate to user management
+          console.log("User Management - To be implemented");
+        },
       },
     ],
     moreOptions: [
       {
         label: "Privacy Policy",
-        action: () => console.log("Privacy Policy pressed"),
+        action: () => {
+          // TODO: Navigate to privacy policy
+          console.log("Privacy Policy - To be implemented");
+        },
       },
       {
         label: "Terms of Service",
-        action: () => console.log("Terms of Service pressed"),
+        action: () => {
+          // TODO: Navigate to terms of service
+          console.log("Terms of Service - To be implemented");
+        },
       },
       {
         label: "Help & Support",
-        action: () => console.log("Help & Support pressed"),
+        action: () => {
+          // TODO: Navigate to help & support
+          console.log("Help & Support - To be implemented");
+        },
       },
     ],
   },

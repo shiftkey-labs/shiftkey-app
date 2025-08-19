@@ -1,11 +1,19 @@
 import tw from "@/app/styles/tailwind";
 import { Link, useRouter } from "expo-router";
 import React, { useState } from "react";
-import { View, Text, ScrollView, Pressable, RefreshControl, Alert } from "react-native";
+import {
+  View,
+  Text,
+  ScrollView,
+  Pressable,
+  RefreshControl,
+  Alert,
+} from "react-native";
 import EventCard from "./home/EventCard";
 import BigBoyCard from "./home/BigBoyCard";
 import { useTheme } from "@/context/ThemeContext";
 import { Image as ImageType } from "@/types/event";
+import CompactEventCard from "./home/CompactEventCard";
 
 interface VolunteerEvent {
   id: string;
@@ -21,7 +29,10 @@ interface VolunteerEventsListProps {
   onRefresh?: () => Promise<void>;
 }
 
-const VolunteerEventsList: React.FC<VolunteerEventsListProps> = ({ events, onRefresh }) => {
+const VolunteerEventsList: React.FC<VolunteerEventsListProps> = ({
+  events,
+  onRefresh,
+}) => {
   const router = useRouter();
   const { isDarkMode, colors } = useTheme();
   const dummyImage: ImageType = {
@@ -31,10 +42,22 @@ const VolunteerEventsList: React.FC<VolunteerEventsListProps> = ({ events, onRef
     size: 0,
     type: "image/png",
     thumbnails: {
-      small: { url: "https://example.com/dummy-image.png", width: 100, height: 100 },
-      large: { url: "https://example.com/dummy-image.png", width: 300, height: 300 },
-      full: { url: "https://example.com/dummy-image.png", width: 500, height: 500 }
-    }
+      small: {
+        url: "https://example.com/dummy-image.png",
+        width: 100,
+        height: 100,
+      },
+      large: {
+        url: "https://example.com/dummy-image.png",
+        width: 300,
+        height: 300,
+      },
+      full: {
+        url: "https://example.com/dummy-image.png",
+        width: 500,
+        height: 500,
+      },
+    },
   };
   const [refreshing, setRefreshing] = useState(false);
 
@@ -59,7 +82,10 @@ const VolunteerEventsList: React.FC<VolunteerEventsListProps> = ({ events, onRef
 
   return (
     <ScrollView
-      style={[tw`p-5`, { backgroundColor: isDarkMode ? colors.background : colors.background }]}
+      style={[
+        tw`p-5`,
+        { backgroundColor: isDarkMode ? colors.background : colors.background },
+      ]}
       refreshControl={
         <RefreshControl
           refreshing={refreshing}
@@ -68,30 +94,41 @@ const VolunteerEventsList: React.FC<VolunteerEventsListProps> = ({ events, onRef
         />
       }
     >
-      <Text style={{
-        color: isDarkMode ? colors.text : colors.text,
-        fontSize: 30,
-        fontWeight: 'bold',
-        marginBottom: 20
-      }}>
+      <Text
+        style={{
+          color: isDarkMode ? colors.text : colors.text,
+          fontSize: 30,
+          fontWeight: "bold",
+          marginBottom: 20,
+        }}
+      >
         Volunteered Events
       </Text>
       {events.length > 0 ? (
-        <View>
+        <View style={tw`flex-1 grid grid-cols-2 gap-4`}>
           {events.map((event: VolunteerEvent) => (
-            <BigBoyCard
+            <CompactEventCard
               key={event.id}
               title={event.eventName || "No Title"}
               date={event.startDate || "No Date"}
               style={"w-full my-2"}
               images={event.images?.length ? event.images : [dummyImage]}
-              onPressShow={() => event.registration ? handlePressEvent(event.id) : Alert.alert("Event is not active")}
+              onPressShow={() =>
+                event.registration
+                  ? handlePressEvent(event.id)
+                  : Alert.alert("Event is not active")
+              }
               category={event.category || "Event"}
             />
           ))}
         </View>
       ) : (
-        <Text style={{ color: isDarkMode ? colors.gray : colors.gray, fontSize: 16 }}>
+        <Text
+          style={{
+            color: isDarkMode ? colors.gray : colors.gray,
+            fontSize: 16,
+          }}
+        >
           No volunteered events
         </Text>
       )}

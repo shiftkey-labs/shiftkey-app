@@ -28,8 +28,11 @@ const Profile = () => {
         firstName: "",
         lastName: "",
         email: "",
-        pronouns: "",
+        pronouns: [],
+        selfIdentification: [],
         isStudent: "",
+        occupation: "",
+        organization: [],
         currentDegree: "",
         faculty: "",
         school: "",
@@ -40,108 +43,210 @@ const Profile = () => {
         isInternational: false,
         role: "STUDENT",
       });
-      AsyncStorage.removeItem("user");
+      await AsyncStorage.removeItem("user");
       router.push("/(auth)/login");
     } catch (error) {
-      Alert.alert("Logout Error", error.message);
+      const errorMessage =
+        error instanceof Error ? error.message : "An unknown error occurred";
+      Alert.alert("Logout Error", errorMessage);
     }
   };
 
   const handleDeleteAccount = async () => {
-    try {
-      if (user.id) {
-        await deleteUserById(user.id);
-      }
+    Alert.alert(
+      "Delete Account",
+      "Are you sure you want to delete your account? This action cannot be undone.",
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              if (user.id) {
+                await deleteUserById(user.id);
+              }
 
-      state.user.userState.set({
-        id: null,
-        firstName: "",
-        lastName: "",
-        email: "",
-        pronouns: "",
-        isStudent: "",
-        currentDegree: "",
-        faculty: "",
-        school: "",
-        hours: 0,
-        university: "",
-        program: "",
-        year: "",
-        isInternational: false,
-        role: "STUDENT"
-      });
+              state.user.userState.set({
+                id: null,
+                firstName: "",
+                lastName: "",
+                email: "",
+                pronouns: [],
+                selfIdentification: [],
+                isStudent: "",
+                occupation: "",
+                organization: [],
+                currentDegree: "",
+                faculty: "",
+                school: "",
+                hours: 0,
+                university: "",
+                program: "",
+                year: "",
+                isInternational: false,
+                role: "STUDENT",
+              });
 
-
-      await AsyncStorage.removeItem("user");
-      router.push("/(auth)/login");
-
-    } catch (error) {
-      Alert.alert("Delete Account Error", error.message);
-    }
+              await AsyncStorage.removeItem("user");
+              router.push("/(auth)/login");
+            } catch (error) {
+              const errorMessage =
+                error instanceof Error
+                  ? error.message
+                  : "An unknown error occurred";
+              Alert.alert("Delete Account Error", errorMessage);
+            }
+          },
+        },
+      ]
+    );
   };
-  console.log(user.id)
-  console.log("user", user);
 
   if (!user) {
     return null;
   }
 
   const { accountSettings, moreOptions } =
-    roleSettingsOptions[user.role as keyof typeof roleSettingsOptions] || roleSettingsOptions.STUDENT;
+    roleSettingsOptions[user.role as keyof typeof roleSettingsOptions] ||
+    roleSettingsOptions.STUDENT;
 
   return (
     <SafeAreaView style={[tw`flex-1`, { backgroundColor: colors.background }]}>
-      <ScrollView style={[tw`flex-1 p-5`, { backgroundColor: colors.background }]}>
-        <Text style={{ color: colors.text, fontSize: 20, fontWeight: 'bold', marginBottom: 20 }}>
-          Links here are dummy, will be replaced with actual settings
-        </Text>
-        <View style={tw`mb-5`}>
-          <Text style={{ color: colors.text, fontSize: 24, fontWeight: 'bold' }}>
-            {user.firstName || "John"} {user.lastName || "Doe"}
+      <ScrollView
+        style={[tw`flex-1 p-5`, { backgroundColor: colors.background }]}
+      >
+        <View style={tw`mb-6`}>
+          <Text
+            style={{ color: colors.text, fontSize: 28, fontWeight: "bold" }}
+          >
+            {user.firstName || "User"} {user.lastName || ""}
           </Text>
-          <Text style={{ color: colors.gray }}>
-            {user.email || "johndoe@example.com"}
+          <Text style={{ color: colors.gray, fontSize: 16, marginTop: 4 }}>
+            {user.email || "user@example.com"}
           </Text>
+          {user.role && (
+            <Text
+              style={{
+                color: colors.primary,
+                fontSize: 14,
+                marginTop: 2,
+                fontWeight: "500",
+              }}
+            >
+              {user.role.charAt(0) + user.role.slice(1).toLowerCase()}
+            </Text>
+          )}
         </View>
-        <View style={[tw`p-5 rounded-lg shadow-sm mb-5`, { backgroundColor: isDarkMode ? colors.lightGray : colors.white }]}>
-          <Text style={{ color: colors.text, fontSize: 20, fontWeight: 'bold', marginBottom: 12 }}>
+
+        <View
+          style={[
+            tw`p-5 rounded-lg shadow-sm mb-5`,
+            { backgroundColor: isDarkMode ? colors.lightGray : colors.white },
+          ]}
+        >
+          <Text
+            style={{
+              color: colors.text,
+              fontSize: 20,
+              fontWeight: "bold",
+              marginBottom: 16,
+            }}
+          >
             Account Settings
           </Text>
           {accountSettings.map((item, index) => (
             <TouchableOpacity
               key={index}
-              style={tw`flex-row items-center justify-between mb-3`}
+              style={[
+                tw`flex-row items-center justify-between py-3`,
+                index < accountSettings.length - 1 && tw`border-b`,
+                { borderBottomColor: colors.gray + "20" },
+              ]}
               onPress={item.action}
             >
-              <Text style={{ color: colors.text }}>{item.label}</Text>
+              <Text style={{ color: colors.text, fontSize: 16 }}>
+                {item.label}
+              </Text>
+              <Text style={{ color: colors.gray }}>›</Text>
             </TouchableOpacity>
           ))}
         </View>
-        <View style={[tw`p-5 rounded-lg shadow-sm`, { backgroundColor: isDarkMode ? colors.lightGray : colors.white }]}>
-          <Text style={{ color: colors.text, fontSize: 20, fontWeight: 'bold', marginBottom: 12 }}>
+
+        <View
+          style={[
+            tw`p-5 rounded-lg shadow-sm mb-5`,
+            { backgroundColor: isDarkMode ? colors.lightGray : colors.white },
+          ]}
+        >
+          <Text
+            style={{
+              color: colors.text,
+              fontSize: 20,
+              fontWeight: "bold",
+              marginBottom: 16,
+            }}
+          >
             More Options
           </Text>
           {moreOptions.map((item, index) => (
             <TouchableOpacity
               key={index}
-              style={tw`flex-row items-center justify-between mb-3`}
+              style={[
+                tw`flex-row items-center justify-between py-3`,
+                index < moreOptions.length - 1 && tw`border-b`,
+                { borderBottomColor: colors.gray + "20" },
+              ]}
               onPress={item.action}
             >
-              <Text style={{ color: colors.text }}>{item.label}</Text>
+              <Text style={{ color: colors.text, fontSize: 16 }}>
+                {item.label}
+              </Text>
+              <Text style={{ color: colors.gray }}>›</Text>
             </TouchableOpacity>
           ))}
         </View>
+
         <TouchableOpacity
-          style={[tw`p-4 rounded mb-3 mt-5`, { backgroundColor: colors.error }]}
+          style={[tw`p-4 rounded-lg mb-4`, { backgroundColor: colors.error }]}
           onPress={handleLogout}
         >
-          <Text style={{ color: colors.white, textAlign: 'center' }}>Logout</Text>
+          <Text
+            style={{
+              color: colors.white,
+              textAlign: "center",
+              fontSize: 16,
+              fontWeight: "500",
+            }}
+          >
+            Logout
+          </Text>
         </TouchableOpacity>
+
         <TouchableOpacity
-          style={tw`p-4 rounded mb-3`}
+          style={[
+            tw`p-4 rounded-lg mb-6`,
+            {
+              backgroundColor: "transparent",
+              borderWidth: 1,
+              borderColor: colors.error,
+            },
+          ]}
           onPress={handleDeleteAccount}
         >
-          <Text style={{ color: colors.error, textAlign: 'center' }}>Delete Account</Text>
+          <Text
+            style={{
+              color: colors.error,
+              textAlign: "center",
+              fontSize: 16,
+              fontWeight: "500",
+            }}
+          >
+            Delete Account
+          </Text>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>

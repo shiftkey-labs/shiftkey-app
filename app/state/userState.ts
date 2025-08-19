@@ -8,8 +8,11 @@ const userState = observable({
   firstName: "",
   lastName: "",
   email: "",
-  pronouns: "",
+  pronouns: [],
+  selfIdentification: [],
   isStudent: "",
+  occupation: "",
+  organization: [],
   currentDegree: "",
   faculty: "",
   school: "",
@@ -34,8 +37,11 @@ const initializeAuth = async () => {
         firstName: "",
         lastName: "",
         email: "",
-        pronouns: "",
+        pronouns: [],
+        selfIdentification: [],
         isStudent: "",
+        occupation: "",
+        organization: [],
         currentDegree: "",
         faculty: "",
         school: "",
@@ -63,8 +69,11 @@ const initializeUser = async (userId: string) => {
       firstName: user.fields.firstName || "",
       lastName: user.fields.lastName || "",
       email: user.fields.email || "",
-      pronouns: user.fields.pronouns || "",
+      pronouns: user.fields.pronouns || [],
+      selfIdentification: user.fields.selfIdentification || [],
       isStudent: user.fields.isStudent || "",
+      occupation: user.fields.occupation || "",
+      organization: user.fields.organization || [],
       currentDegree: user.fields.currentDegree || "",
       faculty: user.fields.faculty || "",
       school: user.fields.school || "",
@@ -90,7 +99,7 @@ const hasRequiredFields = (user: any) => {
   const requiredFields = ["firstName", "lastName", "pronouns", "isStudent"];
 
   // Check if all required fields have values
-  return requiredFields.every(field => {
+  return requiredFields.every((field) => {
     const value = user[field];
     return value && value !== "" && (!Array.isArray(value) || value.length > 0);
   });

@@ -32,7 +32,10 @@ export const signupForm = {
       { label: "Indigenous Persons", value: "Indigenous Persons" },
       { label: "Mi'kmaq", value: "Mi'kmaq" },
       { label: "Racialized Persons", value: "Racialized Persons" },
-      { label: "Person of African or Black Descent", value: "Person of African or Black Descent" },
+      {
+        label: "Person of African or Black Descent",
+        value: "Person of African or Black Descent",
+      },
       { label: "African Nova Scotian", value: "African Nova Scotian" },
       { label: "Person with Disabilities", value: "Person with Disabilities" },
       { label: "2SLGBTQ+", value: "2SLGBTQ+" },
@@ -56,15 +59,15 @@ export const signupForm = {
   organization: {
     label: "What type of organization do you work for?",
     key: "organization",
-    type: "dropdown",
+    type: "multi-select",
     options: [
-      { label: "Community", value: "Government" },
+      { label: "Community", value: "Community" },
       { label: "Non-Profit", value: "Non-Profit" },
       { label: "Private Sector", value: "Private Sector" },
       { label: "Municipal Government", value: "Municipal Government" },
       { label: "Provincial Government", value: "Provincial Government" },
       { label: "Federal Government", value: "Federal Government" },
-      { label: "Faculty/Staff", value: "Faculty/Staff" }
+      { label: "Faculty/Staff", value: "Faculty/Staff" },
     ],
   },
   currentDegree: {
@@ -97,13 +100,25 @@ export const signupForm = {
     type: "dropdown",
     options: [
       { label: "Dalhousie University", value: "Dalhousie University" },
-      { label: "University of King's College", value: "University of King's College" },
+      {
+        label: "University of King's College",
+        value: "University of King's College",
+      },
       { label: "St. Mary's University", value: "St. Mary's University" },
       { label: "NSCAD University", value: "NSCAD University" },
-      { label: "Nova Scotia Community College", value: "Nova Scotia Community College" },
-      { label: "Mount Saint Vincent University", value: "Mount Saint Vincent University" },
+      {
+        label: "Nova Scotia Community College",
+        value: "Nova Scotia Community College",
+      },
+      {
+        label: "Mount Saint Vincent University",
+        value: "Mount Saint Vincent University",
+      },
       { label: "Acadia University", value: "Acadia University" },
-      { label: "St. Francis Xavier University", value: "St. Francis Xavier University" },
+      {
+        label: "St. Francis Xavier University",
+        value: "St. Francis Xavier University",
+      },
       { label: "Cape Breton University", value: "Cape Breton University" },
       { label: "Other", value: "Other" },
     ],
