@@ -1,5 +1,13 @@
 import React from "react";
-import { View, Text, Image as RNImage, TouchableOpacity, ActivityIndicator, Pressable, StyleSheet } from "react-native";
+import {
+  View,
+  Text,
+  Image as RNImage,
+  TouchableOpacity,
+  ActivityIndicator,
+  Pressable,
+  StyleSheet,
+} from "react-native";
 import { FontAwesome } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import tw from "@/app/styles/tailwind";
@@ -34,6 +42,8 @@ interface ImageType {
 interface BigBoyCardProps {
   title: string;
   date: string;
+  startTime?: string;
+  endTime?: string;
   category: string;
   images: ImageType[];
   onPressShow: () => void;
@@ -45,12 +55,14 @@ interface BigBoyCardProps {
 const BigBoyCard: React.FC<BigBoyCardProps> = ({
   title,
   date,
+  startTime,
+  endTime,
   category,
   images,
   onPressShow,
   style,
   isLoading = false,
-  staffOnly = false
+  staffOnly = false,
 }) => {
   const { isDarkMode, colors } = useTheme();
   const imageUrl = images.length > 0 ? images[0].url : dummyImageUrl;
@@ -59,50 +71,110 @@ const BigBoyCard: React.FC<BigBoyCardProps> = ({
     <Pressable
       onPress={onPressShow}
       style={[
-        tw`mr-4 rounded-lg overflow-hidden w-80 my-2 ${style}`,
-        { backgroundColor: isDarkMode ? colors.lightGray : colors.white },
+        tw`mr-4 rounded-lg overflow-hidden w-80 my-2`,
+        {
+          backgroundColor: isDarkMode ? colors.lightGray : colors.white,
+          shadowColor: "#000",
+          shadowOffset: {
+            width: 0,
+            height: 4,
+          },
+          shadowOpacity: 0.15,
+          shadowRadius: 8,
+          elevation: 8,
+        },
+        style,
       ]}
       disabled={isLoading}
     >
       {isLoading ? (
-        <View style={tw`absolute z-10 w-full h-full justify-center items-center bg-black/30`}>
-          <ActivityIndicator size="large" color="#ffffff" />
+        <View
+          style={tw`absolute z-10 w-full h-full justify-center items-center bg-black/30`}
+        >
+          <ActivityIndicator size='large' color='#ffffff' />
         </View>
       ) : null}
-      <View style={tw`relative w-full`}>
-        <RNImage source={{ uri: imageUrl }} style={tw`w-full h-48`} />
+
+      {/* Image Section */}
+      <View style={tw`relative w-full p-4 pb-0`}>
+        <View
+          style={tw`relative w-full h-48 rounded-lg overflow-hidden bg-gray-100`}
+        >
+          <RNImage source={{ uri: imageUrl }} style={tw`w-full h-full`} />
+        </View>
+
+        {/* Category Badge */}
         <Pressable
           style={[
-            tw`absolute top-2 left-2 rounded p-1`,
-            { backgroundColor: isDarkMode ? colors.lightGray : colors.white }
+            tw`absolute top-7 left-7 rounded-full px-3 py-1`,
+            { backgroundColor: isDarkMode ? colors.lightGray : colors.white },
           ]}
         >
-          <Text style={{ color: isDarkMode ? colors.text : colors.text }}>{category}</Text>
+          <Text
+            style={[
+              tw`text-sm font-medium`,
+              { color: isDarkMode ? colors.text : colors.text },
+            ]}
+          >
+            {category}
+          </Text>
         </Pressable>
-        {/* <TouchableOpacity
-          style={tw`absolute top-2 right-2 bg-white p-1 rounded-full`}
-          onPress={onPressFavorite}
-        >
-          <FontAwesome name="heart-o" size={20} color="red" />
-        </TouchableOpacity> */}
+
+        {/* Staff Only Badge */}
         {staffOnly && (
           <View
             style={[
-              tw`absolute top-2 right-2 rounded p-1`,
-              { backgroundColor: colors.primary }
+              tw`absolute top-7 right-7 rounded-full px-3 py-1`,
+              { backgroundColor: colors.primary },
             ]}
           >
-            <Text style={{ color: 'white', fontWeight: 'bold' }}>Staff Only</Text>
+            <Text style={{ color: "white", fontWeight: "bold", fontSize: 12 }}>
+              Staff Only
+            </Text>
           </View>
         )}
-        <LinearGradient
-          colors={["transparent", "rgba(0,0,0,1)"]}
-          style={tw`absolute bottom-0 left-0 right-0 h-24`}
-        />
-        <View style={tw`absolute bottom-4 left-4`}>
-          <Text style={tw`text-2xl font-bold text-white py-1`}>{title}</Text>
-          <Text style={tw`text-lg text-white`}>
-            {new Date(date).toLocaleDateString()}
+      </View>
+
+      {/* Content Section */}
+      <View style={tw`p-4`}>
+        {/* Time Display */}
+        {(startTime || endTime) && (
+          <Text
+            style={[
+              tw`text-sm mb-2`,
+              { color: isDarkMode ? colors.gray : "#6b7280" },
+            ]}
+          >
+            {startTime && endTime
+              ? `${startTime} - ${endTime}`
+              : startTime || endTime}
+          </Text>
+        )}
+
+        {/* Title */}
+        <Text
+          style={[
+            tw`text-xl font-bold mb-3 leading-6`,
+            { color: isDarkMode ? colors.text : "#1a1a1a" },
+          ]}
+          numberOfLines={3}
+        >
+          {title}
+        </Text>
+
+        {/* Date and Time */}
+        <View style={tw`flex-row items-center`}>
+          <Text
+            style={[
+              tw`text-sm`,
+              { color: isDarkMode ? colors.gray : "#6b7280" },
+            ]}
+          >
+            {new Date(date).toLocaleDateString("en-US", {
+              year: "numeric",
+              month: "short",
+              day: "numeric",
+            })}
           </Text>
         </View>
       </View>

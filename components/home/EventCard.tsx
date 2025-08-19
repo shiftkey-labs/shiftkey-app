@@ -17,6 +17,26 @@ const EventCard: React.FC<EventCardProps> = ({
   const { isDarkMode, colors } = useTheme();
   const imageUrl = images?.length ? images[0].url : dummyImageUrl;
 
+  // Helper function to format date for event cards
+  const formatEventDate = (dateString: string) => {
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return "Invalid date";
+      
+      // Format: "Jan 15, 2024 at 2:30 PM"
+      return date.toLocaleString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
+      });
+    } catch (error) {
+      return "Invalid date";
+    }
+  };
+
   return (
     <TouchableOpacity
       style={[
@@ -49,7 +69,7 @@ const EventCard: React.FC<EventCardProps> = ({
         <Text style={{ color: colors.text, fontWeight: 'bold' }}>{title}</Text>
         <Text style={{ color: colors.gray, marginTop: 4 }}>{location}</Text>
         <Text style={{ color: colors.gray, marginTop: 4 }}>
-          {new Date(date).toLocaleDateString()}
+          {formatEventDate(date)}
         </Text>
       </View>
     </TouchableOpacity>

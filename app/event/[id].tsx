@@ -35,59 +35,120 @@ const EventDetails = () => {
   const shiftsScheduled = currentEvent?.shiftsScheduled || 0;
   const [isEventRegistered, setIsEventRegistered] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [loadingRegistrations, setLoadingRegistrations] = useState(false);
   const [canTakeShift, setCanTakeShift] = useState<boolean | null>(null);
   const [shiftModalVisible, setShiftModalVisible] = useState(false);
   const [selectedShifts, setSelectedShifts] = useState<string[]>([]);
   const [allShifts, setAllShifts] = useState<Shift[]>([]);
   const [loadingShifts, setLoadingShifts] = useState(false);
   const user = state.user.userState.get();
-  const userVolunteeredEvents: Event[] = state.volunteer.volunteerState.userVolunteeredEvents.get();
+  const userVolunteeredEvents: Event[] =
+    state.volunteer.volunteerState.userVolunteeredEvents.get();
 
-  const userRegistrations: Registration[] = state.registration.registrationState.userRegistrations.get();
+  const userRegistrations: Registration[] =
+    state.registration.registrationState.userRegistrations.get();
 
   const { isDarkMode, colors } = useTheme();
 
-  const getDefaultShift = () => {
-    if (!currentEvent?.startDate || !currentEvent?.endDate) return [];
+  // Helper function to format date and time
+  const formatEventDateTime = (dateString?: string) => {
+    if (!dateString) return "No date provided";
 
-    const startDate = new Date(currentEvent.startDate);
-    const endDate = new Date(currentEvent.endDate);
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return "Invalid date";
 
-    // If dates are invalid, return empty array
-    if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) return [];
-
-    // Format the time slot as "HH:MM AM/PM - HH:MM AM/PM"
-    const formatTime = (date: Date) => {
-      return date.toLocaleTimeString('en-US', {
-        hour: 'numeric',
-        minute: '2-digit',
-        hour12: true
+      // Format: "Monday, January 15, 2024 at 2:30 PM"
+      return date.toLocaleString("en-US", {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
       });
-    };
+    } catch (error) {
+      return "Invalid date";
+    }
+  };
 
-    return [`${formatTime(startDate)} - ${formatTime(endDate)}`];
+  // Helper function to format date only
+  const formatEventDate = (dateString?: string) => {
+    if (!dateString) return "No date provided";
+
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return "Invalid date";
+
+      // Format: "Monday, January 15, 2024"
+      return date.toLocaleDateString("en-US", {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      });
+    } catch (error) {
+      return "Invalid date";
+    }
+  };
+
+  // Helper function to format time only
+  const formatEventTime = (dateString?: string) => {
+    if (!dateString) return "No time provided";
+
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return "Invalid time";
+
+      // Format: "2:30 PM"
+      return date.toLocaleTimeString("en-US", {
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
+      });
+    } catch (error) {
+      return "Invalid time";
+    }
   };
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        console.log('Fetching event details for eventId:', eventId);
+        console.log("Fetching event details for eventId:", eventId);
         await state.event.fetchEventDetails(eventId);
-        console.log('Current event after fetch:', curr);
-        console.log('Current event fields:', currentEvent);
+        console.log("Current event after fetch:", curr);
+        console.log("Current event fields:", currentEvent);
 
+        // Event details are loaded, show the UI
+        setLoading(false);
+
+        // Continue fetching user-specific data in the background
         if (user?.email) {
-          console.log('Fetching user data for email:', user.email);
-          console.log('Current user state:', user);
-          await state.registration.fetchUserRegistrations(user.email, "UPCOMING");
-          await state.volunteer.fetchUserVolunteeredEvents(user.email);
-          console.log('User registrations after fetch:', userRegistrations);
-          console.log('User volunteered events after fetch:', userVolunteeredEvents);
+          setLoadingRegistrations(true);
+          console.log("Fetching user data for email:", user.email);
+          console.log("Current user state:", user);
+
+          try {
+            await state.registration.fetchUserRegistrations(
+              user.email,
+              "UPCOMING"
+            );
+            await state.volunteer.fetchUserVolunteeredEvents(user.email);
+            console.log("User registrations after fetch:", userRegistrations);
+            console.log(
+              "User volunteered events after fetch:",
+              userVolunteeredEvents
+            );
+          } catch (error) {
+            console.error("Failed to fetch user data:", error);
+          } finally {
+            setLoadingRegistrations(false);
+          }
         }
       } catch (error) {
         console.error("Failed to fetch event details:", error);
-      } finally {
         setLoading(false);
       }
     };
@@ -95,14 +156,18 @@ const EventDetails = () => {
   }, [eventId, user?.email]);
 
   useEffect(() => {
-    const isRegistered = userRegistrations &&
-      Array.isArray(userRegistrations) &&
-      userRegistrations.length > 0 &&
-      userRegistrations.some((registration: Registration) =>
-        registration?.eventId?.[0] === curr?.id
-      );
-    setIsEventRegistered(!!isRegistered);
-  }, [userRegistrations, curr]);
+    if (!loadingRegistrations) {
+      const isRegistered =
+        userRegistrations &&
+        Array.isArray(userRegistrations) &&
+        userRegistrations.length > 0 &&
+        userRegistrations.some(
+          (registration: Registration) =>
+            registration?.eventId?.[0] === curr?.id
+        );
+      setIsEventRegistered(!!isRegistered);
+    }
+  }, [userRegistrations, curr, loadingRegistrations]);
 
   const checkShiftAvailability = async () => {
     if (user?.id && curr?.id && user?.role === "STAFF") {
@@ -119,21 +184,42 @@ const EventDetails = () => {
       }
     } else {
       setCanTakeShift(false);
-      setLoadingShifts(false);
     }
   };
 
+  // Auto-check shift availability when user data is loaded and user is staff
+  useEffect(() => {
+    if (
+      !loadingRegistrations &&
+      user?.role === "STAFF" &&
+      curr?.id &&
+      user?.id
+    ) {
+      checkShiftAvailability();
+    }
+  }, [loadingRegistrations, user?.role, curr?.id, user?.id]);
+
   if (loading) {
     return (
-      <View style={[tw`flex-1 items-center justify-center`, { backgroundColor: colors.background }]}>
-        <ActivityIndicator size="large" color={colors.primary} />
+      <View
+        style={[
+          tw`flex-1 items-center justify-center`,
+          { backgroundColor: colors.background },
+        ]}
+      >
+        <ActivityIndicator size='large' color={colors.primary} />
       </View>
     );
   }
 
   if (!currentEvent) {
     return (
-      <View style={[tw`flex-1 items-center justify-center`, { backgroundColor: colors.background }]}>
+      <View
+        style={[
+          tw`flex-1 items-center justify-center`,
+          { backgroundColor: colors.background },
+        ]}
+      >
         <Text style={tw`text-xl`}>Event not found</Text>
       </View>
     );
@@ -143,7 +229,7 @@ const EventDetails = () => {
     if (!user.id || !eventId) return;
     try {
       await state.registration.registerForEvent(user.id, eventId);
-      await state.registration.fetchUserRegistrations(user.email || '');
+      await state.registration.fetchUserRegistrations(user.email || "");
       setModalVisible(true);
     } catch (error) {
       Alert.alert("Error", "Failed to confirm registration.");
@@ -189,15 +275,13 @@ const EventDetails = () => {
   };
 
   const showShiftModal = async () => {
-    // Check shift availability when the user clicks the button
-    if (!canTakeShift && !loadingShifts) {
-      await checkShiftAvailability();
-    }
-
     if (canTakeShift) {
       setShiftModalVisible(true);
     } else if (!loadingShifts && canTakeShift === false) {
-      Alert.alert("No Shifts Available", "There are no available shifts for this event.");
+      Alert.alert(
+        "No Shifts Available",
+        "There are no available shifts for this event."
+      );
     }
   };
 
@@ -210,98 +294,164 @@ const EventDetails = () => {
   };
 
   return (
-    <SafeAreaView style={[tw`flex-1`, { backgroundColor: colors.background }]}>
-      <View style={tw`flex-1`}>
+    <View style={[tw`flex-1`, { backgroundColor: colors.background }]}>
+      <View style={tw`flex-1 pt-12`}>
         <Image
           source={{
-            uri: currentEvent?.images && currentEvent.images.length > 0
-              ? currentEvent.images[0].url
-              : "https://shiftkeylabs.ca/wp-content/uploads/2022/12/Shiftkey-Labs-Logo-01-e1487284025704-1200x515-1.png"
+            uri:
+              currentEvent?.images && currentEvent.images.length > 0
+                ? currentEvent.images[0].url
+                : "https://shiftkeylabs.ca/wp-content/uploads/2022/12/Shiftkey-Labs-Logo-01-e1487284025704-1200x515-1.png",
           }}
           style={tw`absolute w-full h-84`}
         />
         <TouchableOpacity
           onPress={handleBack}
           style={[
-            tw`absolute top-5 left-5 z-10 p-3 rounded-md shadow-md`,
-            { backgroundColor: isDarkMode ? colors.lightGray : colors.white }
+            tw`absolute top-15 left-5 z-10 p-3 rounded-md shadow-md`,
+            { backgroundColor: isDarkMode ? colors.lightGray : colors.white },
           ]}
         >
-          <FontAwesome name="chevron-left" size={20} color={colors.text} />
+          <FontAwesome name='chevron-left' size={20} color={colors.text} />
         </TouchableOpacity>
-        <ScrollView style={tw`flex-1`} contentContainerStyle={tw`pt-72`}>
-          <View style={[
-            tw`p-5 rounded-t-lg mt-[-10]`,
-            { backgroundColor: isDarkMode ? colors.lightGray : colors.white }
-          ]}>
-            <Text style={{ color: colors.text, fontSize: 30, fontWeight: 'bold', marginTop: 8 }}>
+        <ScrollView
+          style={tw`flex-1`}
+          contentContainerStyle={[tw`pt-72`, { flexGrow: 1 }]}
+        >
+          <View
+            style={[
+              tw`p-5 rounded-t-lg mt-[-10] flex-1`,
+              { backgroundColor: isDarkMode ? colors.lightGray : colors.white },
+            ]}
+          >
+            <Text
+              style={{
+                color: colors.text,
+                fontSize: 30,
+                fontWeight: "bold",
+                marginTop: 8,
+              }}
+            >
               {currentEvent?.eventName || "Event Name"}
             </Text>
             <View style={tw`flex-row items-center mt-3`}>
-              <FontAwesome name="map-marker" size={24} color={colors.primary} />
-              <Text style={{ color: colors.gray, fontSize: 18, marginLeft: 20, marginVertical: 12 }}>
+              <FontAwesome name='map-marker' size={24} color={colors.primary} />
+              <Text
+                style={{
+                  color: colors.gray,
+                  fontSize: 18,
+                  marginLeft: 16,
+                }}
+              >
                 {currentEvent?.location || "No location specified"}
               </Text>
             </View>
 
             <View style={tw`flex-row items-center mt-3`}>
-              <FontAwesome name="calendar" size={24} color={colors.primary} />
-              <Text style={{ color: colors.gray, fontSize: 18, marginLeft: 16 }}>
-                {currentEvent?.startDate
-                  ? new Date(currentEvent.startDate).toLocaleString()
-                  : "No date provided"}
+              <FontAwesome name='calendar' size={24} color={colors.primary} />
+              <Text
+                style={{
+                  color: colors.gray,
+                  fontSize: 18,
+                  marginLeft: 16,
+                }}
+              >
+                {formatEventDate(currentEvent?.startDate)}
               </Text>
             </View>
 
-            <Text style={{ color: colors.text, fontSize: 18, fontWeight: 'bold', marginTop: 20 }}>
+            <View style={tw`flex-row items-center mt-3`}>
+              <FontAwesome name='clock-o' size={24} color={colors.primary} />
+              <Text
+                style={{
+                  color: colors.gray,
+                  fontSize: 18,
+                  marginLeft: 16,
+                }}
+              >
+                {formatEventTime(currentEvent?.startDate)}
+              </Text>
+            </View>
+
+            <Text
+              style={{
+                color: colors.text,
+                fontSize: 18,
+                fontWeight: "bold",
+                marginTop: 20,
+              }}
+            >
               About Event
             </Text>
-            <Text style={{ color: colors.gray, marginTop: 8 }}>
+            <Text style={{ color: colors.gray, marginTop: 8, flex: 1 }}>
               {currentEvent?.eventDetails || "No event details provided"}
             </Text>
-            <View style={tw`flex-row justify-between mt-5`}>
-              {isEventRegistered ? (
+            <View style={tw`flex-row justify-between mt-5 mb-6`}>
+              {loadingRegistrations ? (
                 <TouchableOpacity
                   style={[
                     tw`p-4 rounded-lg flex-1 mr-2`,
-                    { backgroundColor: colors.primary }
+                    { backgroundColor: colors.gray, opacity: 0.5 },
+                  ]}
+                  disabled
+                >
+                  <ActivityIndicator size='small' color={colors.white} />
+                </TouchableOpacity>
+              ) : isEventRegistered ? (
+                <TouchableOpacity
+                  style={[
+                    tw`p-4 rounded-lg flex-1 mr-2`,
+                    { backgroundColor: colors.primary },
                   ]}
                   onPress={handleViewTicket}
                 >
-                  <Text style={{ color: colors.white, textAlign: 'center' }}>View Ticket</Text>
+                  <Text style={{ color: colors.white, textAlign: "center" }}>
+                    View Ticket
+                  </Text>
                 </TouchableOpacity>
-              ) : currentEvent?.registration && (
-                <TouchableOpacity
-                  style={[
-                    tw`p-4 rounded-lg flex-1 mr-2`,
-                    { backgroundColor: colors.primary }
-                  ]}
-                  onPress={handleRegistration}
-                >
-                  <Text style={{ color: colors.white, textAlign: 'center' }}>Register</Text>
-                </TouchableOpacity>
+              ) : (
+                currentEvent?.registration && (
+                  <TouchableOpacity
+                    style={[
+                      tw`p-4 rounded-lg flex-1 mr-2`,
+                      { backgroundColor: colors.primary },
+                    ]}
+                    onPress={handleRegistration}
+                  >
+                    <Text style={{ color: colors.white, textAlign: "center" }}>
+                      Register
+                    </Text>
+                  </TouchableOpacity>
+                )
               )}
               {user?.role === "STAFF" && (
                 <TouchableOpacity
                   style={[
                     tw`p-4 rounded-lg flex-1 ml-2`,
                     {
-                      backgroundColor: isDarkMode ? colors.lightGray : colors.white,
+                      backgroundColor: isDarkMode
+                        ? colors.lightGray
+                        : colors.white,
                       borderWidth: 1,
                       borderColor: colors.primary,
-                      opacity: canTakeShift ? 1 : 0.5
-                    }
+                      opacity:
+                        loadingShifts || canTakeShift === false ? 0.5 : 1,
+                    },
                   ]}
                   onPress={showShiftModal}
-                  disabled={loadingShifts || (canTakeShift === false)}
+                  disabled={loadingShifts || canTakeShift === false}
                 >
                   {loadingShifts ? (
-                    <ActivityIndicator size="small" color={colors.primary} />
+                    <ActivityIndicator size='small' color={colors.primary} />
                   ) : (
-                    <Text style={{ color: colors.primary, textAlign: 'center' }}>
-                      {canTakeShift === true ? "Book Shift" :
-                        canTakeShift === false ? "No Shifts Available" :
-                          "Check Shifts"}
+                    <Text
+                      style={{ color: colors.primary, textAlign: "center" }}
+                    >
+                      {canTakeShift === true
+                        ? "Book Shift"
+                        : canTakeShift === false
+                        ? "No Shifts Available"
+                        : "Check Shifts"}
                     </Text>
                   )}
                 </TouchableOpacity>
@@ -311,50 +461,73 @@ const EventDetails = () => {
         </ScrollView>
       </View>
       <Modal
-        animationType="slide"
+        animationType='slide'
         transparent={true}
         visible={modalVisible}
         onRequestClose={() => {
           setModalVisible(!modalVisible);
         }}
       >
-        <View style={tw`flex-1 justify-center items-center bg-black bg-opacity-50`}>
-          <View style={[
-            tw`rounded-lg p-5 w-4/5`,
-            { backgroundColor: isDarkMode ? colors.lightGray : colors.white }
-          ]}>
+        <View
+          style={tw`flex-1 justify-center items-center bg-black bg-opacity-50`}
+        >
+          <View
+            style={[
+              tw`rounded-lg p-5 w-4/5`,
+              { backgroundColor: isDarkMode ? colors.lightGray : colors.white },
+            ]}
+          >
             <View style={tw`items-center mb-5`}>
-              <FontAwesome name="check-circle" size={50} color={isDarkMode ? colors.secondary : "green"} />
-              <Text style={{ color: colors.text, fontSize: 24, fontWeight: 'bold', marginBottom: 8 }}>
+              <FontAwesome
+                name='check-circle'
+                size={50}
+                color={isDarkMode ? colors.secondary : "green"}
+              />
+              <Text
+                style={{
+                  color: colors.text,
+                  fontSize: 24,
+                  fontWeight: "bold",
+                  marginBottom: 8,
+                }}
+              >
                 Congratulations!
               </Text>
-              <Text style={{ color: colors.gray, textAlign: 'center', marginBottom: 20 }}>
-                You have successfully placed an order for this event. Enjoy the event!
+              <Text
+                style={{
+                  color: colors.gray,
+                  textAlign: "center",
+                  marginBottom: 20,
+                }}
+              >
+                You have successfully placed an order for this event. Enjoy the
+                event!
               </Text>
             </View>
             <TouchableOpacity
               style={[
                 tw`p-4 rounded-lg mb-3`,
-                { backgroundColor: colors.primary }
+                { backgroundColor: colors.primary },
               ]}
               onPress={handleViewTicket}
             >
-              <Text style={{ color: colors.white, textAlign: 'center' }}>View E-Ticket</Text>
+              <Text style={{ color: colors.white, textAlign: "center" }}>
+                View E-Ticket
+              </Text>
             </TouchableOpacity>
             <TouchableOpacity
-              style={[
-                tw`p-4 rounded-lg`,
-                { backgroundColor: colors.gray }
-              ]}
+              style={[tw`p-4 rounded-lg`, { backgroundColor: colors.gray }]}
               onPress={handleGoHome}
             >
-              <Text style={{ color: colors.text, textAlign: 'center' }}>Go to Home</Text>
+              <Text style={{ color: colors.text, textAlign: "center" }}>
+                Go to Home
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
       </Modal>
       <Modal
-        animationType="slide"
+        animationType='slide'
         transparent={true}
         visible={shiftModalVisible}
         onRequestClose={() => {
@@ -368,13 +541,20 @@ const EventDetails = () => {
         >
           <TouchableOpacity
             activeOpacity={1}
-            onPress={e => e.stopPropagation()}
+            onPress={(e) => e.stopPropagation()}
             style={[
               tw`rounded-lg p-5 w-4/5`,
-              { backgroundColor: isDarkMode ? colors.lightGray : colors.white }
+              { backgroundColor: isDarkMode ? colors.lightGray : colors.white },
             ]}
           >
-            <Text style={{ color: colors.text, fontSize: 24, fontWeight: 'bold', marginBottom: 8 }}>
+            <Text
+              style={{
+                color: colors.text,
+                fontSize: 24,
+                fontWeight: "bold",
+                marginBottom: 8,
+              }}
+            >
               Book a Shift
             </Text>
             <Text style={{ color: colors.gray, marginBottom: 20 }}>
@@ -384,7 +564,7 @@ const EventDetails = () => {
             <View style={tw`flex-col w-full`}>
               {loadingShifts ? (
                 <View style={tw`items-center justify-center py-8`}>
-                  <ActivityIndicator size="large" color={colors.primary} />
+                  <ActivityIndicator size='large' color={colors.primary} />
                   <Text style={{ color: colors.gray, marginTop: 10 }}>
                     Loading available shifts...
                   </Text>
@@ -399,20 +579,26 @@ const EventDetails = () => {
                         {
                           backgroundColor: selectedShifts.includes(shift.id)
                             ? colors.primary
-                            : isDarkMode ? colors.lightGray : colors.white,
+                            : isDarkMode
+                            ? colors.lightGray
+                            : colors.white,
                           borderWidth: 1,
                           borderColor: colors.primary,
-                          opacity: shift.isAvailable ? 1 : 0.5
-                        }
+                          opacity: shift.isAvailable ? 1 : 0.5,
+                        },
                       ]}
-                      onPress={() => shift.isAvailable && toggleShiftSelection(shift.id)}
+                      onPress={() =>
+                        shift.isAvailable && toggleShiftSelection(shift.id)
+                      }
                       disabled={!shift.isAvailable}
                     >
                       <View style={tw`flex-1`}>
                         <Text
                           style={{
-                            color: selectedShifts.includes(shift.id) ? colors.white : colors.text,
-                            fontSize: 16
+                            color: selectedShifts.includes(shift.id)
+                              ? colors.white
+                              : colors.text,
+                            fontSize: 16,
                           }}
                         >
                           {shift.shiftTime}
@@ -424,13 +610,17 @@ const EventDetails = () => {
                         )}
                       </View>
                       {selectedShifts.includes(shift.id) && (
-                        <FontAwesome name="check" size={16} color={colors.white} />
+                        <FontAwesome
+                          name='check'
+                          size={16}
+                          color={colors.white}
+                        />
                       )}
                     </TouchableOpacity>
                   );
                 })
               ) : (
-                <Text style={{ color: colors.gray, textAlign: 'center' }}>
+                <Text style={{ color: colors.gray, textAlign: "center" }}>
                   No shifts found for this event.
                 </Text>
               )}
@@ -439,17 +629,18 @@ const EventDetails = () => {
               style={[
                 tw`p-4 rounded-lg mt-4`,
                 {
-                  backgroundColor: selectedShifts.length > 0 ? colors.primary : colors.gray,
-                  opacity: selectedShifts.length > 0 ? 1 : 0.5
-                }
+                  backgroundColor:
+                    selectedShifts.length > 0 ? colors.primary : colors.gray,
+                  opacity: selectedShifts.length > 0 ? 1 : 0.5,
+                },
               ]}
               onPress={handleVolunteer}
               disabled={selectedShifts.length === 0 || loadingShifts}
             >
               {loadingShifts ? (
-                <ActivityIndicator size="small" color={colors.white} />
+                <ActivityIndicator size='small' color={colors.white} />
               ) : (
-                <Text style={{ color: colors.white, textAlign: 'center' }}>
+                <Text style={{ color: colors.white, textAlign: "center" }}>
                   Book Selected Shift
                 </Text>
               )}
@@ -457,7 +648,7 @@ const EventDetails = () => {
           </TouchableOpacity>
         </TouchableOpacity>
       </Modal>
-    </SafeAreaView>
+    </View>
   );
 };
 

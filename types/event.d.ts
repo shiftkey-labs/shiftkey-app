@@ -25,6 +25,7 @@ export type Event = {
     eventName?: string;
     location?: string;
     startDate?: string;
+    endDate?: string;
     eventDetails?: string;
     volunteerCount?: number;
     shiftsScheduled?: number;

@@ -118,25 +118,30 @@ const EventAttendance = () => {
         }
 
         // Update the attendance status for each attendee
-        const attendeesWithDayStatus = allAttendees.map((attendee: Attendee) => {
-          const updatedAttendee = { ...attendee };
+        const attendeesWithDayStatus = allAttendees.map(
+          (attendee: Attendee) => {
+            const updatedAttendee = { ...attendee };
 
-          // Set the day-specific attendance status
-          const dayKey = `day${dayParam}` as keyof Attendee;
-          if (dayKey === 'day1') {
-            updatedAttendee.day1 = attendanceMap.has(attendee.id);
-          } else if (dayKey === 'day2') {
-            updatedAttendee.day2 = attendanceMap.has(attendee.id);
-          } else if (dayKey === 'day3') {
-            updatedAttendee.day3 = attendanceMap.has(attendee.id);
-          } else if (dayKey === 'day4') {
-            updatedAttendee.day4 = attendanceMap.has(attendee.id);
+            // Set the day-specific attendance status
+            const dayKey = `day${dayParam}` as keyof Attendee;
+            if (dayKey === "day1") {
+              updatedAttendee.day1 = attendanceMap.has(attendee.id);
+            } else if (dayKey === "day2") {
+              updatedAttendee.day2 = attendanceMap.has(attendee.id);
+            } else if (dayKey === "day3") {
+              updatedAttendee.day3 = attendanceMap.has(attendee.id);
+            } else if (dayKey === "day4") {
+              updatedAttendee.day4 = attendanceMap.has(attendee.id);
+            }
+
+            return updatedAttendee;
           }
+        );
 
-          return updatedAttendee;
-        });
-
-        console.log("Attendees with day status:", JSON.stringify(attendeesWithDayStatus, null, 2));
+        console.log(
+          "Attendees with day status:",
+          JSON.stringify(attendeesWithDayStatus, null, 2)
+        );
 
         // Set the attendees with their day-specific attendance status
         setAttendees(attendeesWithDayStatus);
@@ -158,7 +163,7 @@ const EventAttendance = () => {
       // Ensure selectedDay is a valid value before sending to the backend
       const dayParam = selectedDay || "1";
 
-      console.log("dayParam", dayParam)
+      console.log("dayParam", dayParam);
 
       // Send the day parameter correctly in the request body
       await server.post(
@@ -174,7 +179,13 @@ const EventAttendance = () => {
     }
   };
 
-  const handleBarCodeScanned = async ({ type, data }: { type: string; data: string }) => {
+  const handleBarCodeScanned = async ({
+    type,
+    data,
+  }: {
+    type: string;
+    data: string;
+  }) => {
     setScanning(false);
     try {
       // Pass the user ID from the QR code to markAttendance
@@ -211,45 +222,84 @@ const EventAttendance = () => {
 
   if (loading) {
     return (
-      <View style={[tw`flex-1 justify-center items-center`, { backgroundColor: colors.background }]}>
-        <ActivityIndicator size="large" color={isDarkMode ? colors.text : colors.primary} />
+      <View
+        style={[
+          tw`flex-1 justify-center items-center`,
+          { backgroundColor: colors.background },
+        ]}
+      >
+        <ActivityIndicator
+          size='large'
+          color={isDarkMode ? colors.text : colors.primary}
+        />
       </View>
     );
   }
 
   return (
-    <SafeAreaView style={[tw`flex-1`, { backgroundColor: isDarkMode ? colors.lightGray : colors.white }]}>
+    <SafeAreaView
+      style={[
+        tw`flex-1`,
+        { backgroundColor: isDarkMode ? colors.lightGray : colors.white },
+      ]}
+    >
       <Stack.Screen
         options={{
           headerShown: false,
         }}
       />
-      <View style={[tw`flex-row items-center justify-between p-5 shadow-sm`, { backgroundColor: isDarkMode ? colors.lightGray : colors.white }]}>
+      <View
+        style={[
+          tw`flex-row items-center justify-between p-5 shadow-sm`,
+          { backgroundColor: isDarkMode ? colors.lightGray : colors.white },
+        ]}
+      >
         <TouchableOpacity onPress={() => router.back()} style={tw`p-2`}>
-          <AntDesign name="arrowleft" size={24} color={colors.primary} />
+          <AntDesign name='arrowleft' size={24} color={colors.primary} />
         </TouchableOpacity>
-        <Text style={{ color: colors.text, fontSize: 20, fontWeight: 'bold' }}>{eventTitle}</Text>
+        <Text style={{ color: colors.text, fontSize: 20, fontWeight: "bold" }}>
+          {eventTitle}
+        </Text>
         <TouchableOpacity onPress={openScanner} style={tw`p-2`}>
-          <AntDesign name="qrcode" size={24} color={colors.primary} />
+          <AntDesign name='qrcode' size={24} color={colors.primary} />
         </TouchableOpacity>
       </View>
 
       <View style={[tw`flex-1`, { backgroundColor: colors.background }]}>
-        <View style={[tw`px-4 py-3`, { backgroundColor: isDarkMode ? colors.lightGray : colors.white }]}>
+        <View
+          style={[
+            tw`px-4 py-3`,
+            { backgroundColor: isDarkMode ? colors.lightGray : colors.white },
+          ]}
+        >
           <View style={tw`flex-row items-center justify-between mb-2`}>
-            <View style={[tw`flex-row items-center rounded-lg px-3 py-2 flex-1 mr-2`, { backgroundColor: isDarkMode ? colors.background : colors.lightGray }]}>
-              <AntDesign name="search1" size={20} color={colors.gray} style={tw`mr-2`} />
+            <View
+              style={[
+                tw`flex-row items-center rounded-lg px-3 py-2 flex-1 mr-2`,
+                {
+                  backgroundColor: isDarkMode
+                    ? colors.background
+                    : colors.lightGray,
+                },
+              ]}
+            >
+              <AntDesign
+                name='search1'
+                size={20}
+                color={colors.gray}
+                style={tw`mr-2`}
+              />
               <TextInput
                 style={[tw`flex-1 text-base`, { color: colors.text }]}
-                placeholder="Search attendees..."
+                placeholder='Search attendees...'
                 placeholderTextColor={colors.gray}
                 value={searchQuery}
                 onChangeText={setSearchQuery}
-                clearButtonMode="while-editing"
+                clearButtonMode='while-editing'
               />
               {searchQuery.length > 0 && (
                 <TouchableOpacity onPress={() => setSearchQuery("")}>
-                  <AntDesign name="close" size={20} color={colors.gray} />
+                  <AntDesign name='close' size={20} color={colors.gray} />
                 </TouchableOpacity>
               )}
             </View>
@@ -257,24 +307,34 @@ const EventAttendance = () => {
             {isMultipleDays && (
               <View style={[tw`rounded-lg`, { minWidth: 100 }]}>
                 <Dropdown
-                  style={[tw`px-2 py-1 rounded-lg`, {
-                    backgroundColor: isDarkMode ? colors.background : colors.lightGray,
-                    height: 40,
-                    width: 120
-                  }]}
+                  style={[
+                    tw`px-2 py-1 rounded-lg`,
+                    {
+                      backgroundColor: isDarkMode
+                        ? colors.background
+                        : colors.lightGray,
+                      height: 40,
+                      width: 120,
+                    },
+                  ]}
                   placeholderStyle={{ color: colors.text }}
                   selectedTextStyle={{ color: colors.text }}
                   data={generateDayOptions()}
                   maxHeight={300}
-                  labelField="label"
-                  valueField="value"
+                  labelField='label'
+                  valueField='value'
                   placeholder={`Day ${selectedDay}`}
                   value={selectedDay}
-                  onChange={item => {
+                  onChange={(item) => {
                     setSelectedDay(item.value);
                   }}
                   renderLeftIcon={() => (
-                    <AntDesign name="calendar" style={tw`mr-2`} color={colors.text} size={16} />
+                    <AntDesign
+                      name='calendar'
+                      style={tw`mr-2`}
+                      color={colors.text}
+                      size={16}
+                    />
                   )}
                 />
               </View>
@@ -290,25 +350,48 @@ const EventAttendance = () => {
             // Ensure we use a valid day parameter
             const dayParam = selectedDay || "1";
             const dayKey = `day${dayParam}` as keyof Attendee;
-            const isAttendedForSelectedDay = item[dayKey] as boolean || false;
+            const isAttendedForSelectedDay = (item[dayKey] as boolean) || false;
 
             return (
               <TouchableOpacity
-                style={[tw`flex-row justify-between items-center p-4 mb-3 rounded-lg shadow-sm`, { backgroundColor: isDarkMode ? colors.lightGray : colors.white }]}
+                style={[
+                  tw`flex-row justify-between items-center p-4 mb-3 rounded-lg shadow-sm`,
+                  {
+                    backgroundColor: isDarkMode
+                      ? colors.lightGray
+                      : colors.white,
+                  },
+                ]}
                 onPress={() => markAttendance(item.id)}
               >
                 <View>
-                  <Text style={{ color: colors.text, fontSize: 18, fontWeight: 'semibold' }}>
+                  <Text
+                    style={{
+                      color: colors.text,
+                      fontSize: 18,
+                      fontWeight: "semibold",
+                    }}
+                  >
                     {item.firstName} {item.lastName}
                   </Text>
-                  <Text style={{ color: colors.gray, fontSize: 14, marginTop: 4 }}>
-                    {isAttendedForSelectedDay ? 'Present' : 'Not checked in'}
+                  <Text
+                    style={{ color: colors.gray, fontSize: 14, marginTop: 4 }}
+                  >
+                    {isAttendedForSelectedDay ? "Present" : "Not checked in"}
                   </Text>
                 </View>
                 {isAttendedForSelectedDay ? (
-                  <AntDesign name="checkcircle" size={24} color={colors.primary} />
+                  <AntDesign
+                    name='checkcircle'
+                    size={24}
+                    color={colors.primary}
+                  />
                 ) : (
-                  <AntDesign name="checkcircleo" size={24} color={colors.gray} />
+                  <AntDesign
+                    name='checkcircleo'
+                    size={24}
+                    color={colors.gray}
+                  />
                 )}
               </TouchableOpacity>
             );
@@ -317,7 +400,7 @@ const EventAttendance = () => {
 
         {scanning && (
           <Modal
-            animationType="slide"
+            animationType='slide'
             transparent={false}
             visible={scanning}
             onRequestClose={() => setScanning(false)}
@@ -331,10 +414,21 @@ const EventAttendance = () => {
             >
               <View style={tw`flex-1 justify-end p-5`}>
                 <TouchableOpacity
-                  style={[tw`p-4 rounded-lg mb-10`, { backgroundColor: colors.primary }]}
+                  style={[
+                    tw`p-4 rounded-lg mb-10`,
+                    { backgroundColor: colors.primary },
+                  ]}
                   onPress={() => setScanning(false)}
                 >
-                  <Text style={{ color: colors.white, textAlign: 'center', fontWeight: 'semibold' }}>Close Scanner</Text>
+                  <Text
+                    style={{
+                      color: colors.white,
+                      textAlign: "center",
+                      fontWeight: "semibold",
+                    }}
+                  >
+                    Close Scanner
+                  </Text>
                 </TouchableOpacity>
               </View>
             </CameraView>
