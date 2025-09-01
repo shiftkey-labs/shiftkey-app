@@ -20,6 +20,7 @@ import Checkbox from "expo-checkbox";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { signupForm } from "@/constants/signupForm";
 import { updateUserById } from "@/api/userApi";
+import { useTheme } from "@/context/ThemeContext";
 
 type SignupFormType = typeof signupForm;
 type FormFieldKey = keyof SignupFormType;
@@ -32,13 +33,15 @@ interface FormData {
 const EditProfile = () => {
   const user = state.user.userState.get();
   const router = useRouter();
+  const { isDarkMode, colors } = useTheme();
   const [loading, setLoading] = useState(false);
   const [touchedFields, setTouchedFields] = useState<Record<string, boolean>>(
     {}
   );
   const [hasSubmitAttempt, setHasSubmitAttempt] = useState(false);
 
-  const [formData, setFormData] = useState<FormData>({
+  // Initialize form data with proper type handling
+  const initializeFormData = () => ({
     firstName: user.firstName || "",
     lastName: user.lastName || "",
     email: user.email || "",
@@ -63,44 +66,15 @@ const EditProfile = () => {
     faculty: user.faculty || "",
     school: user.school || "",
     year: user.year || "",
-    university: user.university || "",
-    program: user.program || "",
     isInternational: user.isInternational || false,
     role: user.role || "",
   });
 
+  const [formData, setFormData] = useState<FormData>(initializeFormData());
+
   // Update form data when user state changes
   useEffect(() => {
-    setFormData({
-      firstName: user.firstName || "",
-      lastName: user.lastName || "",
-      email: user.email || "",
-      pronouns: Array.isArray(user.pronouns)
-        ? user.pronouns
-        : user.pronouns
-        ? [user.pronouns]
-        : [],
-      selfIdentification: Array.isArray(user.selfIdentification)
-        ? user.selfIdentification
-        : user.selfIdentification
-        ? [user.selfIdentification]
-        : [],
-      isStudent: user.isStudent || "",
-      occupation: user.occupation || "",
-      organization: Array.isArray(user.organization)
-        ? user.organization
-        : user.organization
-        ? [user.organization]
-        : [],
-      currentDegree: user.currentDegree || "",
-      faculty: user.faculty || "",
-      school: user.school || "",
-      year: user.year || "",
-      university: user.university || "",
-      program: user.program || "",
-      isInternational: user.isInternational || false,
-      role: user.role || "",
-    });
+    setFormData(initializeFormData());
   }, [user]);
 
   // Define all possible required fields from backend schema
@@ -269,13 +243,13 @@ const EditProfile = () => {
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       style={tw`flex-1`}
     >
-      <SafeAreaView style={tw`flex-1 bg-white`}>
+      <SafeAreaView style={[tw`flex-1`, { backgroundColor: colors.background }]}>
         <ScrollView
           style={tw`flex-1`}
           contentContainerStyle={tw`p-5`}
           keyboardShouldPersistTaps='handled'
         >
-          <Text style={tw`text-3xl font-bold mb-6 text-black`}>
+          <Text style={[tw`text-3xl font-bold mb-6`, { color: colors.text }]}>
             Edit Profile
           </Text>
 
@@ -284,7 +258,7 @@ const EditProfile = () => {
             .filter(([key, field]) => shouldShowField(field.key))
             .map(([key, field]) => (
               <View key={field.key} style={tw`mb-4`}>
-                <Text style={tw`text-lg font-bold mb-2 text-black`}>
+                <Text style={[tw`text-lg font-bold mb-2`, { color: colors.text }]}>
                   {field.label}
                   {isFieldInvalid(field.key) && (
                     <Text style={tw`text-red-500 text-sm ml-1`}>
@@ -296,15 +270,18 @@ const EditProfile = () => {
                 {field.type === "text" || field.type === "number" ? (
                   <TextInput
                     style={[
-                      tw`p-4 rounded-lg text-base bg-white border`,
+                      tw`p-4 rounded-lg text-base`,
                       {
+                        borderWidth: 1,
                         borderColor: isFieldInvalid(field.key)
-                          ? "#ff0000"
-                          : "#d1d5db",
+                          ? "#ef4444"
+                          : colors.lightGray,
+                        backgroundColor: isDarkMode ? colors.lightGray : colors.white,
+                        color: colors.text,
                       },
                     ]}
                     placeholder={field.placeholder}
-                    placeholderTextColor='#6b7280'
+                    placeholderTextColor={colors.gray}
                     keyboardType={
                       field.type === "number" ? "numeric" : "default"
                     }
@@ -323,11 +300,13 @@ const EditProfile = () => {
                 ) : field.type === "multi-select" ? (
                   <View
                     style={[
-                      tw`p-4 rounded-lg bg-white border`,
+                      tw`p-4 rounded-lg`,
                       {
+                        borderWidth: 1,
                         borderColor: isFieldInvalid(field.key)
-                          ? "#ff0000"
-                          : "#d1d5db",
+                          ? "#ef4444"
+                          : colors.lightGray,
+                        backgroundColor: isDarkMode ? colors.lightGray : colors.white,
                       },
                     ]}
                   >
@@ -350,9 +329,9 @@ const EditProfile = () => {
                           }}
                           style={tw`mr-3`}
                           disabled={loading}
-                          color='#0455BF'
+                          color={colors.primary}
                         />
-                        <Text style={tw`text-base flex-1 text-black`}>
+                        <Text style={[tw`text-base flex-1`, { color: colors.text }]}>
                           {option.label}
                         </Text>
                       </View>
@@ -361,11 +340,13 @@ const EditProfile = () => {
                 ) : (
                   <Dropdown
                     style={[
-                      tw`border rounded-lg p-4 min-h-[60px] bg-white`,
+                      tw`rounded-lg p-4 min-h-[60px]`,
                       {
+                        borderWidth: 1,
                         borderColor: isFieldInvalid(field.key)
-                          ? "#ff0000"
-                          : "#d1d5db",
+                          ? "#ef4444"
+                          : colors.lightGray,
+                        backgroundColor: isDarkMode ? colors.lightGray : colors.white,
                       },
                     ]}
                     data={[...(field.options || [])]}
@@ -382,12 +363,12 @@ const EditProfile = () => {
                         [field.key]: true,
                       }))
                     }
-                    placeholderStyle={tw`text-base text-gray-500`}
-                    selectedTextStyle={tw`text-base text-black`}
-                    containerStyle={tw`rounded-lg border-0 shadow-lg`}
-                    activeColor='#0455BF20'
-                    itemTextStyle={tw`text-base text-black`}
-                    itemContainerStyle={tw`border-b border-gray-200`}
+                    placeholderStyle={{ color: colors.gray }}
+                    selectedTextStyle={{ color: colors.text }}
+                    containerStyle={[tw`rounded-lg border-0 shadow-lg`, { backgroundColor: colors.white }]}
+                    activeColor={colors.primary + "20"}
+                    itemTextStyle={{ color: colors.text }}
+                    itemContainerStyle={[tw`border-b`, { borderColor: colors.lightGray }]}
                     maxHeight={300}
                     disable={loading}
                   />
@@ -395,36 +376,10 @@ const EditProfile = () => {
               </View>
             ))}
 
-          {/* Additional fields not in signup form but in user state */}
-          <View style={tw`mb-4`}>
-            <Text style={tw`text-lg font-bold mb-2 text-black`}>
-              University
-            </Text>
-            <TextInput
-              style={tw`p-4 rounded-lg text-base bg-white border border-gray-300`}
-              placeholder='Enter your university'
-              placeholderTextColor='#6b7280'
-              value={String(formData.university || "")}
-              onChangeText={(value) => handleInputChange("university", value)}
-              editable={!loading}
-            />
-          </View>
-
-          <View style={tw`mb-4`}>
-            <Text style={tw`text-lg font-bold mb-2 text-black`}>Program</Text>
-            <TextInput
-              style={tw`p-4 rounded-lg text-base bg-white border border-gray-300`}
-              placeholder='Enter your program'
-              placeholderTextColor='#6b7280'
-              value={String(formData.program || "")}
-              onChangeText={(value) => handleInputChange("program", value)}
-              editable={!loading}
-            />
-          </View>
 
           {/* Validation Error Message */}
           {hasSubmitAttempt && hasEmptyRequiredFields() && (
-            <View style={tw`p-4 rounded-lg mb-4 bg-red-50`}>
+            <View style={[tw`p-4 rounded-lg mb-4`, { backgroundColor: "#fef2f2" }]}>
               <Text style={tw`text-center text-base text-red-500`}>
                 Please fill in all required fields
               </Text>
@@ -435,9 +390,9 @@ const EditProfile = () => {
           <Pressable
             style={[
               tw`p-4 rounded-lg mb-10 flex-row justify-center items-center`,
-              hasEmptyRequiredFields() || loading
-                ? tw`bg-gray-400`
-                : tw`bg-blue-600`,
+              {
+                backgroundColor: hasEmptyRequiredFields() || loading ? colors.gray : colors.primary,
+              }
             ]}
             onPress={handleSave}
             disabled={loading || hasEmptyRequiredFields()}
@@ -445,7 +400,7 @@ const EditProfile = () => {
             {loading ? (
               <ActivityIndicator color='white' style={tw`mr-2`} />
             ) : null}
-            <Text style={tw`text-white text-center font-bold text-base`}>
+            <Text style={[tw`text-center font-bold text-base`, { color: colors.white }]}>
               {loading ? "Saving..." : "Save Changes"}
             </Text>
           </Pressable>

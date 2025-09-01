@@ -21,6 +21,7 @@ import state from "../state";
 import { signupForm } from "@/constants/signupForm";
 import server from "@/config/axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useTheme } from "@/context/ThemeContext";
 
 type SignupFormType = typeof signupForm;
 type FormFieldKey = keyof SignupFormType;
@@ -51,6 +52,7 @@ interface UserState {
 
 const Signup = () => {
   const router = useRouter();
+  const { isDarkMode, colors } = useTheme();
   const user = state.user.userState.get() as UserState;
   const email = user.email;
   const [formData, setFormData] = useState<FormData>({});
@@ -235,30 +237,35 @@ const Signup = () => {
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       style={tw`flex-1`}
     >
-      <SafeAreaView style={tw`flex-1 bg-white`}>
+      <SafeAreaView style={[tw`flex-1`, { backgroundColor: colors.background }]}>
         <ScrollView
           style={tw`flex-1`}
           contentContainerStyle={tw`p-5`}
           keyboardShouldPersistTaps="handled"
         >
-          <Text style={tw`text-3xl font-poppinsBold text-center mb-5`}>
+          <Text style={[tw`text-3xl font-bold text-center mb-5`, { color: colors.text }]}>
             Complete Your Profile
           </Text>
           {missingFields
             .filter(field => shouldShowField(field.key)) // Filter fields based on conditions
             .map((field) => (
               <View key={field.key}>
-                <Text style={tw`text-lg font-poppinsBold mb-2`}>
+                <Text style={[tw`text-lg font-bold mb-2`, { color: colors.text }]}>
                   {field.label}
                   {isFieldInvalid(field.key) && (
-                    <Text style={tw`text-red-500 text-sm ml-1 font-poppins`}> *Required</Text>
+                    <Text style={tw`text-red-500 text-sm ml-1`}> *Required</Text>
                   )}
                 </Text>
                 {field.type === "text" || field.type === "number" ? (
                   <TextInput
                     style={[
-                      tw`border border-gray p-5 rounded-lg mb-5 font-poppins`,
-                      isFieldInvalid(field.key) && tw`border-red-500`,
+                      tw`p-5 rounded-lg mb-5`,
+                      {
+                        borderWidth: 1,
+                        borderColor: isFieldInvalid(field.key) ? "#ef4444" : colors.lightGray,
+                        backgroundColor: isDarkMode ? colors.lightGray : colors.white,
+                        color: colors.text,
+                      },
                     ]}
                     placeholder={field.placeholder}
                     keyboardType={field.type === "number" ? "numeric" : "default"}
@@ -266,7 +273,7 @@ const Signup = () => {
                     onChangeText={(value) => handleInputChange(field.key, value)}
                     onBlur={() => setTouchedFields(prev => ({ ...prev, [field.key]: true }))}
                     editable={!loading}
-                    placeholderTextColor="#666666"
+                    placeholderTextColor={colors.gray}
                   />
                 ) : field.type === "multi-select" ? (
                   <View style={[
@@ -287,15 +294,19 @@ const Signup = () => {
                           style={tw`mr-2`}
                           disabled={loading}
                         />
-                        <Text style={tw`text-base font-poppins`}>{option.label}</Text>
+                        <Text style={[tw`text-base`, { color: colors.text }]}>{option.label}</Text>
                       </View>
                     ))}
                   </View>
                 ) : (
                   <Dropdown
                     style={[
-                      tw`border border-gray p-5 rounded-lg mb-5 bg-white min-h-[60px]`,
-                      isFieldInvalid(field.key) && tw`border-red-500`,
+                      tw`p-5 rounded-lg mb-5 min-h-[60px]`,
+                      {
+                        borderWidth: 1,
+                        borderColor: isFieldInvalid(field.key) ? "#ef4444" : colors.lightGray,
+                        backgroundColor: isDarkMode ? colors.lightGray : colors.white,
+                      },
                     ]}
                     data={field.options || []}
                     labelField="label"
@@ -304,12 +315,12 @@ const Signup = () => {
                     value={formData[field.key] as string}
                     onChange={(item: any) => handleInputChange(field.key, item.value)}
                     onBlur={() => setTouchedFields(prev => ({ ...prev, [field.key]: true }))}
-                    placeholderStyle={tw`font-poppins text-gray-500`}
-                    selectedTextStyle={tw`font-poppins text-black`}
-                    containerStyle={tw`rounded-lg border-0 shadow-none`}
-                    activeColor={tw.color('primary/10')}
-                    itemTextStyle={tw`font-poppins text-black`}
-                    itemContainerStyle={tw`border-b border-lightGray`}
+                    placeholderStyle={{ color: colors.gray }}
+                    selectedTextStyle={{ color: colors.text }}
+                    containerStyle={[tw`rounded-lg border-0 shadow-lg`, { backgroundColor: colors.white }]}
+                    activeColor={colors.primary + "20"}
+                    itemTextStyle={{ color: colors.text }}
+                    itemContainerStyle={[tw`border-b`, { borderColor: colors.lightGray }]}
                     maxHeight={300}
                     disable={loading}
                   />
@@ -318,14 +329,16 @@ const Signup = () => {
             ))}
           <>
             {hasSubmitAttempt && hasEmptyRequiredFields() && (
-              <Text style={tw`text-red-500 text-center mt-5 mb-2 font-poppins`}>
+              <Text style={tw`text-red-500 text-center mt-5 mb-2`}>
                 Please fill in all required fields
               </Text>
             )}
             <Pressable
               style={[
                 tw`p-4 rounded-lg mb-10 flex-row justify-center items-center`,
-                hasEmptyRequiredFields() ? tw`bg-primary/50` : tw`bg-primary`
+                {
+                  backgroundColor: hasEmptyRequiredFields() ? colors.gray : colors.primary,
+                }
               ]}
               onPress={handleSignup}
               disabled={loading || hasEmptyRequiredFields()}
@@ -333,7 +346,7 @@ const Signup = () => {
               {loading ? (
                 <ActivityIndicator color="white" style={tw`mr-2`} />
               ) : null}
-              <Text style={tw`text-white text-center font-poppinsBold`}>
+              <Text style={[tw`text-center font-bold`, { color: colors.white }]}>
                 {loading ? "Updating..." : "Update Profile"}
               </Text>
             </Pressable>

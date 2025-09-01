@@ -70,11 +70,11 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="my-volunteer"
+        name="leaderboard"
         options={{
-          title: "Volunteer",
+          title: "Leaderboard",
           tabBarIcon: ({ color }) => (
-            <Ionicons name="people-outline" color={color} size={24} />
+            <Ionicons name="trophy-outline" color={color} size={24} />
           ),
         }}
       />
