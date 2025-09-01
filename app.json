@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "shiftkey-app",
+    "name": "ShiftKey Events",
     "slug": "shiftkey-app",
-    "version": "0.0.18",
+    "version": "0.0.20",
     "orientation": "portrait",
     "icon": "./assets/images/adaptive-icon.jpeg",
     "scheme": "myapp",
@@ -15,7 +15,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.shiftkey.app",
-      "buildNumber": "18",
+      "buildNumber": "20",
       "minVersion": "17.0",
       "infoPlist": {
         "NSCameraUsageDescription": "This app uses the camera to scan QR codes for events.",
@@ -27,17 +27,16 @@
         "foregroundImage": "./assets/images/adaptive-icon.jpeg",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.shiftkey.app"
+      "package": "com.shiftkey.app",
+      "targetSdkVersion": 34,
+      "compileSdkVersion": 34
     },
     "web": {
       "bundler": "metro",
       "output": "static",
       "favicon": "./assets/images/adaptive-icon.jpeg"
     },
-    "plugins": [
-      "expo-router",
-      "expo-font"
-    ],
+    "plugins": ["expo-router", "expo-font"],
     "experiments": {
       "typedRoutes": true
     },

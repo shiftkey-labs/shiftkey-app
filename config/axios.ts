@@ -3,7 +3,7 @@ import axios from "axios";
 export const PROD_URL = process.env.BACKEND_URL;
 
 const server = axios.create({
-  baseURL: "https://shiftkey.vanshsood.com",
+  baseURL: "http://localhost:3000",
   headers: {
     "Content-Type": "application/json",
   },

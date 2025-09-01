@@ -260,9 +260,7 @@ const EventAttendance = () => {
         <Text style={{ color: colors.text, fontSize: 20, fontWeight: "bold" }}>
           {eventTitle}
         </Text>
-        <TouchableOpacity onPress={openScanner} style={tw`p-2`}>
-          <AntDesign name='qrcode' size={24} color={colors.primary} />
-        </TouchableOpacity>
+        <View style={tw`w-10`} />
       </View>
 
       <View style={[tw`flex-1`, { backgroundColor: colors.background }]}>
@@ -345,7 +343,7 @@ const EventAttendance = () => {
         <FlatList
           data={filteredAttendees}
           keyExtractor={(item) => item.id.toString()}
-          contentContainerStyle={tw`p-4`}
+          contentContainerStyle={tw`p-4 pb-24`}
           renderItem={({ item }) => {
             // Ensure we use a valid day parameter
             const dayParam = selectedDay || "1";
@@ -397,6 +395,29 @@ const EventAttendance = () => {
             );
           }}
         />
+
+        {/* Floating QR Code Button */}
+        <View
+          style={[
+            tw`absolute bottom-0 left-0 right-0 p-4`,
+            { backgroundColor: isDarkMode ? colors.lightGray : colors.white },
+          ]}
+        >
+          <TouchableOpacity
+            style={[
+              tw`flex-row items-center justify-center py-4 px-6 rounded-lg shadow-lg`,
+              { backgroundColor: colors.primary },
+            ]}
+            onPress={openScanner}
+          >
+            <AntDesign name='qrcode' size={24} color={colors.white} />
+            <Text
+              style={[tw`ml-3 text-lg font-semibold`, { color: colors.white }]}
+            >
+              Scan QR Code
+            </Text>
+          </TouchableOpacity>
+        </View>
 
         {scanning && (
           <Modal

@@ -23,7 +23,8 @@ const MyEvents = observer(() => {
   const [activeTab, setActiveTab] = useState("upcoming");
   const user = state.user.userState.get();
   const events = state.event.eventState.get();
-  const userRegistrations: Registration[] = state.registration.registrationState.userRegistrations.get();
+  const userRegistrations: Registration[] =
+    state.registration.registrationState.userRegistrations.get();
   const { isDarkMode, colors } = useTheme();
 
   const [upcomingEvents, setUpcomingEvents] = useState<DisplayEvent[]>([]);
@@ -49,7 +50,7 @@ const MyEvents = observer(() => {
           eventName: registration.eventName[0],
           location: registration.event?.[0] || "No location",
           startDate: registration.endTime[0],
-          images: [dummyImage]
+          images: [dummyImage],
         }));
 
       const past = userRegistrations
@@ -62,7 +63,7 @@ const MyEvents = observer(() => {
           eventName: registration.eventName[0],
           location: registration.event?.[0] || "No location",
           startDate: registration.endTime[0],
-          images: [dummyImage]
+          images: [dummyImage],
         }));
 
       setUpcomingEvents(upcoming);
@@ -82,7 +83,6 @@ const MyEvents = observer(() => {
   };
 
   const handlePressEvent = async (eventId: string) => {
-
     try {
       await fetchEventDetails(eventId);
       router.push(`/event/${eventId}`);
@@ -100,29 +100,52 @@ const MyEvents = observer(() => {
 
   if (isLoading) {
     return (
-      <SafeAreaView style={[tw`flex-1 justify-center items-center`, { backgroundColor: colors.background }]}>
-        <ActivityIndicator size="large" color={isDarkMode ? colors.text : colors.primary} />
+      <SafeAreaView
+        style={[
+          tw`flex-1 justify-center items-center`,
+          { backgroundColor: colors.background },
+        ]}
+      >
+        <ActivityIndicator
+          size='large'
+          color={isDarkMode ? colors.text : colors.primary}
+        />
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={[tw`flex-1 p-5`, { backgroundColor: colors.background }]}>
+    <SafeAreaView
+      style={[tw`flex-1 p-5`, { backgroundColor: colors.background }]}
+    >
       <View style={[tw`flex-1 p-5`, { backgroundColor: colors.background }]}>
-        <Text style={{ color: colors.text, fontSize: 30, fontWeight: 'bold', marginBottom: 20 }}>My Events</Text>
+        <Text
+          style={{
+            color: colors.text,
+            fontSize: 30,
+            fontWeight: "bold",
+            marginBottom: 20,
+          }}
+        >
+          My Events
+        </Text>
         <View style={tw`flex-row mb-5`}>
           <TouchableOpacity
             style={[
               tw`flex-1 p-3 rounded-full mr-2`,
               activeTab === "upcoming"
                 ? { backgroundColor: colors.primary }
-                : { backgroundColor: isDarkMode ? colors.lightGray : colors.white },
+                : {
+                    backgroundColor: isDarkMode
+                      ? colors.lightGray
+                      : colors.white,
+                  },
             ]}
             onPress={() => setActiveTab("upcoming")}
           >
             <Text
               style={{
-                textAlign: 'center',
+                textAlign: "center",
                 color: activeTab === "upcoming" ? colors.white : colors.gray,
               }}
             >
@@ -134,13 +157,17 @@ const MyEvents = observer(() => {
               tw`flex-1 p-3 rounded-full ml-2`,
               activeTab === "past"
                 ? { backgroundColor: colors.primary }
-                : { backgroundColor: isDarkMode ? colors.lightGray : colors.white },
+                : {
+                    backgroundColor: isDarkMode
+                      ? colors.lightGray
+                      : colors.white,
+                  },
             ]}
             onPress={() => setActiveTab("past")}
           >
             <Text
               style={{
-                textAlign: 'center',
+                textAlign: "center",
                 color: activeTab === "past" ? colors.white : colors.gray,
               }}
             >
@@ -162,16 +189,32 @@ const MyEvents = observer(() => {
             ))}
           </ScrollView>
         ) : (
-          <View style={[tw`flex-1 items-center justify-center`, { backgroundColor: colors.background }]}>
-            <Text style={{ color: colors.text, fontSize: 24, fontWeight: 'bold', marginBottom: 8 }}>
+          <View
+            style={[
+              tw`flex-1 items-center justify-center`,
+              { backgroundColor: colors.background },
+            ]}
+          >
+            <Text
+              style={{
+                color: colors.text,
+                fontSize: 24,
+                fontWeight: "bold",
+                marginBottom: 8,
+              }}
+            >
               No {activeTab === "upcoming" ? "Upcoming" : "Past"} Event
             </Text>
-            <Text style={{ color: colors.gray, marginBottom: 20 }}>No Result Show</Text>
+            <Text style={{ color: colors.gray, marginBottom: 20 }}>
+              No Result Show
+            </Text>
             <TouchableOpacity
               style={[tw`p-4 rounded-lg`, { backgroundColor: colors.primary }]}
               onPress={() => router.push("/")}
             >
-              <Text style={{ color: colors.white, textAlign: 'center' }}>Explore Events</Text>
+              <Text style={{ color: colors.white, textAlign: "center" }}>
+                Explore Events
+              </Text>
             </TouchableOpacity>
           </View>
         )}

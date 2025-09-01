@@ -1,5 +1,8 @@
 import { observable } from "@legendapp/state";
-import { getUserRegistrations, getUserUpcomingRegistrations } from "@/api/registrationApi";
+import {
+  getUserRegistrations,
+  getUserUpcomingRegistrations,
+} from "@/api/registrationApi";
 import server from "@/config/axios";
 
 const registrationState = observable({
@@ -9,7 +12,9 @@ const registrationState = observable({
 const fetchUserRegistrations = async (uid: string, type: string = "ALL") => {
   try {
     const registrations = await getUserRegistrations(uid);
-    registrationState.userRegistrations.set(Object.values(registrations.records));
+    registrationState.userRegistrations.set(
+      Object.values(registrations.records)
+    );
   } catch (error) {
     console.error("Failed to fetch user registrations:", error);
   }
@@ -17,7 +22,6 @@ const fetchUserRegistrations = async (uid: string, type: string = "ALL") => {
 
 const registerForEvent = async (userId: string, eventId: string) => {
   try {
-
     const response = await server.post("/registration/register", {
       userId,
       eventId,

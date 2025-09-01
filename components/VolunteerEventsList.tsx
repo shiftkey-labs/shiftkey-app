@@ -22,6 +22,7 @@ interface VolunteerEvent {
   category?: string;
   images?: ImageType[];
   registration?: boolean;
+  isActive?: boolean;
 }
 
 interface VolunteerEventsListProps {
@@ -63,7 +64,7 @@ const VolunteerEventsList: React.FC<VolunteerEventsListProps> = ({
 
   const handlePressEvent = async (eventId: string) => {
     try {
-      router.push(`/volunteer/${eventId}`);
+      router.push(`/event/${eventId}`);
     } catch (error) {
       console.error("Failed to load event details:", error);
     }
@@ -114,7 +115,7 @@ const VolunteerEventsList: React.FC<VolunteerEventsListProps> = ({
               style={"w-full my-2"}
               images={event.images?.length ? event.images : [dummyImage]}
               onPressShow={() =>
-                event.registration
+                event.registration && event.isActive
                   ? handlePressEvent(event.id)
                   : Alert.alert("Event is not active")
               }
