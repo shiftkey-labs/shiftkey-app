@@ -56,4 +56,9 @@ const checkUserCanTakeShift = async (userId: string, eventId: string) => {
   }
 };
 
-export { volunteerState, fetchUserVolunteeredEvents, volunteerForEvent, checkUserCanTakeShift };
+const checkUserHasShiftForEvent = (eventId: string): boolean => {
+  const userVolunteeredEvents = volunteerState.userVolunteeredEvents.get();
+  return userVolunteeredEvents.some((event: any) => event.id === eventId);
+};
+
+export { volunteerState, fetchUserVolunteeredEvents, volunteerForEvent, checkUserCanTakeShift, checkUserHasShiftForEvent };

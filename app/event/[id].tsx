@@ -16,7 +16,7 @@ import { FontAwesome } from "@expo/vector-icons";
 import state from "../state";
 import { useTheme } from "@/context/ThemeContext";
 import { Event, Registration } from "@/types/event";
-import { checkUserCanTakeShift } from "../state/volunteerState";
+import { checkUserCanTakeShift, checkUserHasShiftForEvent } from "../state/volunteerState";
 
 // Define a type for shift
 type Shift = {
@@ -41,6 +41,7 @@ const EventDetails = () => {
   const [selectedShifts, setSelectedShifts] = useState<string[]>([]);
   const [allShifts, setAllShifts] = useState<Shift[]>([]);
   const [loadingShifts, setLoadingShifts] = useState(false);
+  const [userHasShift, setUserHasShift] = useState(false);
   const user = state.user.userState.get();
   const userVolunteeredEvents: Event[] =
     state.volunteer.volunteerState.userVolunteeredEvents.get();
@@ -199,6 +200,14 @@ const EventDetails = () => {
     }
   }, [loadingRegistrations, user?.role, curr?.id, user?.id]);
 
+  // Check if user has a shift for this event
+  useEffect(() => {
+    if (!loadingRegistrations && curr?.id) {
+      const hasShift = checkUserHasShiftForEvent(curr.id);
+      setUserHasShift(hasShift);
+    }
+  }, [loadingRegistrations, curr?.id, userVolunteeredEvents]);
+
   if (loading) {
     return (
       <View
@@ -268,6 +277,11 @@ const EventDetails = () => {
       Alert.alert("Error", "Failed to sign up as a volunteer.");
       console.error("Failed to sign up as a volunteer:", error);
     }
+  };
+
+  const handleMarkAttendance = () => {
+    // Navigate to volunteer event page for marking attendance of registered students
+    router.push(`/volunteer/${curr?.id}`);
   };
 
   const handleBack = () => {
@@ -429,25 +443,32 @@ const EventDetails = () => {
                   style={[
                     tw`p-4 rounded-lg flex-1 ml-2`,
                     {
-                      backgroundColor: isDarkMode
+                      backgroundColor: userHasShift 
+                        ? colors.primary
+                        : isDarkMode
                         ? colors.lightGray
                         : colors.white,
-                      borderWidth: 1,
+                      borderWidth: userHasShift ? 0 : 1,
                       borderColor: colors.primary,
                       opacity:
-                        loadingShifts || canTakeShift === false ? 0.5 : 1,
+                        loadingShifts || (!userHasShift && canTakeShift === false) ? 0.5 : 1,
                     },
                   ]}
-                  onPress={showShiftModal}
-                  disabled={loadingShifts || canTakeShift === false}
+                  onPress={userHasShift ? handleMarkAttendance : showShiftModal}
+                  disabled={loadingShifts || (!userHasShift && canTakeShift === false)}
                 >
                   {loadingShifts ? (
-                    <ActivityIndicator size='small' color={colors.primary} />
+                    <ActivityIndicator size='small' color={userHasShift ? colors.white : colors.primary} />
                   ) : (
                     <Text
-                      style={{ color: colors.primary, textAlign: "center" }}
+                      style={{ 
+                        color: userHasShift ? colors.white : colors.primary, 
+                        textAlign: "center" 
+                      }}
                     >
-                      {canTakeShift === true
+                      {userHasShift
+                        ? "Mark Attendance"
+                        : canTakeShift === true
                         ? "Book Shift"
                         : canTakeShift === false
                         ? "No Shifts Available"

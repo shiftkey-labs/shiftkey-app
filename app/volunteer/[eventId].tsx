@@ -45,17 +45,19 @@ const EventAttendance = () => {
   const [isMultipleDays, setIsMultipleDays] = useState(false);
   const [selectedDay, setSelectedDay] = useState("1");
   const [totalDays, setTotalDays] = useState(4);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
     if (eventId) {
       fetchEventDetails();
       fetchAttendees();
+      setIsInitialized(true);
     }
   }, [eventId]);
 
-  // Add a new useEffect to refetch attendees when selectedDay changes
+  // Add a new useEffect to refetch attendees when selectedDay changes (but not on initial load)
   useEffect(() => {
-    if (eventId && !loading) {
+    if (eventId && isInitialized && selectedDay && !loading) {
       fetchAttendees();
     }
   }, [selectedDay]);
@@ -257,7 +259,17 @@ const EventAttendance = () => {
         <TouchableOpacity onPress={() => router.back()} style={tw`p-2`}>
           <AntDesign name='arrowleft' size={24} color={colors.primary} />
         </TouchableOpacity>
-        <Text style={{ color: colors.text, fontSize: 20, fontWeight: "bold" }}>
+        <Text 
+          style={{ 
+            color: colors.text, 
+            fontSize: 18, 
+            fontWeight: "bold",
+            flex: 1,
+            textAlign: 'center',
+            marginHorizontal: 8,
+          }}
+          numberOfLines={2}
+        >
           {eventTitle}
         </Text>
         <View style={tw`w-10`} />
@@ -273,11 +285,13 @@ const EventAttendance = () => {
           <View style={tw`flex-row items-center justify-between mb-2`}>
             <View
               style={[
-                tw`flex-row items-center rounded-lg px-3 py-2 flex-1 mr-2`,
+                tw`flex-row items-center rounded-lg px-3 py-2`,
                 {
                   backgroundColor: isDarkMode
                     ? colors.background
                     : colors.lightGray,
+                  flex: 1,
+                  marginRight: 8,
                 },
               ]}
             >
@@ -301,6 +315,17 @@ const EventAttendance = () => {
                 </TouchableOpacity>
               )}
             </View>
+
+            {/* QR Code Scanner Button */}
+            <TouchableOpacity
+              style={[
+                tw`p-3 rounded-lg mr-2`,
+                { backgroundColor: colors.primary }
+              ]}
+              onPress={openScanner}
+            >
+              <AntDesign name='qrcode' size={20} color={colors.white} />
+            </TouchableOpacity>
 
             {isMultipleDays && (
               <View style={[tw`rounded-lg`, { minWidth: 100 }]}>
@@ -396,28 +421,6 @@ const EventAttendance = () => {
           }}
         />
 
-        {/* Floating QR Code Button */}
-        <View
-          style={[
-            tw`absolute bottom-0 left-0 right-0 p-4`,
-            { backgroundColor: isDarkMode ? colors.lightGray : colors.white },
-          ]}
-        >
-          <TouchableOpacity
-            style={[
-              tw`flex-row items-center justify-center py-4 px-6 rounded-lg shadow-lg`,
-              { backgroundColor: colors.primary },
-            ]}
-            onPress={openScanner}
-          >
-            <AntDesign name='qrcode' size={24} color={colors.white} />
-            <Text
-              style={[tw`ml-3 text-lg font-semibold`, { color: colors.white }]}
-            >
-              Scan QR Code
-            </Text>
-          </TouchableOpacity>
-        </View>
 
         {scanning && (
           <Modal
