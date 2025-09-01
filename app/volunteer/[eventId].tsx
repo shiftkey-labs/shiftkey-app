@@ -46,6 +46,8 @@ const EventAttendance = () => {
   const [selectedDay, setSelectedDay] = useState("1");
   const [totalDays, setTotalDays] = useState(4);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [isProcessingQR, setIsProcessingQR] = useState(false);
+  const [lastScannedData, setLastScannedData] = useState<string | null>(null);
 
   useEffect(() => {
     if (eventId) {
@@ -188,7 +190,13 @@ const EventAttendance = () => {
     type: string;
     data: string;
   }) => {
+    // Prevent multiple scans of the same QR code
+    if (isProcessingQR || data === lastScannedData) return;
+    
+    setIsProcessingQR(true);
+    setLastScannedData(data);
     setScanning(false);
+    
     try {
       // Pass the user ID from the QR code to markAttendance
       await markAttendance(data.split("~")[0]);
@@ -196,6 +204,15 @@ const EventAttendance = () => {
     } catch (error) {
       console.error(error);
       Alert.alert("Error", "Failed to mark attendance via QR code.");
+    } finally {
+      // Reset processing flag quickly to allow scanning different QR codes
+      setTimeout(() => {
+        setIsProcessingQR(false);
+        // Clear last scanned data after a short delay to prevent duplicate scans of same QR
+        setTimeout(() => {
+          setLastScannedData(null);
+        }, 1000);
+      }, 500);
     }
   };
 

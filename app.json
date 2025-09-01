@@ -16,7 +16,6 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.shiftkey.app",
       "buildNumber": "20",
-      "minVersion": "17.0",
       "infoPlist": {
         "NSCameraUsageDescription": "This app uses the camera to scan QR codes for events.",
         "ITSAppUsesNonExemptEncryption": false
@@ -27,9 +26,7 @@
         "foregroundImage": "./assets/images/adaptive-icon.jpeg",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.shiftkey.app",
-      "targetSdkVersion": 34,
-      "compileSdkVersion": 34
+      "package": "com.shiftkey.app"
     },
     "web": {
       "bundler": "metro",
