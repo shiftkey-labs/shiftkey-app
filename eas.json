@@ -6,25 +6,13 @@
   "build": {
     "development": {
       "developmentClient": true,
-      "distribution": "internal",
-      "android": {
-        "targetSdkVersion": 34,
-        "compileSdkVersion": 34
-      }
+      "distribution": "internal"
     },
     "preview": {
-      "distribution": "internal",
-      "android": {
-        "targetSdkVersion": 34,
-        "compileSdkVersion": 34
-      }
+      "distribution": "internal"
     },
     "production": {
-      "autoIncrement": true,
-      "android": {
-        "targetSdkVersion": 34,
-        "compileSdkVersion": 34
-      }
+      "autoIncrement": true
     }
   },
   "submit": {
