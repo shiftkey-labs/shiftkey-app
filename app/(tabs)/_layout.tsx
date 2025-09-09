@@ -69,6 +69,17 @@ export default function TabLayout() {
           ),
         }}
       />
+      {role === "STAFF" && (
+        <Tabs.Screen
+          name="shifts"
+          options={{
+            title: "Shifts",
+            tabBarIcon: ({ color }) => (
+              <Ionicons name="briefcase-outline" color={color} size={24} />
+            ),
+          }}
+        />
+      )}
       <Tabs.Screen
         name="leaderboard"
         options={{

@@ -113,6 +113,14 @@ const EventDetails = () => {
     }
   };
 
+  // Helper function to check if event has started
+  const hasEventStarted = () => {
+    if (!currentEvent?.startDate) return false;
+    const now = new Date();
+    const eventStartDate = new Date(currentEvent.startDate);
+    return now >= eventStartDate;
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -443,30 +451,30 @@ const EventDetails = () => {
                   style={[
                     tw`p-4 rounded-lg flex-1 ml-2`,
                     {
-                      backgroundColor: userHasShift 
+                      backgroundColor: (userHasShift || hasEventStarted()) 
                         ? colors.primary
                         : isDarkMode
                         ? colors.lightGray
                         : colors.white,
-                      borderWidth: userHasShift ? 0 : 1,
+                      borderWidth: (userHasShift || hasEventStarted()) ? 0 : 1,
                       borderColor: colors.primary,
                       opacity:
-                        loadingShifts || (!userHasShift && canTakeShift === false) ? 0.5 : 1,
+                        loadingShifts || (!userHasShift && !hasEventStarted() && canTakeShift === false) ? 0.5 : 1,
                     },
                   ]}
-                  onPress={userHasShift ? handleMarkAttendance : showShiftModal}
-                  disabled={loadingShifts || (!userHasShift && canTakeShift === false)}
+                  onPress={(userHasShift || hasEventStarted()) ? handleMarkAttendance : showShiftModal}
+                  disabled={loadingShifts || (!userHasShift && !hasEventStarted() && canTakeShift === false)}
                 >
                   {loadingShifts ? (
-                    <ActivityIndicator size='small' color={userHasShift ? colors.white : colors.primary} />
+                    <ActivityIndicator size='small' color={(userHasShift || hasEventStarted()) ? colors.white : colors.primary} />
                   ) : (
                     <Text
                       style={{ 
-                        color: userHasShift ? colors.white : colors.primary, 
+                        color: (userHasShift || hasEventStarted()) ? colors.white : colors.primary, 
                         textAlign: "center" 
                       }}
                     >
-                      {userHasShift
+                      {(userHasShift || hasEventStarted())
                         ? "Mark Attendance"
                         : canTakeShift === true
                         ? "Book Shift"
