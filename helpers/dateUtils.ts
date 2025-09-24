@@ -97,7 +97,7 @@ export const formatTimeFromDate = (dateString: string): string => {
 };
 
 /**
- * Check if a multi-day event should be displayed on the current date
+ * Check if a multi-day event should be displayed (either upcoming or currently active)
  */
 export const isMultiDayEventActive = (event: Event): boolean => {
   if (!event.fields.isMultipleDays || !event.fields.startDate) {
@@ -113,29 +113,52 @@ export const isMultiDayEventActive = (event: Event): boolean => {
   const numberOfDays = event.fields.numberOfMultipleDays || 1;
   const multipleDayType = event.fields.multipleDayType;
 
+  // Show upcoming events (start date is in the future)
+  if (eventStartDate > today) {
+    console.log(`📅 Multi-day event "${event.fields.eventName}" is upcoming - showing`);
+    return true;
+  }
+
   if (multipleDayType === "Daily") {
     // For daily events, check if today falls within the consecutive days range
     const endDate = new Date(eventStartDate);
     endDate.setDate(endDate.getDate() + numberOfDays - 1);
 
-    return today >= eventStartDate && today <= endDate;
+    const isActive = today >= eventStartDate && today <= endDate;
+    console.log(`📅 Daily event "${event.fields.eventName}" active check: ${isActive}`);
+    return isActive;
   } else if (multipleDayType === "Weekly") {
-    // For weekly events, check if today is the same day of week and within the number of weeks
+    // For weekly events, show if:
+    // 1. It's upcoming (handled above), OR
+    // 2. Today is the same day of week and within the number of weeks
     const eventDayOfWeek = eventStartDate.getDay();
     const todayDayOfWeek = today.getDay();
 
+    // If today is not the same day of week, but the event hasn't ended, still show it as upcoming/ongoing
     if (eventDayOfWeek !== todayDayOfWeek) {
+      // Calculate the final session date
+      const finalSessionDate = new Date(eventStartDate);
+      finalSessionDate.setDate(finalSessionDate.getDate() + ((numberOfDays - 1) * 7));
+
+      if (today <= finalSessionDate) {
+        console.log(`📅 Weekly event "${event.fields.eventName}" - different day but event is ongoing - showing`);
+        return true;
+      }
+      console.log(`📅 Weekly event "${event.fields.eventName}" - different day and event ended - hiding`);
       return false;
     }
 
-    // Calculate weeks difference
+    // Same day of week - check if within the number of weeks
     const diffTime = today.getTime() - eventStartDate.getTime();
     const diffDays = diffTime / (1000 * 3600 * 24);
     const weeksDiff = Math.floor(diffDays / 7);
 
-    return weeksDiff >= 0 && weeksDiff < numberOfDays;
+    const isActive = weeksDiff >= 0 && weeksDiff < numberOfDays;
+    console.log(`📅 Weekly event "${event.fields.eventName}" same day check: ${isActive} (week ${weeksDiff + 1} of ${numberOfDays})`);
+    return isActive;
   }
 
+  console.log(`⚠️ Unknown multipleDayType for event "${event.fields.eventName}": ${multipleDayType}`);
   return false;
 };
 

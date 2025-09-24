@@ -64,19 +64,14 @@ const Home: React.FC = () => {
 
         console.log(`- After role filter (${user.role}): ${filteredByRole.length}`);
 
-        // Apply multi-day event filtering
+        // Apply multi-day event filtering for all users
         const filteredEvents = filteredByRole.filter(event => {
-          // For staff, show all events (no multi-day filtering)
-          if (user.role === "STAFF") {
-            return true;
-          }
-
-          // For non-staff, include single day events
+          // Include single day events for all users
           if (!event.fields.isMultipleDays) {
             return true;
           }
 
-          // For non-staff multi-day events, only show if currently active
+          // For multi-day events, only show if currently active (applies to all users including staff)
           return isMultiDayEventActive(event);
         });
 
