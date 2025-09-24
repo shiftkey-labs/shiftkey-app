@@ -13,6 +13,8 @@ import { LinearGradient } from "expo-linear-gradient";
 import tw from "@/app/styles/tailwind";
 import { useTheme } from "@/context/ThemeContext";
 import { dummyImageUrl } from "@/constants/statics";
+import { Event } from "@/types/event";
+import { getMultiDayEventDayNumber } from "@/helpers/dateUtils";
 
 interface ImageType {
   id: string;
@@ -50,6 +52,7 @@ interface BigBoyCardProps {
   style?: any;
   isLoading?: boolean;
   staffOnly?: boolean;
+  event?: Event;
 }
 
 const BigBoyCard: React.FC<BigBoyCardProps> = ({
@@ -63,9 +66,16 @@ const BigBoyCard: React.FC<BigBoyCardProps> = ({
   style,
   isLoading = false,
   staffOnly = false,
+  event,
 }) => {
   const { isDarkMode, colors } = useTheme();
   const imageUrl = images.length > 0 ? images[0].url : dummyImageUrl;
+
+  // Calculate multi-day indicators
+  const isMultiDay = event?.fields.isMultipleDays;
+  const dayNumber = isMultiDay && event ? getMultiDayEventDayNumber(event) : null;
+  const totalDays = event?.fields.numberOfMultipleDays;
+  const dayType = event?.fields.multipleDayType;
 
   return (
     <Pressable
@@ -130,6 +140,20 @@ const BigBoyCard: React.FC<BigBoyCardProps> = ({
           >
             <Text style={{ color: "white", fontWeight: "bold", fontSize: 12 }}>
               Staff Only
+            </Text>
+          </View>
+        )}
+
+        {/* Multi-day Event Badge */}
+        {isMultiDay && dayNumber && totalDays && (
+          <View
+            style={[
+              tw`absolute bottom-7 left-7 rounded-full px-3 py-1`,
+              { backgroundColor: 'rgba(0,0,0,0.7)' },
+            ]}
+          >
+            <Text style={{ color: "white", fontWeight: "bold", fontSize: 12 }}>
+              {dayType === "Weekly" ? `Week ${dayNumber} of ${totalDays}` : `Day ${dayNumber} of ${totalDays}`}
             </Text>
           </View>
         )}

@@ -34,7 +34,7 @@ interface Attendee {
 
 const EventAttendance = () => {
   const router = useRouter();
-  const { eventId } = useLocalSearchParams();
+  const { eventId, day } = useLocalSearchParams();
   const [attendees, setAttendees] = useState<Attendee[]>([]);
   const [loading, setLoading] = useState(true);
   const [scanning, setScanning] = useState(false);
@@ -54,8 +54,13 @@ const EventAttendance = () => {
       fetchEventDetails();
       fetchAttendees();
       setIsInitialized(true);
+
+      // If day parameter is provided, set it as selected day
+      if (day && typeof day === 'string') {
+        setSelectedDay(day);
+      }
     }
-  }, [eventId]);
+  }, [eventId, day]);
 
   // Add a new useEffect to refetch attendees when selectedDay changes (but not on initial load)
   useEffect(() => {

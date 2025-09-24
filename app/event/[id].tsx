@@ -23,6 +23,10 @@ type Shift = {
   id: string;
   shiftTime: string;
   isAvailable: boolean;
+  bookedBy?: {
+    name: string;
+    email: string;
+  };
 };
 
 const EventDetails = () => {
@@ -297,7 +301,10 @@ const EventDetails = () => {
   };
 
   const showShiftModal = async () => {
-    if (canTakeShift) {
+    // For staff users, always show the modal regardless of shift availability
+    if (user?.role === "STAFF") {
+      setShiftModalVisible(true);
+    } else if (canTakeShift) {
       setShiftModalVisible(true);
     } else if (!loadingShifts && canTakeShift === false) {
       Alert.alert(
@@ -409,81 +416,93 @@ const EventDetails = () => {
               {currentEvent?.eventDetails || "No event details provided"}
             </Text>
             <View style={tw`flex-row justify-between mt-5 mb-6`}>
-              {loadingRegistrations ? (
-                <TouchableOpacity
-                  style={[
-                    tw`p-4 rounded-lg flex-1 mr-2`,
-                    { backgroundColor: colors.gray, opacity: 0.5 },
-                  ]}
-                  disabled
-                >
-                  <ActivityIndicator size='small' color={colors.white} />
-                </TouchableOpacity>
-              ) : isEventRegistered ? (
-                <TouchableOpacity
-                  style={[
-                    tw`p-4 rounded-lg flex-1 mr-2`,
-                    { backgroundColor: colors.primary },
-                  ]}
-                  onPress={handleViewTicket}
-                >
-                  <Text style={{ color: colors.white, textAlign: "center" }}>
-                    View Ticket
-                  </Text>
-                </TouchableOpacity>
-              ) : (
-                currentEvent?.registration && (
+              {user?.role === "STAFF" ? (
+                // Staff users: Show Book Shift and Mark Attendance buttons
+                <>
                   <TouchableOpacity
                     style={[
                       tw`p-4 rounded-lg flex-1 mr-2`,
-                      { backgroundColor: colors.primary },
+                      {
+                        backgroundColor: isDarkMode ? colors.lightGray : colors.white,
+                        borderWidth: 1,
+                        borderColor: colors.primary,
+                      },
                     ]}
-                    onPress={handleRegistration}
+                    onPress={showShiftModal}
                   >
-                    <Text style={{ color: colors.white, textAlign: "center" }}>
-                      Register
-                    </Text>
+                    {loadingShifts ? (
+                      <ActivityIndicator size='small' color={colors.primary} />
+                    ) : (
+                      <Text
+                        style={{
+                          color: colors.primary,
+                          textAlign: "center"
+                        }}
+                      >
+                        Book Shift
+                      </Text>
+                    )}
                   </TouchableOpacity>
-                )
-              )}
-              {user?.role === "STAFF" && (
-                <TouchableOpacity
-                  style={[
-                    tw`p-4 rounded-lg flex-1 ml-2`,
-                    {
-                      backgroundColor: (userHasShift || hasEventStarted()) 
-                        ? colors.primary
-                        : isDarkMode
-                        ? colors.lightGray
-                        : colors.white,
-                      borderWidth: (userHasShift || hasEventStarted()) ? 0 : 1,
-                      borderColor: colors.primary,
-                      opacity:
-                        loadingShifts || (!userHasShift && !hasEventStarted() && canTakeShift === false) ? 0.5 : 1,
-                    },
-                  ]}
-                  onPress={(userHasShift || hasEventStarted()) ? handleMarkAttendance : showShiftModal}
-                  disabled={loadingShifts || (!userHasShift && !hasEventStarted() && canTakeShift === false)}
-                >
-                  {loadingShifts ? (
-                    <ActivityIndicator size='small' color={(userHasShift || hasEventStarted()) ? colors.white : colors.primary} />
-                  ) : (
+                  <TouchableOpacity
+                    style={[
+                      tw`p-4 rounded-lg flex-1 ml-2`,
+                      {
+                        backgroundColor: colors.primary,
+                      },
+                    ]}
+                    onPress={handleMarkAttendance}
+                  >
                     <Text
-                      style={{ 
-                        color: (userHasShift || hasEventStarted()) ? colors.white : colors.primary, 
-                        textAlign: "center" 
+                      style={{
+                        color: colors.white,
+                        textAlign: "center"
                       }}
                     >
-                      {(userHasShift || hasEventStarted())
-                        ? "Mark Attendance"
-                        : canTakeShift === true
-                        ? "Book Shift"
-                        : canTakeShift === false
-                        ? "No Shifts Available"
-                        : "Check Shifts"}
+                      Mark Attendance
                     </Text>
+                  </TouchableOpacity>
+                </>
+              ) : (
+                // Non-staff users: Show registration/ticket buttons
+                <>
+                  {loadingRegistrations ? (
+                    <TouchableOpacity
+                      style={[
+                        tw`p-4 rounded-lg flex-1 mr-2`,
+                        { backgroundColor: colors.gray, opacity: 0.5 },
+                      ]}
+                      disabled
+                    >
+                      <ActivityIndicator size='small' color={colors.white} />
+                    </TouchableOpacity>
+                  ) : isEventRegistered ? (
+                    <TouchableOpacity
+                      style={[
+                        tw`p-4 rounded-lg flex-1 mr-2`,
+                        { backgroundColor: colors.primary },
+                      ]}
+                      onPress={handleViewTicket}
+                    >
+                      <Text style={{ color: colors.white, textAlign: "center" }}>
+                        View Ticket
+                      </Text>
+                    </TouchableOpacity>
+                  ) : (
+                    currentEvent?.registration && (
+                      <TouchableOpacity
+                        style={[
+                          tw`p-4 rounded-lg flex-1 mr-2`,
+                          { backgroundColor: colors.primary },
+                        ]}
+                        onPress={handleRegistration}
+                      >
+                        <Text style={{ color: colors.white, textAlign: "center" }}>
+                          Register
+                        </Text>
+                      </TouchableOpacity>
+                    )
                   )}
-                </TouchableOpacity>
+                </>
               )}
             </View>
           </View>
@@ -632,7 +651,12 @@ const EventDetails = () => {
                         >
                           {shift.shiftTime}
                         </Text>
-                        {!shift.isAvailable && (
+                        {!shift.isAvailable && shift.bookedBy && (
+                          <Text style={{ color: colors.gray, fontSize: 12 }}>
+                            Booked by: {shift.bookedBy.name}
+                          </Text>
+                        )}
+                        {!shift.isAvailable && !shift.bookedBy && (
                           <Text style={{ color: colors.gray, fontSize: 12 }}>
                             Already taken
                           </Text>

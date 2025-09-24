@@ -18,6 +18,7 @@ import { initializeAuth, userState } from "../state/userState";
 import { useTheme } from "@/context/ThemeContext";
 import { Event } from "@/types/event";
 import { dummyImageUrl } from "@/constants/statics";
+import { isMultiDayEventActive } from "@/helpers/dateUtils";
 const Home: React.FC = () => {
   const router = useRouter();
   const events = state.event;
@@ -27,10 +28,14 @@ const Home: React.FC = () => {
   const { isDarkMode, colors, toggleTheme } = useTheme();
 
 
-  const handlePressEvent = async (eventId: string) => {
+  const handlePressEvent = async (eventId: string, isMultiDay?: boolean) => {
     try {
       events.fetchEventDetails(eventId);
-      router.push(`/event/${eventId}`);
+      if (isMultiDay) {
+        router.push(`/event/multi-day/${eventId}`);
+      } else {
+        router.push(`/event/${eventId}`);
+      }
     } catch (error) {
       console.error("Failed to load event details:", error);
     }
@@ -47,12 +52,36 @@ const Home: React.FC = () => {
         await events.initializeEvents();
         const allEvents = events.eventState.events.get();
 
-        // Filter events based on user role
+        console.log('📊 Event Count Debug:');
+        console.log(`- Total events from API: ${allEvents.length}`);
+
+        // Filter events based on user role and multi-day status
         // If user is not STAFF, filter out staffOnly events
         // If user is STAFF, show all events
-        const filteredEvents = user.role === "STAFF"
+        const filteredByRole = user.role === "STAFF"
           ? allEvents
           : allEvents.filter(event => !event.fields.staffOnly);
+
+        console.log(`- After role filter (${user.role}): ${filteredByRole.length}`);
+
+        // Apply multi-day event filtering
+        const filteredEvents = filteredByRole.filter(event => {
+          // For staff, show all events (no multi-day filtering)
+          if (user.role === "STAFF") {
+            return true;
+          }
+
+          // For non-staff, include single day events
+          if (!event.fields.isMultipleDays) {
+            return true;
+          }
+
+          // For non-staff multi-day events, only show if currently active
+          return isMultiDayEventActive(event);
+        });
+
+        console.log(`- After multi-day filter: ${filteredEvents.length}`);
+        console.log(`- Events being displayed:`, filteredEvents.map(e => e.fields.eventName));
 
         setEventsList(filteredEvents);
         await initializeAuth();
@@ -104,7 +133,7 @@ const Home: React.FC = () => {
           showsHorizontalScrollIndicator={false}
           style={tw`-mx-5 px-5 mt-7`}
         >
-          {eventsList.slice(0, eventsList.length / 2).map((event) => (
+          {eventsList.slice(0, 1).map((event) => (
             <BigBoyCard
               key={event.id}
               title={event.fields.eventName || "No Title"}
@@ -119,16 +148,17 @@ const Home: React.FC = () => {
                   ? event.fields.images
                   : [{ url: dummyImageUrl }]
               }
-              onPressShow={() => handlePressEvent(event.id)}
+              onPressShow={() => handlePressEvent(event.id, event.fields.isMultipleDays)}
+              event={event}
             />
           ))}
         </ScrollView>
 
         <SectionHeader
-          title="Some events you might like"
-          onPressSeeAll={() => handlePressSeeAll("Recommendations for you")}
+          title="All Events"
+          onPressSeeAll={() => handlePressSeeAll("All Events")}
         />
-        {eventsList.slice(eventsList.length / 2).map((event) => (
+        {eventsList.slice(1).map((event) => (
           <EventCard
             key={event.id}
             title={event.fields.eventName || "No Title"}
@@ -139,9 +169,18 @@ const Home: React.FC = () => {
                 ? event.fields.images
                 : [{ url: dummyImageUrl }]
             }
-            onPress={() => handlePressEvent(event.id)}
+            onPress={() => handlePressEvent(event.id, event.fields.isMultipleDays)}
+            event={event}
           />
         ))}
+
+        {eventsList.length === 0 && !isLoading && (
+          <View style={tw`items-center py-8`}>
+            <Text style={{ color: colors.gray, fontSize: 16, textAlign: 'center' }}>
+              No events available at the moment
+            </Text>
+          </View>
+        )}
       </ScrollView>
     </SafeAreaView>
   );

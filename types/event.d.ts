@@ -18,6 +18,8 @@ export type EventFields = {
   staffShiftCount?: number;
   staffOnly?: boolean;
   isMultipleDays?: boolean;
+  numberOfMultipleDays?: number;
+  multipleDayType?: string;
 };
 export type Event = {
   id: string;
@@ -33,6 +35,9 @@ export type Event = {
     images?: Array<{ url: string }>;
     registration?: boolean;
     staffOnly?: boolean;
+    isMultipleDays?: boolean;
+    numberOfMultipleDays?: number;
+    multipleDayType?: string;
   };
 };
 
@@ -69,6 +74,7 @@ export interface EventCardProps {
   onPress: () => void;
   isLoading?: boolean;
   staffOnly?: boolean;
+  event?: Event;
 }
 
 

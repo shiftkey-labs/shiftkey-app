@@ -3,12 +3,11 @@ import { View } from "react-native";
 import { Stack } from "expo-router";
 import tw from "@/app/styles/tailwind";
 
-export default function EventLayout() {
+export default function MultiDayEventLayout() {
   return (
     <View style={tw`flex-1`}>
       <Stack>
         <Stack.Screen name="[id]" options={{ headerShown: false }} />
-        <Stack.Screen name="multi-day" options={{ headerShown: false }} />
       </Stack>
     </View>
   );

@@ -7,6 +7,10 @@ type Shift = {
   id: string;
   shiftTime: string;
   isAvailable: boolean;
+  bookedBy?: {
+    name: string;
+    email: string;
+  };
 };
 
 const volunteerState = observable({
