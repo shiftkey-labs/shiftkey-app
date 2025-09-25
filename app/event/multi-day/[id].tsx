@@ -5,9 +5,7 @@ import {
   Image,
   TouchableOpacity,
   ScrollView,
-  Modal,
   ActivityIndicator,
-  Alert,
   SafeAreaView,
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
@@ -16,19 +14,8 @@ import { FontAwesome } from "@expo/vector-icons";
 import state from "../../state";
 import { useTheme } from "@/context/ThemeContext";
 import { Event } from "@/types/event";
-import { checkUserCanTakeShift } from "../../state/volunteerState";
 import { getMultiDayEventDates, formatTimeFromDate } from "@/helpers/dateUtils";
 import MultiDaySessionCard from "@/components/home/MultiDaySessionCard";
-
-type Shift = {
-  id: string;
-  shiftTime: string;
-  isAvailable: boolean;
-  bookedBy?: {
-    name: string;
-    email: string;
-  };
-};
 
 const MultiDayEventDetails = () => {
   const params = useLocalSearchParams();
@@ -37,11 +24,6 @@ const MultiDayEventDetails = () => {
   const curr: Event = state.event.eventState.currentEvent.get();
   const currentEvent = curr?.fields;
   const [loading, setLoading] = useState(true);
-  const [shiftModalVisible, setShiftModalVisible] = useState(false);
-  const [selectedShifts, setSelectedShifts] = useState<string[]>([]);
-  const [allShifts, setAllShifts] = useState<Shift[]>([]);
-  const [loadingShifts, setLoadingShifts] = useState(false);
-  const [selectedDay, setSelectedDay] = useState<number>(1);
   const user = state.user.userState.get();
 
   const { isDarkMode, colors } = useTheme();
@@ -96,57 +78,11 @@ const MultiDayEventDetails = () => {
     router.back();
   };
 
-  const handleBookShift = async (dayNumber: number) => {
-    setSelectedDay(dayNumber);
-    if (user?.role === "STAFF" && user?.id && curr?.id) {
-      setLoadingShifts(true);
-      try {
-        const result = await checkUserCanTakeShift(user.id, curr.id);
-        setAllShifts(result.allShifts || []);
-        setShiftModalVisible(true);
-      } catch (error) {
-        console.error("Error checking shift availability:", error);
-        Alert.alert("Error", "Failed to load available shifts.");
-      } finally {
-        setLoadingShifts(false);
-      }
-    }
-  };
 
   const handleMarkAttendance = (dayNumber: number) => {
     router.push(`/volunteer/${curr?.id}?day=${dayNumber}`);
   };
 
-  const handleVolunteer = async () => {
-    if (!user.id || selectedShifts.length !== 1) return;
-
-    const shiftId = selectedShifts[0];
-
-    try {
-      await state.volunteer.volunteerForEvent(user.id, shiftId);
-      setSelectedShifts([]);
-      setShiftModalVisible(false);
-      Alert.alert("Success", "You have successfully booked a shift for this day", [
-        {
-          text: "OK",
-          onPress: () => {
-            // Optionally refresh or navigate
-          },
-        },
-      ]);
-    } catch (error) {
-      Alert.alert("Error", "Failed to sign up as a volunteer.");
-      console.error("Failed to sign up as a volunteer:", error);
-    }
-  };
-
-  const toggleShiftSelection = (shiftId: string) => {
-    if (selectedShifts.includes(shiftId)) {
-      setSelectedShifts([]);
-    } else {
-      setSelectedShifts([shiftId]);
-    }
-  };
 
   if (loading) {
     return (
@@ -286,7 +222,6 @@ const MultiDayEventDetails = () => {
                   date={date}
                   eventStartDate={currentEvent.startDate}
                   multipleDayType={currentEvent.multipleDayType}
-                  onBookShift={() => handleBookShift(index + 1)}
                   onMarkAttendance={() => handleMarkAttendance(index + 1)}
                 />
               ))
@@ -309,134 +244,6 @@ const MultiDayEventDetails = () => {
         </ScrollView>
       </View>
 
-      {/* Shift Booking Modal */}
-      <Modal
-        animationType='slide'
-        transparent={true}
-        visible={shiftModalVisible}
-        onRequestClose={() => {
-          setShiftModalVisible(!shiftModalVisible);
-        }}
-      >
-        <TouchableOpacity
-          style={tw`flex-1 justify-center items-center bg-black bg-opacity-50`}
-          activeOpacity={1}
-          onPress={() => setShiftModalVisible(false)}
-        >
-          <TouchableOpacity
-            activeOpacity={1}
-            onPress={(e) => e.stopPropagation()}
-            style={[
-              tw`rounded-lg p-5 w-4/5`,
-              { backgroundColor: isDarkMode ? colors.lightGray : colors.white },
-            ]}
-          >
-            <Text
-              style={{
-                color: colors.text,
-                fontSize: 24,
-                fontWeight: "bold",
-                marginBottom: 8,
-              }}
-            >
-              Book Shift - {currentEvent.multipleDayType === "Weekly" ? `Week ${selectedDay}` : `Day ${selectedDay}`}
-            </Text>
-            <Text style={{ color: colors.gray, marginBottom: 20 }}>
-              Please select an available shift from the list below.
-            </Text>
-
-            <View style={tw`flex-col w-full`}>
-              {loadingShifts ? (
-                <View style={tw`items-center justify-center py-8`}>
-                  <ActivityIndicator size='large' color={colors.primary} />
-                  <Text style={{ color: colors.gray, marginTop: 10 }}>
-                    Loading available shifts...
-                  </Text>
-                </View>
-              ) : allShifts.length > 0 ? (
-                allShifts.map((shift) => {
-                  return (
-                    <TouchableOpacity
-                      key={shift.id}
-                      style={[
-                        tw`p-4 rounded-lg mb-2 flex-row justify-between items-center`,
-                        {
-                          backgroundColor: selectedShifts.includes(shift.id)
-                            ? colors.primary
-                            : isDarkMode
-                            ? colors.lightGray
-                            : colors.white,
-                          borderWidth: 1,
-                          borderColor: colors.primary,
-                          opacity: shift.isAvailable ? 1 : 0.5,
-                        },
-                      ]}
-                      onPress={() =>
-                        shift.isAvailable && toggleShiftSelection(shift.id)
-                      }
-                      disabled={!shift.isAvailable}
-                    >
-                      <View style={tw`flex-1`}>
-                        <Text
-                          style={{
-                            color: selectedShifts.includes(shift.id)
-                              ? colors.white
-                              : colors.text,
-                            fontSize: 16,
-                          }}
-                        >
-                          {shift.shiftTime}
-                        </Text>
-                        {!shift.isAvailable && shift.bookedBy && (
-                          <Text style={{ color: colors.gray, fontSize: 12 }}>
-                            Booked by: {shift.bookedBy.name}
-                          </Text>
-                        )}
-                        {!shift.isAvailable && !shift.bookedBy && (
-                          <Text style={{ color: colors.gray, fontSize: 12 }}>
-                            Already taken
-                          </Text>
-                        )}
-                      </View>
-                      {selectedShifts.includes(shift.id) && (
-                        <FontAwesome
-                          name='check'
-                          size={16}
-                          color={colors.white}
-                        />
-                      )}
-                    </TouchableOpacity>
-                  );
-                })
-              ) : (
-                <Text style={{ color: colors.gray, textAlign: "center" }}>
-                  No shifts found for this session.
-                </Text>
-              )}
-            </View>
-            <TouchableOpacity
-              style={[
-                tw`p-4 rounded-lg mt-4`,
-                {
-                  backgroundColor:
-                    selectedShifts.length > 0 ? colors.primary : colors.gray,
-                  opacity: selectedShifts.length > 0 ? 1 : 0.5,
-                },
-              ]}
-              onPress={handleVolunteer}
-              disabled={selectedShifts.length === 0 || loadingShifts}
-            >
-              {loadingShifts ? (
-                <ActivityIndicator size='small' color={colors.white} />
-              ) : (
-                <Text style={{ color: colors.white, textAlign: "center" }}>
-                  Book Selected Shift
-                </Text>
-              )}
-            </TouchableOpacity>
-          </TouchableOpacity>
-        </TouchableOpacity>
-      </Modal>
     </View>
   );
 };

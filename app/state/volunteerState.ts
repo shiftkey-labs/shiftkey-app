@@ -45,9 +45,9 @@ const volunteerForEvent = async (userId: string, shiftId: string) => {
   }
 };
 
-const checkUserCanTakeShift = async (userId: string, eventId: string) => {
+const checkUserCanTakeShift = async (userId: string, eventId: string, eventName?: string, dayNumber?: number) => {
   try {
-    const response = await checkCanTakeShift(userId, eventId);
+    const response = await checkCanTakeShift(userId, eventId, eventName, dayNumber);
     volunteerState.canTakeShiftStatus.set(response);
     return response;
   } catch (error) {

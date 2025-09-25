@@ -69,9 +69,14 @@ export const getVolunteerEvents = async (userId: string) => {
   }
 };
 
-export const checkCanTakeShift = async (userId: string, eventId: string) => {
+export const checkCanTakeShift = async (userId: string, eventId: string, eventName?: string, dayNumber?: number) => {
   try {
-    const response = await server.get(`/volunteer/can-take-shift/${userId}/${eventId}`);
+    // Simple API call - no need for query parameters since we get all shifts for the event
+    const url = `/volunteer/can-take-shift/${userId}/${eventId}`;
+
+    console.log(`📡 API call: ${url}`);
+
+    const response = await server.get(url);
     return response.data;
   } catch (error: any) {
     throw new Error(`Error checking if user can take shift: ${error.message}`);

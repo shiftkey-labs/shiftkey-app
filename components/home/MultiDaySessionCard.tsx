@@ -9,9 +9,7 @@ interface MultiDaySessionCardProps {
   date: Date;
   eventStartDate?: string;
   multipleDayType?: string;
-  onBookShift: () => void;
   onMarkAttendance: () => void;
-  hasShiftBooked?: boolean;
 }
 
 const MultiDaySessionCard: React.FC<MultiDaySessionCardProps> = ({
@@ -19,9 +17,7 @@ const MultiDaySessionCard: React.FC<MultiDaySessionCardProps> = ({
   date,
   eventStartDate,
   multipleDayType,
-  onBookShift,
   onMarkAttendance,
-  hasShiftBooked = false,
 }) => {
   const { isDarkMode, colors } = useTheme();
 
@@ -111,18 +107,6 @@ const MultiDaySessionCard: React.FC<MultiDaySessionCardProps> = ({
                 </Text>
               </View>
             )}
-            {hasShiftBooked && (
-              <View
-                style={[
-                  tw`ml-2 rounded-full px-2 py-1`,
-                  { backgroundColor: colors.secondary || "#10B981" },
-                ]}
-              >
-                <Text style={{ color: colors.white, fontSize: 10, fontWeight: "bold" }}>
-                  Shift Booked
-                </Text>
-              </View>
-            )}
           </View>
           <Text
             style={{
@@ -152,52 +136,26 @@ const MultiDaySessionCard: React.FC<MultiDaySessionCardProps> = ({
         />
       </View>
 
-      {/* Action Buttons */}
-      <View style={tw`flex-row justify-between`}>
-        <TouchableOpacity
-          style={[
-            tw`flex-1 p-3 rounded-lg mr-2`,
-            {
-              backgroundColor: hasShiftBooked
-                ? colors.secondary || "#10B981"
-                : isDarkMode ? colors.background : colors.lightGray,
-              borderWidth: hasShiftBooked ? 0 : 1,
-              borderColor: colors.primary,
-            },
-          ]}
-          onPress={onBookShift}
+      {/* Action Button */}
+      <TouchableOpacity
+        style={[
+          tw`w-full p-3 rounded-lg`,
+          {
+            backgroundColor: colors.primary,
+          },
+        ]}
+        onPress={onMarkAttendance}
+      >
+        <Text
+          style={{
+            color: colors.white,
+            textAlign: "center",
+            fontWeight: "semibold",
+          }}
         >
-          <Text
-            style={{
-              color: hasShiftBooked ? colors.white : colors.primary,
-              textAlign: "center",
-              fontWeight: "semibold",
-            }}
-          >
-            {hasShiftBooked ? "View Shift" : "Book Shift"}
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[
-            tw`flex-1 p-3 rounded-lg ml-2`,
-            {
-              backgroundColor: colors.primary,
-            },
-          ]}
-          onPress={onMarkAttendance}
-        >
-          <Text
-            style={{
-              color: colors.white,
-              textAlign: "center",
-              fontWeight: "semibold",
-            }}
-          >
-            Mark Attendance
-          </Text>
-        </TouchableOpacity>
-      </View>
+          Mark Attendance
+        </Text>
+      </TouchableOpacity>
     </View>
   );
 };
