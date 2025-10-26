@@ -3,10 +3,10 @@ import { observer } from "@legendapp/state/react";
 
 import { View, Text, SafeAreaView, Pressable, Alert, ActivityIndicator } from "react-native";
 import tw from "../styles/tailwind";
-import state from "../state";
+import state from "@/state";
 import VolunteerEventsList from "@/components/VolunteerEventsList";
 import server from "@/config/axios";
-import { fetchUserVolunteeredEvents } from "../state/volunteerState";
+import { fetchUserVolunteeredEvents } from "@/state/volunteerState";
 import { useTheme } from "@/context/ThemeContext";
 
 const Volunteer = observer(() => {

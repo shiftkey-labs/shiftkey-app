@@ -17,7 +17,7 @@ import { Dropdown } from "react-native-element-dropdown";
 import Checkbox from 'expo-checkbox';
 import tw from "../styles/tailwind";
 import axios from "axios";
-import state from "../state";
+import state from "@/state";
 import { signupForm } from "@/constants/signupForm";
 import server from "@/config/axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";

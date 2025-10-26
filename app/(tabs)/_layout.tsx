@@ -6,7 +6,7 @@ import colors from "@/constants/colors";
 import { useColorScheme } from "@/components/useColorScheme";
 import { useClientOnlyValue } from "@/components/useClientOnlyValue";
 import Ionicons from "@expo/vector-icons/Ionicons";
-import state from "../state";
+import state from "@/state";
 import { useTheme } from "@/context/ThemeContext";
 
 // You can explore the built-in icon families and icons on the web at https://icons.expo.fyi/

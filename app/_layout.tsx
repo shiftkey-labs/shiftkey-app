@@ -13,9 +13,9 @@ import "react-native-reanimated";
 import { ActivityIndicator, View, useColorScheme as useNativeColorScheme } from "react-native";
 import tw from "./styles/tailwind";
 import { observer } from "@legendapp/state/react";
-import { initializeEvents } from "./state/eventState";
-import { initializeAuth, hasRequiredFields } from "./state/userState";
-import state from "./state";
+import { initializeEvents } from "@/state/eventState";
+import { initializeAuth, hasRequiredFields } from "@/state/userState";
+import state from "@/state";
 import Toast from "react-native-toast-message";
 import { ThemeProvider, useTheme } from "@/context/ThemeContext";
 
@@ -38,17 +38,29 @@ const RootLayoutNav = observer(() => {
   const user = state.user.userState.get();
   const [isInitializing, setIsInitializing] = useState(true);
 
+  const [loaded, error] = useFonts({
+    SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
+    ...FontAwesome.font,
+  });
+
+  // Expo Router uses Error Boundaries to catch errors in the navigation tree.
   useEffect(() => {
-    const initialize = async () => {
-      try {
-        await initializeAuth();
-      } finally {
-        setIsInitializing(false);
-        SplashScreen.hideAsync();
-      }
-    };
-    initialize();
-  }, []);
+    if (error) throw error;
+  }, [error]);
+
+  useEffect(() => {
+    if (loaded) {
+      const initialize = async () => {
+        try {
+          await initializeAuth();
+        } finally {
+          setIsInitializing(false);
+          SplashScreen.hideAsync();
+        }
+      };
+      initialize();
+    }
+  }, [loaded]);
 
   useEffect(() => {
     if (isInitializing) return; // Don't navigate while initializing
@@ -62,10 +74,10 @@ const RootLayoutNav = observer(() => {
     }
   }, [user, isInitializing]);
 
-  // Show loading screen while initializing
-  if (isInitializing) {
+  // Show loading screen while fonts are loading or while initializing
+  if (!loaded || isInitializing) {
     return (
-      <View style={tw`flex-1 justify-center items-center bg-background dark:bg-dark-background`}>
+      <View style={tw`flex-1 justify-center items-center bg-white dark:bg-black`}>
         <ActivityIndicator size="large" color={systemColorScheme === 'dark' ? '#ffffff' : '#0000ff'} />
       </View>
     );

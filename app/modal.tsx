@@ -5,7 +5,7 @@ import QRCode from "react-native-qrcode-svg";
 import { Text, View } from "@/components/Themed";
 import tw from "./styles/tailwind";
 import { useRouter } from "expo-router";
-import state from "./state";
+import state from "@/state";
 import { useTheme } from "@/context/ThemeContext";
 
 export default function ModalScreen() {

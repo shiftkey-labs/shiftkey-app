@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import tw from "../styles/tailwind";
 import { useRouter } from "expo-router";
-import state from "../state";
+import state from "@/state";
 import { Picker } from "@react-native-picker/picker";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 

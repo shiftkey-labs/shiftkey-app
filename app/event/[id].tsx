@@ -13,10 +13,10 @@ import {
 import { useRouter, useLocalSearchParams } from "expo-router";
 import tw from "../styles/tailwind";
 import { FontAwesome } from "@expo/vector-icons";
-import state from "../state";
+import state from "@/state";
 import { useTheme } from "@/context/ThemeContext";
 import { Event, Registration } from "@/types/event";
-import { checkUserCanTakeShift } from "../state/volunteerState";
+import { checkUserCanTakeShift } from "@/state/volunteerState";
 
 // Define a type for shift
 type Shift = {

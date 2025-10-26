@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import tw from "../styles/tailwind";
 import { useRouter } from "expo-router";
-import state from "../state";
+import state from "@/state";
 import { roleSettingsOptions } from "@/config/roleSettingsOptions";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { deleteUserById } from "@/api/userApi";

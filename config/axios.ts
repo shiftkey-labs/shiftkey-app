@@ -1,12 +1,14 @@
 import axios from "axios";
-
-export const PROD_URL = process.env.BACKEND_URL;
+import environment from "./environment";
 
 const server = axios.create({
-  baseURL: "https://shiftkey.vanshsood.com",
+  baseURL: environment.apiUrl,
   headers: {
     "Content-Type": "application/json",
   },
 });
+
+// Log current environment for debugging
+console.log(`API configured for ${environment.env} environment: ${environment.apiUrl}`);
 
 export default server;

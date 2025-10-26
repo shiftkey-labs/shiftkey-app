@@ -6,7 +6,7 @@ import Logo from "@/components/common/Logo";
 import axios from "axios";
 import Toast from "react-native-toast-message";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import state from "../state";
+import state from "@/state";
 import server from "@/config/axios";
 import { SafeAreaView } from "react-native";
 
