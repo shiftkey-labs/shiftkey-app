@@ -1,6 +1,5 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
-  ScrollView,
   View,
   Text,
   SafeAreaView,
@@ -9,6 +8,7 @@ import {
 import tw from "../styles/tailwind";
 import EventCard from "@/components/home/EventCard";
 import SectionHeader from "@/components/home/SectionHeader";
+import RefreshableScrollView from "@/components/common/RefreshableScrollView";
 import { useRouter } from "expo-router";
 import state from "@/state";
 import { initializeAuth } from "@/state/userState";
@@ -23,15 +23,28 @@ const Home: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const { isDarkMode, colors } = useTheme();
 
+  const loadEvents = useCallback(async () => {
+    try {
+      const response = await getUpcomingEvents();
+      if (response?.success && Array.isArray(response.events)) {
+        setEventsList(response.events);
+      } else {
+        setEventsList([]);
+      }
+    } catch (error) {
+      console.error("Failed to load upcoming events:", error);
+      setEventsList([]);
+    }
+  }, []);
 
-  const handlePressEvent = async (eventId: string) => {
+  const handlePressEvent = useCallback(async (eventId: string) => {
     try {
       await events.fetchEventDetails(eventId);
       router.push(`/event/${eventId}`);
     } catch (error) {
       console.error("Failed to load event details:", error);
     }
-  };
+  }, [events, router]);
 
   const handlePressSeeAll = (section: string) => {
     console.log("See all pressed for section:", section);
@@ -39,25 +52,17 @@ const Home: React.FC = () => {
 
   useEffect(() => {
     const initialize = async () => {
+      setIsLoading(true);
       try {
-        setIsLoading(true);
         await initializeAuth();
-        const response = await getUpcomingEvents();
-        if (response?.success && Array.isArray(response.events)) {
-          setEventsList(response.events);
-        } else {
-          setEventsList([]);
-        }
-      } catch (error) {
-        console.error("Failed to load upcoming events:", error);
-        setEventsList([]);
+        await loadEvents();
       } finally {
         setIsLoading(false);
       }
     };
 
     initialize();
-  }, []);
+  }, [loadEvents]);
 
   if (isLoading) {
     return (
@@ -69,7 +74,11 @@ const Home: React.FC = () => {
 
   return (
     <SafeAreaView style={[tw`flex-1`, { backgroundColor: colors.background }]}>
-      <ScrollView style={[tw`flex-1 p-5`, { backgroundColor: colors.background }]}>
+      <RefreshableScrollView
+        style={[tw`flex-1 p-5`, { backgroundColor: colors.background }]}
+        contentContainerStyle={tw`pb-6`}
+        onRefresh={loadEvents}
+      >
         <View style={tw`pt-5`}>
           <Text style={{ color: colors.text, fontSize: 36, fontWeight: 'bold' }}>
             Hi {user.firstName}
@@ -97,7 +106,7 @@ const Home: React.FC = () => {
             No upcoming events found.
           </Text>
         )}
-      </ScrollView>
+      </RefreshableScrollView>
     </SafeAreaView>
   );
 };

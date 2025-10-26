@@ -49,7 +49,11 @@ const EventCard: React.FC<EventCardProps> = ({
         </View>
       ) : null}
       <View style={tw`relative`}>
-        <Image source={{ uri: resolvedImageUrl }} style={tw`w-24 h-24 rounded-lg`} />
+        <Image
+          source={{ uri: resolvedImageUrl }}
+          style={tw`w-24 h-24 rounded-lg`}
+          resizeMode="contain"
+        />
         {staffOnly && (
           <View
             style={[
