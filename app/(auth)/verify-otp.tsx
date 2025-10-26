@@ -4,9 +4,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import tw from "../styles/tailwind";
 import Logo from "@/components/common/Logo";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import state from "@/state";
 import server from "@/config/axios";
+import { persistAuthSession } from "@/state/authSession";
 
 const VerifyOtp = () => {
   const router = useRouter();
@@ -70,16 +69,11 @@ const VerifyOtp = () => {
 
       if (isSuccess) {
         const userData = response.data.user;
+        const token = response.data.token;
 
-        state.user.userState.set(userData);
-        await AsyncStorage.setItem("user", JSON.stringify(userData));
+        const hasRequiredProfile = await persistAuthSession(userData, token);
 
-        const hasRequiredFields = userData.firstName &&
-          userData.lastName &&
-          userData.role &&
-          userData.email;
-
-        if (!hasRequiredFields) {
+        if (!hasRequiredProfile) {
           router.push("/(auth)/signup");
         } else {
           router.push("/");

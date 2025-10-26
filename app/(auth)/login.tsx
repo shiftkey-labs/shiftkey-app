@@ -6,6 +6,7 @@ import tw from "../styles/tailwind";
 import Logo from "@/components/common/Logo";
 import Toast from "react-native-toast-message";
 import server from "@/config/axios";
+import { persistAuthSession } from "@/state/authSession";
 
 const Login = () => {
   const router = useRouter();
@@ -40,15 +41,29 @@ const Login = () => {
 
       if (isSuccess) {
         const successMessage = response.data?.message || "OTP sent successfully.";
+        const token = response.data?.token;
+        const userData = response.data?.user;
+
         setStatusMessage(successMessage);
         Toast.show({
           type: "success",
           text1: successMessage,
         });
-        router.push({
-          pathname: "/(auth)/verify-otp",
-          params: { email, message: successMessage },
-        });
+
+        if (token && userData) {
+          const hasRequiredProfile = await persistAuthSession(userData, token);
+
+          if (!hasRequiredProfile) {
+            router.replace("/(auth)/signup");
+          } else {
+            router.replace("/");
+          }
+        } else {
+          router.push({
+            pathname: "/(auth)/verify-otp",
+            params: { email, message: successMessage },
+          });
+        }
       } else {
         const errorMessage = response.data?.message || "Failed to send verification code. Please try again.";
         setStatusMessage(errorMessage);

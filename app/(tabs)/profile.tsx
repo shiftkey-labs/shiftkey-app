@@ -15,6 +15,8 @@ import { roleSettingsOptions } from "@/config/roleSettingsOptions";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { deleteUserById } from "@/api/userApi";
 import { useTheme } from "@/context/ThemeContext";
+import { defaultUserState } from "@/state/userState";
+import { setAuthToken } from "@/config/axios";
 
 const Profile = () => {
   const user = state.user.userState.get();
@@ -23,25 +25,10 @@ const Profile = () => {
 
   const handleLogout = async () => {
     try {
-      state.user.userState.set({
-        id: null,
-        firstName: "",
-        lastName: "",
-        email: "",
-        pronouns: "",
-        isStudent: "",
-        currentDegree: "",
-        faculty: "",
-        school: "",
-        hours: 0,
-        university: "",
-        program: "",
-        year: "",
-        isInternational: false,
-        role: "STUDENT",
-      });
-      AsyncStorage.removeItem("user");
-      router.push("/(auth)/login");
+      state.user.userState.set({ ...defaultUserState });
+      await AsyncStorage.multiRemove(["user", "token"]);
+      setAuthToken(null);
+      router.replace("/(auth)/login");
     } catch (error) {
       Alert.alert("Logout Error", error.message);
     }
@@ -53,27 +40,10 @@ const Profile = () => {
         await deleteUserById(user.id);
       }
 
-      state.user.userState.set({
-        id: null,
-        firstName: "",
-        lastName: "",
-        email: "",
-        pronouns: "",
-        isStudent: "",
-        currentDegree: "",
-        faculty: "",
-        school: "",
-        hours: 0,
-        university: "",
-        program: "",
-        year: "",
-        isInternational: false,
-        role: "STUDENT"
-      });
-
-
-      await AsyncStorage.removeItem("user");
-      router.push("/(auth)/login");
+      state.user.userState.set({ ...defaultUserState });
+      await AsyncStorage.multiRemove(["user", "token"]);
+      setAuthToken(null);
+      router.replace("/(auth)/login");
 
     } catch (error) {
       Alert.alert("Delete Account Error", error.message);

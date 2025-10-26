@@ -1,9 +1,9 @@
 import { getUserById } from "@/api/userApi";
 import { observable } from "@legendapp/state";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { setAuthToken } from "@/config/axios";
 
-// Initialize the userState with all necessary fields
-const userState = observable({
+const defaultUserState = {
   id: null,
   firstName: "",
   lastName: "",
@@ -19,36 +19,44 @@ const userState = observable({
   year: "",
   isInternational: false,
   role: "",
-});
+  token: "",
+};
+
+// Initialize the userState with all necessary fields
+const userState = observable(defaultUserState);
 
 // Function to initialize the authentication state
 const initializeAuth = async () => {
   try {
-    const storedUser = await AsyncStorage.getItem("user");
+    const [storedUser, storedToken] = await Promise.all([
+      AsyncStorage.getItem("user"),
+      AsyncStorage.getItem("token"),
+    ]);
+
+    if (storedToken) {
+      setAuthToken(storedToken);
+    } else {
+      setAuthToken(null);
+    }
+
     if (storedUser) {
       const user = JSON.parse(storedUser);
-      userState.set(user);
-    } else {
       userState.set({
-        id: null,
-        firstName: "",
-        lastName: "",
-        email: "",
-        pronouns: "",
-        isStudent: "",
-        currentDegree: "",
-        faculty: "",
-        school: "",
-        hours: 0,
-        university: "",
-        program: "",
-        year: "",
-        isInternational: false,
-        role: "",
+        ...defaultUserState,
+        ...user,
+        token: storedToken ?? "",
       });
+      return;
     }
+
+    userState.set({
+      ...defaultUserState,
+      token: storedToken ?? "",
+    });
   } catch (error) {
     console.error("Failed to initialize auth:", error);
+    userState.set({ ...defaultUserState });
+    setAuthToken(null);
   }
 };
 
@@ -76,7 +84,13 @@ const initializeUser = async (userId: string) => {
       role: user.fields.role || "",
     };
 
-    userState.set(userData);
+    const currentToken = userState.get().token ?? "";
+
+    userState.set({
+      ...defaultUserState,
+      ...userData,
+      token: currentToken,
+    });
 
     // Store user data in AsyncStorage
     await AsyncStorage.setItem("user", JSON.stringify(userData));
@@ -96,4 +110,4 @@ const hasRequiredFields = (user: any) => {
   });
 };
 
-export { userState, initializeUser, initializeAuth, hasRequiredFields };
+export { userState, initializeUser, initializeAuth, hasRequiredFields, defaultUserState };
