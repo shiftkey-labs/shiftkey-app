@@ -1,5 +1,6 @@
 import React, { useState, useRef } from "react";
 import { View, Text, TouchableOpacity, Alert, TextInput, KeyboardAvoidingView, ScrollView, Platform, ActivityIndicator, Pressable } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import tw from "../styles/tailwind";
 import Logo from "@/components/common/Logo";
@@ -8,7 +9,6 @@ import Toast from "react-native-toast-message";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import state from "@/state";
 import server from "@/config/axios";
-import { SafeAreaView } from "react-native";
 
 const Login = () => {
   const router = useRouter();
@@ -19,6 +19,16 @@ const Login = () => {
   const [verifying, setVerifying] = useState(false);
 
   const inputRefs = useRef([]);
+
+  // Sanitize email input
+  const handleEmailChange = (text: string) => {
+    // Remove whitespace, convert to lowercase, and only allow valid email characters
+    // Valid chars: a-z, 0-9, @, ., -, _
+    const sanitized = text
+      .toLowerCase()
+      .replace(/[^a-z0-9@._-]/g, ''); // Remove any character that's not valid for email
+    setEmail(sanitized);
+  };
 
   const handleOtpChange = (value, index) => {
     const newOtp = [...otp];
@@ -135,15 +145,19 @@ const Login = () => {
   };
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      style={tw`flex-1`}
-    >
-      <ScrollView
-        contentContainerStyle={tw`flex-1 justify-center p-5 bg-white`}
-        keyboardShouldPersistTaps="handled"
+    <SafeAreaView style={tw`flex-1 bg-white`}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "padding"}
+        style={tw`flex-1`}
+        keyboardVerticalOffset={0}
       >
-        <View style={tw`flex-1 justify-center`}>
+        <ScrollView
+          contentContainerStyle={tw`flexGrow px-5 bg-white`}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+          bounces={false}
+        >
+          <View style={tw`flex-1 justify-center mt-16`}>
           <Logo />
           <Text style={tw`text-3xl font-poppinsBold text-center mt-5`}>
             Let's sign you in
@@ -155,8 +169,8 @@ const Login = () => {
             <TextInput
               style={tw`border border-gray p-5 rounded-lg mb-5`}
               placeholder="Email"
-              value={email.toLowerCase()}
-              onChangeText={setEmail}
+              value={email}
+              onChangeText={handleEmailChange}
               keyboardType="email-address"
               autoCapitalize="none"
               editable={!loading}
@@ -168,7 +182,7 @@ const Login = () => {
               <View style={tw`flex-row items-center mb-5`}>
                 <TextInput
                   style={tw`flex-1 border border-gray p-5 rounded-lg bg-gray-100`}
-                  value={email.toLowerCase()}
+                  value={email}
                   editable={false}
                   placeholderTextColor="#666666"
                 />
@@ -231,9 +245,10 @@ const Login = () => {
               </Text>
             </Pressable>
           )}
-        </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 };
 
