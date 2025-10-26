@@ -10,12 +10,28 @@ const EventCard: React.FC<EventCardProps> = ({
   location,
   date,
   images,
+  imageUrl,
   onPress,
   isLoading = false,
   staffOnly = false
 }) => {
   const { isDarkMode, colors } = useTheme();
-  const imageUrl = images?.length ? images[0].url : dummyImageUrl;
+  const resolvedImageUrl =
+    imageUrl || (images?.length ? images[0].url : dummyImageUrl);
+
+  const formattedDate = (() => {
+    if (!date) {
+      return "Date to be announced";
+    }
+    const parsed = new Date(date);
+    if (Number.isNaN(parsed.getTime())) {
+      return date;
+    }
+    return parsed.toLocaleString(undefined, {
+      dateStyle: "medium",
+      timeStyle: "short",
+    });
+  })();
 
   return (
     <TouchableOpacity
@@ -33,7 +49,7 @@ const EventCard: React.FC<EventCardProps> = ({
         </View>
       ) : null}
       <View style={tw`relative`}>
-        <Image source={{ uri: imageUrl }} style={tw`w-24 h-24 rounded-lg`} />
+        <Image source={{ uri: resolvedImageUrl }} style={tw`w-24 h-24 rounded-lg`} />
         {staffOnly && (
           <View
             style={[
@@ -47,9 +63,11 @@ const EventCard: React.FC<EventCardProps> = ({
       </View>
       <View style={tw`flex-1 ml-3 p-3`}>
         <Text style={{ color: colors.text, fontWeight: 'bold' }}>{title}</Text>
-        <Text style={{ color: colors.gray, marginTop: 4 }}>{location}</Text>
         <Text style={{ color: colors.gray, marginTop: 4 }}>
-          {new Date(date).toLocaleDateString()}
+          {location || "Location TBA"}
+        </Text>
+        <Text style={{ color: colors.gray, marginTop: 4 }}>
+          {formattedDate}
         </Text>
       </View>
     </TouchableOpacity>

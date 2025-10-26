@@ -65,6 +65,7 @@ export interface EventCardProps {
   location: string;
   date: string;
   images?: Image[];
+  imageUrl?: string | null;
   onPress: () => void;
   isLoading?: boolean;
   staffOnly?: boolean;
@@ -93,4 +94,18 @@ export type DisplayEvent = {
   location: string;
   startDate: string;
   images?: Image[];
+};
+
+export type UpcomingEvent = {
+  id: string;
+  eventName: string;
+  category: string | null;
+  location: string | null;
+  startDate: string;
+  endDate: string | null;
+  image: string | null;
+  parentEventID?: string | null;
+  registration?: boolean | null;
+  day?: number;
+  dayLabel?: string | null;
 };

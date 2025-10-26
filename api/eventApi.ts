@@ -31,6 +31,15 @@ export const getAllEvents = async () => {
   }
 };
 
+export const getUpcomingEvents = async () => {
+  try {
+    const response = await server.get("/events");
+    return response.data;
+  } catch (error) {
+    throw new Error(`Error fetching upcoming events: ${error.message}`);
+  }
+};
+
 export const updateEventById = async (eventId: string, updateData: any) => {
   try {
     const response = await server.put(`/event/update/${eventId}`, updateData);

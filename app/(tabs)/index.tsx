@@ -4,32 +4,29 @@ import {
   View,
   Text,
   SafeAreaView,
-  TouchableOpacity,
   ActivityIndicator,
 } from "react-native";
 import tw from "../styles/tailwind";
-import BigBoyCard from "@/components/home/BigBoyCard";
 import EventCard from "@/components/home/EventCard";
 import SectionHeader from "@/components/home/SectionHeader";
 import { useRouter } from "expo-router";
-import { FontAwesome5 } from "@expo/vector-icons";
 import state from "@/state";
-import { initializeAuth, userState } from "@/state/userState";
+import { initializeAuth } from "@/state/userState";
 import { useTheme } from "@/context/ThemeContext";
-import { Event } from "@/types/event";
-import { dummyImageUrl } from "@/constants/statics";
+import { UpcomingEvent } from "@/types/event";
+import { getUpcomingEvents } from "@/api/eventApi";
 const Home: React.FC = () => {
   const router = useRouter();
   const events = state.event;
   const user = state.user.userState.get();
-  const [eventsList, setEventsList] = useState<Event[]>([]);
+  const [eventsList, setEventsList] = useState<UpcomingEvent[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const { isDarkMode, colors, toggleTheme } = useTheme();
+  const { isDarkMode, colors } = useTheme();
 
 
   const handlePressEvent = async (eventId: string) => {
     try {
-      events.fetchEventDetails(eventId);
+      await events.fetchEventDetails(eventId);
       router.push(`/event/${eventId}`);
     } catch (error) {
       console.error("Failed to load event details:", error);
@@ -44,20 +41,16 @@ const Home: React.FC = () => {
     const initialize = async () => {
       try {
         setIsLoading(true);
-        await events.initializeEvents();
-        const allEvents = events.eventState.events.get();
-
-        // Filter events based on user role
-        // If user is not STAFF, filter out staffOnly events
-        // If user is STAFF, show all events
-        const filteredEvents = user.role === "STAFF"
-          ? allEvents
-          : allEvents.filter(event => !event.fields.staffOnly);
-
-        setEventsList(filteredEvents);
         await initializeAuth();
+        const response = await getUpcomingEvents();
+        if (response?.success && Array.isArray(response.events)) {
+          setEventsList(response.events);
+        } else {
+          setEventsList([]);
+        }
       } catch (error) {
-        console.error("Failed to initialize:", error);
+        console.error("Failed to load upcoming events:", error);
+        setEventsList([]);
       } finally {
         setIsLoading(false);
       }
@@ -77,71 +70,33 @@ const Home: React.FC = () => {
   return (
     <SafeAreaView style={[tw`flex-1`, { backgroundColor: colors.background }]}>
       <ScrollView style={[tw`flex-1 p-5`, { backgroundColor: colors.background }]}>
-        <View style={tw`flex-row pt-5 justify-between items-center`}>
+        <View style={tw`pt-5`}>
           <Text style={{ color: colors.text, fontSize: 36, fontWeight: 'bold' }}>
             Hi {user.firstName}
           </Text>
-          <TouchableOpacity
-            onPress={toggleTheme}
-            style={[
-              tw`p-2 rounded-full`,
-              { backgroundColor: isDarkMode ? colors.lightGray : colors.lightGray }
-            ]}
-          >
-            <FontAwesome5
-              name={isDarkMode ? "sun" : "moon"}
-              size={24}
-              color={colors.text}
-            />
-          </TouchableOpacity>
         </View>
-        <Text style={{ color: colors.gray, fontSize: 18, marginTop: 4 }}>
-          Let's find you something to do
-        </Text>
-
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          style={tw`-mx-5 px-5 mt-7`}
-        >
-          {eventsList.slice(0, eventsList.length / 2).map((event) => (
-            <BigBoyCard
-              key={event.id}
-              title={event.fields.eventName || "No Title"}
-              date={event.fields.startDate || "No Date"}
-              category={
-                event.fields.category1
-                  ? event.fields.category1[0]
-                  : "No Category"
-              }
-              images={
-                event.fields.images?.length
-                  ? event.fields.images
-                  : [{ url: dummyImageUrl }]
-              }
-              onPressShow={() => handlePressEvent(event.id)}
-            />
-          ))}
-        </ScrollView>
-
         <SectionHeader
-          title="Some events you might like"
-          onPressSeeAll={() => handlePressSeeAll("Recommendations for you")}
+          title="Upcoming Events"
+          onPressSeeAll={() => handlePressSeeAll("Upcoming Events")}
         />
-        {eventsList.slice(eventsList.length / 2).map((event) => (
-          <EventCard
-            key={event.id}
-            title={event.fields.eventName || "No Title"}
-            location={event.fields.location || "No Location"}
-            date={event.fields.startDate || "No Date"}
-            images={
-              event.fields.images?.length
-                ? event.fields.images
-                : [{ url: dummyImageUrl }]
-            }
-            onPress={() => handlePressEvent(event.id)}
-          />
-        ))}
+        {eventsList.map((event) => {
+          const targetId = event.parentEventID || event.id;
+          return (
+            <EventCard
+              key={event.id}
+              title={event.eventName || "No Title"}
+              location={event.location || "No Location"}
+              date={event.startDate || ""}
+              imageUrl={event.image}
+              onPress={() => handlePressEvent(targetId)}
+            />
+          );
+        })}
+        {eventsList.length === 0 && (
+          <Text style={{ color: colors.gray, marginTop: 16 }}>
+            No upcoming events found.
+          </Text>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
