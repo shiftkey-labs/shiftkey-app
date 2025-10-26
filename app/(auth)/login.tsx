@@ -1,10 +1,9 @@
 import React, { useState, useRef } from "react";
-import { View, Text, TouchableOpacity, Alert, TextInput, KeyboardAvoidingView, ScrollView, Platform, ActivityIndicator, Pressable } from "react-native";
+import { View, Text, TouchableOpacity, TextInput, KeyboardAvoidingView, ScrollView, Platform, ActivityIndicator, Pressable, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import tw from "../styles/tailwind";
 import Logo from "@/components/common/Logo";
-import axios from "axios";
 import Toast from "react-native-toast-message";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import state from "@/state";
@@ -12,11 +11,13 @@ import server from "@/config/axios";
 
 const Login = () => {
   const router = useRouter();
+  const defaultStatusMessage = "Please enter your email to continue";
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [otpSent, setOtpSent] = useState(false);
   const [loading, setLoading] = useState(false);
   const [verifying, setVerifying] = useState(false);
+  const [statusMessage, setStatusMessage] = useState(defaultStatusMessage);
 
   const inputRefs = useRef([]);
 
@@ -47,32 +48,45 @@ const Login = () => {
   };
 
   const requestOtp = async () => {
+    if (loading) {
+      return;
+    }
+
     setLoading(true);
     try {
-
       const response = await server.post(`/auth/send-otp`, {
         email,
       });
-      if (response.status === 200) {
+
+      if (response.status === 200 && response.data?.success) {
+        const successMessage = response.data?.message || "OTP sent successfully.";
         setOtpSent(true);
-        Alert.alert("OTP Sent", "Please check your email for the OTP.");
-      }
-    } catch (error: any) {
-      if (error.response && error.response.status === 404) {
+        setStatusMessage(successMessage);
         Toast.show({
-          type: "error",
-          text1: "User Not Found",
-          text2: "The email you entered does not exist. Please sign up first.",
+          type: "success",
+          text1: successMessage,
         });
       } else {
-        Alert.alert("Error", "Failed to send OTP. Please try again.");
+        const errorMessage = response.data?.message || "Failed to send verification code. Please try again.";
+        setStatusMessage(errorMessage);
+        Alert.alert("Request Failed", errorMessage);
       }
+    } catch (error: any) {
+      // Handle error response from API
+      const errorMessage = error.response?.data?.message || "Failed to send verification code. Please try again.";
+      setStatusMessage(errorMessage);
+
+      Alert.alert("Request Failed", errorMessage);
     } finally {
       setLoading(false);
     }
   };
 
   const verifyOtp = async () => {
+    if (verifying) {
+      return;
+    }
+
     setVerifying(true);
     try {
       const otpString = otp.join("");
@@ -80,7 +94,7 @@ const Login = () => {
         email,
         otp: otpString,
       });
-      if (response.status === 200) {
+      if (response.status === 200 && response.data?.success) {
         const userData = response.data.user;
 
         // Update userState with the user data 
@@ -102,9 +116,15 @@ const Login = () => {
           // If all required fields are present, redirect to home
           router.push("/");
         }
+      } else {
+        const errorMessage = response.data?.message || "Invalid OTP. Please try again.";
+        setStatusMessage(errorMessage);
+        Alert.alert("Verification Error", errorMessage);
       }
-    } catch (error) {
-      Alert.alert("Verification Error", "Invalid OTP. Please try again.");
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message || "Invalid OTP. Please try again.";
+      setStatusMessage(errorMessage);
+      Alert.alert("Verification Error", errorMessage);
     } finally {
       setVerifying(false);
     }
@@ -152,7 +172,7 @@ const Login = () => {
         keyboardVerticalOffset={0}
       >
         <ScrollView
-          contentContainerStyle={tw`flexGrow px-5 bg-white`}
+          contentContainerStyle={tw`flex-grow px-5 bg-white`}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
           bounces={false}
@@ -163,7 +183,7 @@ const Login = () => {
             Let's sign you in
           </Text>
           <Text style={tw`text-lg font-poppins text-center mb-10`}>
-            {otpSent ? 'Check your email for the verification code' : 'Please enter your email to continue'}
+            {statusMessage}
           </Text>
           {!otpSent && (
             <TextInput
@@ -181,7 +201,7 @@ const Login = () => {
             <View style={tw`mb-5`}>
               <View style={tw`flex-row items-center mb-5`}>
                 <TextInput
-                  style={tw`flex-1 border border-gray p-5 rounded-lg bg-gray-100`}
+                  style={tw`flex-1 border border-gray p-5 rounded-lg bg-lightGray`}
                   value={email}
                   editable={false}
                   placeholderTextColor="#666666"
@@ -190,13 +210,14 @@ const Login = () => {
                   onPress={() => {
                     setOtpSent(false);
                     setOtp(["", "", "", "", "", ""]);
+                    setStatusMessage(defaultStatusMessage);
                   }}
                   style={tw`ml-2 p-3`}
                 >
                   <Text style={tw`text-primary font-poppinsBold`}>Edit</Text>
                 </Pressable>
               </View>
-              <Text style={tw`text-center mb-3 text-gray-600 font-poppins`}>Enter the 6-digit code we sent to your email</Text>
+              <Text style={tw`text-center mb-3 text-gray font-poppins`}>Enter the 6-digit code we sent to your email</Text>
               <View style={tw`flex-row justify-between px-2`}>
                 {otp.map((digit, index) => (
                   <TextInput
@@ -222,13 +243,13 @@ const Login = () => {
             <Pressable
               style={tw`bg-primary p-4 rounded-lg mb-3 flex-row justify-center items-center`}
               onPress={requestOtp}
-              disabled={loading}
+              disabled={loading || !email}
             >
               {loading ? (
                 <ActivityIndicator color="white" style={tw`mr-2`} />
               ) : null}
               <Text style={tw`text-white text-center font-poppinsBold`}>
-                {loading ? "Sending Code..." : "Send Code"}
+                {loading ? "Logging in..." : "Login"}
               </Text>
             </Pressable>
           ) : (
