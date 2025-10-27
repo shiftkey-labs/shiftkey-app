@@ -6,12 +6,12 @@ import {
   TouchableOpacity,
   Alert,
   ScrollView,
-  SafeAreaView,
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
   Pressable,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Dropdown } from "react-native-element-dropdown";
 import Checkbox from 'expo-checkbox';

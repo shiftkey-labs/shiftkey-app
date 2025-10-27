@@ -5,9 +5,9 @@ import {
     TextInput,
     TouchableOpacity,
     ScrollView,
-    SafeAreaView,
     Alert,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import tw from "../styles/tailwind";
 import { useRouter } from "expo-router";
 import state from "@/state";

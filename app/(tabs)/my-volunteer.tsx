@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { observer } from "@legendapp/state/react";
 
-import { View, Text, SafeAreaView, Pressable, Alert, ActivityIndicator } from "react-native";
+import { View, Text, Pressable, Alert, ActivityIndicator } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import tw from "../styles/tailwind";
 import state from "@/state";
 import VolunteerEventsList from "@/components/VolunteerEventsList";

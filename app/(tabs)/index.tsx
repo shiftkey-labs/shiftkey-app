@@ -2,10 +2,10 @@ import React, { useCallback, useEffect, useState } from "react";
 import {
   View,
   Text,
-  SafeAreaView,
   ActivityIndicator,
   Alert,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import tw from "../styles/tailwind";
 import EventCard from "@/components/home/EventCard";
 import SectionHeader from "@/components/home/SectionHeader";

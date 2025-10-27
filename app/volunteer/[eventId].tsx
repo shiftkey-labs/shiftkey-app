@@ -47,10 +47,13 @@ const CheckedInModal: React.FC<{
 
   const panResponder = useRef(
     PanResponder.create({
-      onStartShouldSetPanResponder: () => true,
+      onStartShouldSetPanResponder: () => false,
       onMoveShouldSetPanResponder: (_, gestureState) => {
-        // Only respond to vertical drags
-        return Math.abs(gestureState.dy) > 5;
+        // Only respond to vertical drags that are clearly downward
+        const isVertical = Math.abs(gestureState.dy) > Math.abs(gestureState.dx);
+        const isDownward = gestureState.dy > 0;
+        const hasMovedEnough = Math.abs(gestureState.dy) > 10;
+        return isVertical && isDownward && hasMovedEnough;
       },
       onPanResponderMove: (_, gestureState) => {
         // Only allow dragging down (positive dy)
@@ -92,20 +95,21 @@ const CheckedInModal: React.FC<{
       visible={visible}
       onRequestClose={onClose}
     >
-      <TouchableOpacity
-        style={tw`flex-1 bg-black/50`}
-        activeOpacity={1}
-        onPress={onClose}
-      >
+      <View style={tw`flex-1 bg-black/50`}>
+        <TouchableOpacity
+          style={tw`flex-1`}
+          activeOpacity={1}
+          onPress={onClose}
+        />
         <Animated.View
           style={[
-            tw`flex-1 mt-32 rounded-t-3xl`,
+            tw`absolute bottom-0 left-0 right-0 rounded-t-3xl`,
             {
+              height: '68%',
               backgroundColor: isDarkMode ? colors.lightGray : colors.white,
               transform: [{ translateY }],
             }
           ]}
-          onStartShouldSetResponder={() => true}
         >
           {/* Drag Handle Area */}
           <View {...panResponder.panHandlers} style={tw`items-center pt-3 pb-2`}>
@@ -129,6 +133,8 @@ const CheckedInModal: React.FC<{
               keyExtractor={(item) => item.id.toString()}
               contentContainerStyle={tw`px-4 pb-4 pt-2`}
               ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
+              scrollEnabled={true}
+              directionalLockEnabled={false}
               renderItem={({ item }) => (
                 <SwipeableAttendeeItem
                   attendee={item}
@@ -148,7 +154,7 @@ const CheckedInModal: React.FC<{
             />
           </View>
         </Animated.View>
-      </TouchableOpacity>
+      </View>
     </Modal>
   );
 };
@@ -170,8 +176,18 @@ const SwipeableAttendeeItem: React.FC<{
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
       onMoveShouldSetPanResponder: (_, gestureState) => {
-        return Math.abs(gestureState.dx) > 5;
+        // Only capture if it's clearly a horizontal swipe (dx > dy)
+        const isHorizontal = Math.abs(gestureState.dx) > Math.abs(gestureState.dy);
+        const hasMovedEnough = Math.abs(gestureState.dx) > 5;
+
+        // Check if swipe is in the correct direction
+        const isCorrectDirection = isRightSwipe
+          ? gestureState.dx > 0  // Right swipe needs positive dx
+          : gestureState.dx < 0; // Left swipe needs negative dx
+
+        return isHorizontal && hasMovedEnough && isCorrectDirection;
       },
+      onPanResponderTerminationRequest: () => false, // Don't allow termination once we've started
       onPanResponderGrant: () => {
         setIsSwiping(true);
       },
@@ -212,7 +228,7 @@ const SwipeableAttendeeItem: React.FC<{
   ).current;
 
   return (
-    <View style={tw`mb-3 overflow-hidden rounded-lg`}>
+    <View style={tw`overflow-hidden rounded-lg`}>
       <View
         style={[
           tw`absolute inset-0 flex-row items-center rounded-lg`,
@@ -522,6 +538,7 @@ const EventAttendance = () => {
           data={filteredAttendees}
           keyExtractor={(item) => item.id.toString()}
           contentContainerStyle={tw`p-4`}
+          ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
           renderItem={({ item }) => (
             <SwipeableAttendeeItem
               attendee={item}
