@@ -3,7 +3,6 @@ import {
   View,
   Text,
   ActivityIndicator,
-  Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import tw from "../styles/tailwind";
@@ -58,7 +57,7 @@ const Home: React.FC = () => {
     } catch (error) {
       clearTimeout(timeout);
       console.error("Failed to load event details:", error);
-      Alert.alert("Error", "Failed to load event details. Please try again.");
+      // Alert is handled by axios interceptor
       // Clear loading state on error so user can retry
       setLoadingEventId(null);
     }
