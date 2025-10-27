@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useMemo, useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -6,10 +6,8 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Alert,
-  SafeAreaView,
   Modal,
   TextInput,
-  Platform,
 } from "react-native";
 import { useRouter, useLocalSearchParams, Stack } from "expo-router";
 import { AntDesign } from "@expo/vector-icons";
@@ -18,14 +16,16 @@ import tw from "../styles/tailwind";
 import server from "@/config/axios";
 import { useTheme } from "@/context/ThemeContext";
 import { Dropdown } from "react-native-element-dropdown";
+import { SafeAreaView } from "react-native-safe-area-context";
+import state from "@/state";
 
 // Define the Attendee type to fix TypeScript errors
+type DayKey = "day1" | "day2" | "day3" | "day4";
+
 interface Attendee {
   id: string;
-  firstName: string;
-  lastName: string;
-  attended: boolean;
-  // Add specific day columns
+  userId: string;
+  fullName: string;
   day1?: boolean;
   day2?: boolean;
   day3?: boolean;
@@ -34,17 +34,43 @@ interface Attendee {
 
 const EventAttendance = () => {
   const router = useRouter();
-  const { eventId } = useLocalSearchParams();
+  const params = useLocalSearchParams();
+  const attendanceContext = state.event.eventState.attendanceContext.get();
+  const currentEventFromState = state.event.eventState.currentEvent.get();
+
+  const extractParam = (value: string | string[] | undefined) => {
+    if (Array.isArray(value)) {
+      return value[0];
+    }
+    return value;
+  };
+
+  const eventIdParam = extractParam(params.eventId) ?? attendanceContext.parentEventId ?? undefined;
+  const initialDayParam = extractParam(params.day) ?? (attendanceContext.day !== null && attendanceContext.day !== undefined ? String(attendanceContext.day) : undefined);
+  const initialDayLabelParam = extractParam(params.dayLabel) ?? attendanceContext.dayLabel ?? undefined;
+  const eventNameParam = extractParam(params.eventName) ?? currentEventFromState?.eventName ?? undefined;
+
+  const normalizedDay =
+    initialDayParam && initialDayParam.toString().trim()
+      ? initialDayParam.toString().trim()
+      : "1";
+  const normalizedDayLabel =
+    initialDayLabelParam && initialDayLabelParam.toString().trim()
+      ? initialDayLabelParam.toString().trim()
+      : `Day ${normalizedDay}`;
+
+  const eventId = eventIdParam ? String(eventIdParam) : "";
   const [attendees, setAttendees] = useState<Attendee[]>([]);
   const [loading, setLoading] = useState(true);
   const [scanning, setScanning] = useState(false);
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
-  const [eventTitle, setEventTitle] = useState("Event");
+  const [eventTitle, setEventTitle] = useState(eventNameParam ?? "Event");
   const [searchQuery, setSearchQuery] = useState("");
   const { isDarkMode, colors } = useTheme();
   const [isMultipleDays, setIsMultipleDays] = useState(false);
-  const [selectedDay, setSelectedDay] = useState("1");
-  const [totalDays, setTotalDays] = useState(4);
+  const [selectedDay, setSelectedDay] = useState(normalizedDay);
+  const [currentDayLabel, setCurrentDayLabel] = useState(normalizedDayLabel);
+  const [totalDays, setTotalDays] = useState(1);
 
   useEffect(() => {
     if (eventId) {
@@ -52,13 +78,6 @@ const EventAttendance = () => {
       fetchAttendees();
     }
   }, [eventId]);
-
-  // Add a new useEffect to refetch attendees when selectedDay changes
-  useEffect(() => {
-    if (eventId && !loading) {
-      fetchAttendees();
-    }
-  }, [selectedDay]);
 
   useEffect(() => {
     (async () => {
@@ -71,14 +90,7 @@ const EventAttendance = () => {
     try {
       const response = await server.get(`/event/read/${eventId}`);
 
-      setEventTitle(response.data.fields.eventName);
-
-      if (response.data.fields.isMultipleDays) {
-        setIsMultipleDays(true);
-      } else {
-        setIsMultipleDays(false);
-        setSelectedDay("1");
-      }
+      setEventTitle(response.data.fields?.eventName ?? "Event");
     } catch (error) {
       console.error(error);
       Alert.alert("Error", "Failed to fetch event details.");
@@ -86,64 +98,50 @@ const EventAttendance = () => {
   };
 
   const fetchAttendees = async () => {
+    if (!eventId) {
+      setAttendees([]);
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
-      // Fetch all attendees for the event
-      const response = await server.get(
-        `/registration/event/${eventId}/attendees`
-      );
+      const response = await server.get(`/registrations/${eventId}`);
+      const payload = response.data;
 
-      console.log("Response data:", JSON.stringify(response.data, null, 2));
+      if (!payload?.success || !Array.isArray(payload.data)) {
+        setAttendees([]);
+        return;
+      }
 
-      const dayParam = selectedDay || "1";
+      const normalisedAttendees: Attendee[] = payload.data.map((record: any) => ({
+        id: String(record?.id ?? record?.userId ?? Math.random()),
+        userId: String(record?.userId ?? ""),
+        fullName: record?.fullName?.toString() ?? "Unknown attendee",
+        day1: Boolean(record?.day1),
+        day2: Boolean(record?.day2),
+        day3: Boolean(record?.day3),
+        day4: Boolean(record?.day4),
+      }));
 
-      // We need to fetch the attendance status for the selected day
-      // First, let's get all attendees
-      const allAttendees = response.data.attendees;
+      setAttendees(normalisedAttendees);
 
-      // Now, let's fetch the attendance status for the selected day
-      try {
-        const dayResponse = await server.get(
-          `/registration/event/${eventId}/attendees/${dayParam}`
-        );
+      const dayKeys: DayKey[] = ["day1", "day2", "day3", "day4"];
+      const discoveredMaxDay = normalisedAttendees.reduce((max, attendee) => {
+        return dayKeys.reduce((innerMax, key, index) => {
+          const value = attendee[key];
+          return value !== undefined ? Math.max(innerMax, index + 1) : innerMax;
+        }, max);
+      }, 0);
 
-        console.log("Day response:", JSON.stringify(dayResponse.data, null, 2));
+      const maxDay = Math.max(discoveredMaxDay, 1);
+      setTotalDays(maxDay);
+      setIsMultipleDays(maxDay > 1);
 
-        // Create a map of attendee IDs to their attendance status for the selected day
-        const attendanceMap = new Map();
-        if (dayResponse.data.attendees) {
-          dayResponse.data.attendees.forEach((attendee: Attendee) => {
-            attendanceMap.set(attendee.id, true);
-          });
-        }
-
-        // Update the attendance status for each attendee
-        const attendeesWithDayStatus = allAttendees.map((attendee: Attendee) => {
-          const updatedAttendee = { ...attendee };
-
-          // Set the day-specific attendance status
-          const dayKey = `day${dayParam}` as keyof Attendee;
-          if (dayKey === 'day1') {
-            updatedAttendee.day1 = attendanceMap.has(attendee.id);
-          } else if (dayKey === 'day2') {
-            updatedAttendee.day2 = attendanceMap.has(attendee.id);
-          } else if (dayKey === 'day3') {
-            updatedAttendee.day3 = attendanceMap.has(attendee.id);
-          } else if (dayKey === 'day4') {
-            updatedAttendee.day4 = attendanceMap.has(attendee.id);
-          }
-
-          return updatedAttendee;
-        });
-
-        console.log("Attendees with day status:", JSON.stringify(attendeesWithDayStatus, null, 2));
-
-        // Set the attendees with their day-specific attendance status
-        setAttendees(attendeesWithDayStatus);
-      } catch (error) {
-        console.error("Error fetching day-specific attendance:", error);
-        // If we can't fetch the day-specific attendance, just use the general attendance
-        setAttendees(allAttendees);
+      if (Number(selectedDay) > maxDay) {
+        const fallbackDay = String(maxDay);
+        setSelectedDay(fallbackDay);
+        setCurrentDayLabel(`Day ${fallbackDay}`);
       }
     } catch (error) {
       console.error(error);
@@ -154,6 +152,11 @@ const EventAttendance = () => {
   };
 
   const markAttendance = async (userId: string) => {
+    if (!eventId) {
+      Alert.alert("Error", "Event identifier missing. Please try again.");
+      return;
+    }
+
     try {
       // Ensure selectedDay is a valid value before sending to the backend
       const dayParam = selectedDay || "1";
@@ -204,10 +207,17 @@ const EventAttendance = () => {
     return options;
   };
 
-  const filteredAttendees = attendees.filter((attendee) => {
-    const fullName = `${attendee.firstName} ${attendee.lastName}`.toLowerCase();
-    return fullName.includes(searchQuery.toLowerCase());
-  });
+  const filteredAttendees = useMemo(() => {
+    const normalisedQuery = searchQuery.trim().toLowerCase();
+
+    if (!normalisedQuery) {
+      return attendees;
+    }
+
+    return attendees.filter((attendee) =>
+      attendee.fullName?.toLowerCase().includes(normalisedQuery)
+    );
+  }, [attendees, searchQuery]);
 
   if (loading) {
     return (
@@ -268,10 +278,11 @@ const EventAttendance = () => {
                   maxHeight={300}
                   labelField="label"
                   valueField="value"
-                  placeholder={`Day ${selectedDay}`}
+                  placeholder={currentDayLabel || `Day ${selectedDay}`}
                   value={selectedDay}
                   onChange={item => {
                     setSelectedDay(item.value);
+                    setCurrentDayLabel(item.label);
                   }}
                   renderLeftIcon={() => (
                     <AntDesign name="calendar" style={tw`mr-2`} color={colors.text} size={16} />
@@ -287,10 +298,14 @@ const EventAttendance = () => {
           keyExtractor={(item) => item.id.toString()}
           contentContainerStyle={tw`p-4`}
           renderItem={({ item }) => {
-            // Ensure we use a valid day parameter
-            const dayParam = selectedDay || "1";
-            const dayKey = `day${dayParam}` as keyof Attendee;
-            const isAttendedForSelectedDay = item[dayKey] as boolean || false;
+            const parsedDay = parseInt(selectedDay, 10);
+            const boundedDay =
+              Number.isFinite(parsedDay) && parsedDay >= 1 && parsedDay <= 4
+                ? parsedDay
+                : 1;
+            const dayKey = `day${boundedDay}` as DayKey;
+            const isAttendedForSelectedDay = Boolean(item[dayKey]);
+            const attendeeName = item.fullName || "Unknown attendee";
 
             return (
               <TouchableOpacity
@@ -299,7 +314,7 @@ const EventAttendance = () => {
               >
                 <View>
                   <Text style={{ color: colors.text, fontSize: 18, fontWeight: 'semibold' }}>
-                    {item.firstName} {item.lastName}
+                    {attendeeName}
                   </Text>
                   <Text style={{ color: colors.gray, fontSize: 14, marginTop: 4 }}>
                     {isAttendedForSelectedDay ? 'Present' : 'Not checked in'}

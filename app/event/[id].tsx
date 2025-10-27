@@ -88,10 +88,53 @@ const EventDetails = () => {
   };
 
   const handleMarkAttendance = () => {
-    if (!currentEventId) {
+    const preferredParentId =
+      typeof currentEvent?.parentEventID === "string" && currentEvent.parentEventID.trim()
+        ? currentEvent.parentEventID.trim()
+        : typeof currentEventId === "string" && currentEventId.trim()
+          ? currentEventId.trim()
+          : null;
+
+    if (!preferredParentId) {
       return;
     }
-    router.push(`/volunteer/${currentEventId}`);
+
+    const attendanceDay =
+      typeof currentEvent?.day === "number" && Number.isFinite(currentEvent.day)
+        ? currentEvent.day
+        : null;
+    const attendanceDayLabel =
+      typeof currentEvent?.dayLabel === "string" && currentEvent.dayLabel.trim()
+        ? currentEvent.dayLabel.trim()
+        : null;
+
+    state.event.eventState.attendanceContext.set({
+      parentEventId: preferredParentId,
+      day: attendanceDay,
+      dayLabel: attendanceDayLabel,
+    });
+
+    const params: Record<string, string> = {
+      eventId: preferredParentId,
+    };
+
+    if (attendanceDay !== null) {
+      params.day = String(attendanceDay);
+    }
+
+    if (attendanceDayLabel) {
+      params.dayLabel = attendanceDayLabel;
+    }
+
+    const eventName =
+      typeof currentEvent?.eventName === "string" && currentEvent.eventName.trim()
+        ? currentEvent.eventName.trim()
+        : null;
+    if (eventName) {
+      params.eventName = eventName;
+    }
+
+    router.push({ pathname: "/volunteer/[eventId]", params });
   };
 
   const heroImageUri = (() => {

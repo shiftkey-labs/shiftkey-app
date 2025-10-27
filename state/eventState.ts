@@ -5,6 +5,11 @@ import { EventDetails, UpcomingEvent } from "@/types/event";
 const eventState = observable({
   events: [] as UpcomingEvent[],
   currentEvent: null as EventDetails | null,
+  attendanceContext: {
+    parentEventId: null as string | null,
+    day: null as number | null,
+    dayLabel: null as string | null,
+  },
 });
 
 const initializeEvents = async () => {
@@ -23,6 +28,17 @@ const fetchEventDetails = async (id: string) => {
     const event = response?.event ?? null;
 
     eventState.currentEvent.set(event);
+    eventState.attendanceContext.set({
+      parentEventId:
+        (event?.parentEventID && typeof event.parentEventID === "string"
+          ? event.parentEventID
+          : event?.id) ?? null,
+      day: typeof event?.day === "number" ? event.day : null,
+      dayLabel:
+        (event?.dayLabel && typeof event.dayLabel === "string"
+          ? event.dayLabel
+          : null),
+    });
     return event;
   } catch (error) {
     console.error("Failed to fetch event:", error);

@@ -9,7 +9,7 @@ import tw from "../styles/tailwind";
 import EventCard from "@/components/home/EventCard";
 import SectionHeader from "@/components/home/SectionHeader";
 import RefreshableScrollView from "@/components/common/RefreshableScrollView";
-import { useRouter } from "expo-router";
+import { useRouter, useFocusEffect } from "expo-router";
 import state from "@/state";
 import { initializeAuth } from "@/state/userState";
 import { useTheme } from "@/context/ThemeContext";
@@ -21,6 +21,7 @@ const Home: React.FC = () => {
   const user = state.user.userState.get();
   const [eventsList, setEventsList] = useState<UpcomingEvent[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadingEventId, setLoadingEventId] = useState<string | null>(null);
   const { isDarkMode, colors } = useTheme();
 
   const loadEvents = useCallback(async () => {
@@ -38,13 +39,19 @@ const Home: React.FC = () => {
   }, []);
 
   const handlePressEvent = useCallback(async (eventId: string) => {
+    // Prevent multiple simultaneous presses
+    if (loadingEventId) return;
+
+    setLoadingEventId(eventId);
     try {
       await events.fetchEventDetails(eventId);
       router.push(`/event/${eventId}`);
     } catch (error) {
       console.error("Failed to load event details:", error);
+      // Clear loading state on error so user can retry
+      setLoadingEventId(null);
     }
-  }, [events, router]);
+  }, [events, router, loadingEventId]);
 
   const handlePressSeeAll = (section: string) => {
     console.log("See all pressed for section:", section);
@@ -63,6 +70,13 @@ const Home: React.FC = () => {
 
     initialize();
   }, [loadEvents]);
+
+  // Clear loading state when screen comes back into focus
+  useFocusEffect(
+    useCallback(() => {
+      setLoadingEventId(null);
+    }, [])
+  );
 
   if (isLoading) {
     return (
@@ -98,6 +112,7 @@ const Home: React.FC = () => {
               date={event.startDate || ""}
               imageUrl={event.image}
               onPress={() => handlePressEvent(targetId)}
+              isLoading={loadingEventId === targetId}
             />
           );
         })}
