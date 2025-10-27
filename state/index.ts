@@ -5,11 +5,7 @@ import {
   volunteerForEvent,
   volunteerState,
 } from "./volunteerState";
-import {
-  registrationState,
-  fetchUserRegistrations,
-  registerForEvent,
-} from "./registrationState";
+import { registrationState } from "./registrationState";
 
 const state = {
   event: { eventState, initializeEvents, fetchEventDetails },
@@ -17,8 +13,6 @@ const state = {
   volunteer: { volunteerState, fetchUserVolunteeredEvents, volunteerForEvent },
   registration: {
     registrationState,
-    fetchUserRegistrations,
-    registerForEvent,
   },
 };
 

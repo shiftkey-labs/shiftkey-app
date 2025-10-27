@@ -12,8 +12,8 @@ import tw from "../styles/tailwind";
 import EventCard from "@/components/home/EventCard";
 import { observer } from "@legendapp/state/react";
 import state from "@/state";
-import { fetchUserRegistrations } from "@/state/registrationState";
 import { fetchEventDetails } from "@/state/eventState";
+
 import { useTheme } from "@/context/ThemeContext";
 import { Registration, DisplayEvent } from "@/types/event";
 import { dummyImage } from "@/constants/statics";
@@ -73,7 +73,9 @@ const MyEvents = observer(() => {
   const fetchLocalUserRegistrations = async (uid: string) => {
     try {
       setIsLoading(true);
-      await fetchUserRegistrations(uid);
+      // TODO: Replace with new endpoint for fetching user's registrations
+      // await fetchUserRegistrations(uid);
+      console.warn("User registrations endpoint removed - page needs updating");
     } catch (error) {
       console.error("Failed to fetch registrations:", error);
     } finally {

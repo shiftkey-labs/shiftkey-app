@@ -6,7 +6,24 @@ const server = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
+  validateStatus: function (status) {
+    // Accept 2xx and 304 as valid responses
+    return (status >= 200 && status < 300) || status === 304;
+  },
 });
+
+// Global response interceptor to handle 304 Not Modified
+server.interceptors.response.use(
+  (response) => {
+    // 304 responses are valid - just return the response as-is
+    return response;
+  },
+  (error) => {
+    // Log errors for debugging
+    console.error('API Error:', error.message, error.config?.url);
+    return Promise.reject(error);
+  }
+);
 
 export const setAuthToken = (token?: string | null) => {
   if (token) {
