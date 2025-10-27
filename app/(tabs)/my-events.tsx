@@ -3,7 +3,6 @@ import {
   View,
   Text,
   TouchableOpacity,
-  ActivityIndicator,
   FlatList,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -198,8 +197,6 @@ const MyShifts = observer(() => {
             tw`p-4 mb-3 rounded-xl`,
             {
               backgroundColor: isDarkMode ? colors.lightGray : colors.white,
-              borderWidth: 1,
-              borderColor: colors.primary,
             },
           ]}
         >
@@ -290,50 +287,36 @@ const MyShifts = observer(() => {
           })}
         </View>
 
-        {isLoading && !shifts[activeTab]?.loaded ? (
-          <View
-            style={[
-              tw`flex-1 justify-center items-center`,
-              { backgroundColor: colors.background },
-            ]}
-          >
-            <ActivityIndicator
-              size="large"
-              color={isDarkMode ? colors.text : colors.primary}
-            />
-          </View>
-        ) : (
-          <FlatList
-            data={activeShifts}
-            keyExtractor={keyExtractor}
-            renderItem={renderShiftRow}
-            contentContainerStyle={tw`pb-10`}
-            refreshing={isLoading}
-            onRefresh={() => fetchShiftsForTab(activeTab)}
-            ListEmptyComponent={
-              <View
-                style={[
-                  tw`flex-1 items-center justify-center pt-20`,
-                  { backgroundColor: colors.background },
-                ]}
+        <FlatList
+          data={activeShifts}
+          keyExtractor={keyExtractor}
+          renderItem={renderShiftRow}
+          contentContainerStyle={tw`pb-10`}
+          refreshing={isLoading}
+          onRefresh={() => fetchShiftsForTab(activeTab)}
+          ListEmptyComponent={
+            <View
+              style={[
+                tw`flex-1 items-center justify-center pt-20`,
+                { backgroundColor: colors.background },
+              ]}
+            >
+              <Text
+                style={{
+                  color: colors.text,
+                  fontSize: 22,
+                  fontWeight: "600",
+                  marginBottom: 8,
+                }}
               >
-                <Text
-                  style={{
-                    color: colors.text,
-                    fontSize: 22,
-                    fontWeight: "600",
-                    marginBottom: 8,
-                  }}
-                >
-                  No {activeTabLabel} Shifts
-                </Text>
-                <Text style={{ color: colors.gray }}>
-                  You do not have any {activeTabLabel.toLowerCase()} shifts yet.
-                </Text>
-              </View>
-            }
-          />
-        )}
+                No {activeTabLabel} Shifts
+              </Text>
+              <Text style={{ color: colors.gray }}>
+                You do not have any {activeTabLabel.toLowerCase()} shifts yet.
+              </Text>
+            </View>
+          }
+        />
       </View>
     </SafeAreaView>
   );
