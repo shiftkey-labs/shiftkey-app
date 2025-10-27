@@ -200,7 +200,7 @@ const EventDetails = () => {
             </Text>
             <View style={tw`flex-row items-center mt-3`}>
               <FontAwesome name="map-marker" size={24} color={colors.primary} />
-              <Text style={{ color: colors.gray, fontSize: 18, marginLeft: 20, marginVertical: 12 }}>
+              <Text style={{ color: colors.gray, fontSize: 18, marginLeft: 16 }}>
                 {currentEvent?.location || "No location specified"}
               </Text>
             </View>
@@ -211,6 +211,15 @@ const EventDetails = () => {
                 {formattedStartDate}
               </Text>
             </View>
+
+            {(currentEvent?.parentRegistrationCount ?? 0) > 0 && (
+              <View style={tw`flex-row items-center mt-3`}>
+                <FontAwesome name="users" size={24} color={colors.primary} />
+                <Text style={{ color: colors.gray, fontSize: 18, marginLeft: 16 }}>
+                  {currentEvent.parentRegistrationCount} {currentEvent.parentRegistrationCount === 1 ? 'participant' : 'participants'} registered
+                </Text>
+              </View>
+            )}
 
             {staffOnShift.length > 0 && (
               <>

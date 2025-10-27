@@ -6,6 +6,7 @@ const server = axios.create({
   baseURL: environment.apiUrl,
   headers: {
     "Content-Type": "application/json",
+    "Cache-Control": "no-cache", // Disable caching
   },
   validateStatus: function (status) {
     // Accept 2xx, 302, and 304 as valid responses

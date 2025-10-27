@@ -113,7 +113,6 @@ const Home: React.FC = () => {
           onPressSeeAll={() => handlePressSeeAll("Upcoming Events")}
         />
         {eventsList.map((event) => {
-          const targetId = event.parentEventID || event.id;
           return (
             <EventCard
               key={event.id}
@@ -121,8 +120,8 @@ const Home: React.FC = () => {
               location={event.location || "No Location"}
               date={event.startDate || ""}
               imageUrl={event.image}
-              onPress={() => handlePressEvent(targetId)}
-              isLoading={loadingEventId === targetId}
+              onPress={() => handlePressEvent(event.id)}
+              isLoading={loadingEventId === event.id}
             />
           );
         })}
