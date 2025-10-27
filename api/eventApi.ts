@@ -11,9 +11,7 @@ export const createEvent = async (eventData: any) => {
 
 export const getEventById = async (eventId: string) => {
   try {
-
-    const response = await server.get(`/event/read/${eventId}`);
-
+    const response = await server.get(`/event/${eventId}`);
     return response.data;
   } catch (error) {
     throw new Error(`Error fetching event: ${error.message}`);
@@ -22,9 +20,7 @@ export const getEventById = async (eventId: string) => {
 
 export const getAllEvents = async () => {
   try {
-
-    const response = await server.get("/event/read");
-
+    const response = await server.get("/events");
     return response.data;
   } catch (error) {
     throw new Error(`Error fetching events: ${error.message}`);

@@ -109,3 +109,8 @@ export type UpcomingEvent = {
   day?: number;
   dayLabel?: string | null;
 };
+
+export type EventDetails = UpcomingEvent & {
+  volunteers?: string[];
+  description?: string | null;
+};

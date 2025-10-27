@@ -13,7 +13,6 @@ import "react-native-reanimated";
 import { ActivityIndicator, View, useColorScheme as useNativeColorScheme } from "react-native";
 import tw from "./styles/tailwind";
 import { observer } from "@legendapp/state/react";
-import { initializeEvents } from "@/state/eventState";
 import { initializeAuth, hasRequiredFields } from "@/state/userState";
 import state from "@/state";
 import Toast from "react-native-toast-message";

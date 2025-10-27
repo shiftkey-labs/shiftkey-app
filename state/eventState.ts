@@ -1,15 +1,17 @@
 import { getEventById, getAllEvents } from "@/api/eventApi";
 import { observable } from "@legendapp/state";
+import { EventDetails, UpcomingEvent } from "@/types/event";
 
 const eventState = observable({
-  events: [],
-  currentEvent: null,
+  events: [] as UpcomingEvent[],
+  currentEvent: null as EventDetails | null,
 });
 
 const initializeEvents = async () => {
   try {
-    const events = await getAllEvents();
-    eventState.events.set(Object.values(events));
+    const response = await getAllEvents();
+    const events = response?.events ?? [];
+    eventState.events.set(events);
   } catch (error) {
     console.error("Failed to initialize events:", error);
   }
@@ -17,8 +19,8 @@ const initializeEvents = async () => {
 
 const fetchEventDetails = async (id: string) => {
   try {
-
-    const event = await getEventById(id);
+    const response = await getEventById(id);
+    const event = response?.event ?? null;
 
     eventState.currentEvent.set(event);
     return event;
