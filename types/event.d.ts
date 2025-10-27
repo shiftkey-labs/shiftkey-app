@@ -106,6 +106,7 @@ export type UpcomingEvent = {
   image: string | null;
   parentEventID?: string | null;
   registration?: boolean | null;
+  parentRegistrationCount?: number | null;
   day?: number;
   dayLabel?: string | null;
 };

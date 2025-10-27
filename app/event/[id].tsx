@@ -227,7 +227,7 @@ const EventDetails = () => {
                 ))}
               </>
             )}
-            {currentEvent?.registration && (
+            {(currentEvent?.parentRegistrationCount ?? 0) > 0 && (
               <TouchableOpacity
                 style={[
                   tw`mt-5 p-4 rounded-lg`,
