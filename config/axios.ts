@@ -7,15 +7,15 @@ const server = axios.create({
     "Content-Type": "application/json",
   },
   validateStatus: function (status) {
-    // Accept 2xx and 304 as valid responses
-    return (status >= 200 && status < 300) || status === 304;
+    // Accept 2xx, 302, and 304 as valid responses
+    return (status >= 200 && status < 300) || status === 302 || status === 304;
   },
 });
 
-// Global response interceptor to handle 304 Not Modified
+// Global response interceptor to handle 302 Redirect and 304 Not Modified
 server.interceptors.response.use(
   (response) => {
-    // 304 responses are valid - just return the response as-is
+    // 302 and 304 responses are valid - just return the response as-is
     return response;
   },
   (error) => {
