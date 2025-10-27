@@ -4,6 +4,7 @@ import {
   ScrollView,
   ScrollViewProps,
 } from "react-native";
+import { useTheme } from "@/context/ThemeContext";
 
 type RefreshableScrollViewProps = ScrollViewProps & {
   onRefresh: () => Promise<void> | void;
@@ -17,6 +18,7 @@ const RefreshableScrollView: React.FC<RefreshableScrollViewProps> = ({
   ...rest
 }) => {
   const [internalRefreshing, setInternalRefreshing] = useState(false);
+  const { colors } = useTheme();
 
   const handleRefresh = useCallback(async () => {
     if (!onRefresh) {
@@ -42,7 +44,12 @@ const RefreshableScrollView: React.FC<RefreshableScrollViewProps> = ({
     <ScrollView
       {...rest}
       refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={handleRefresh}
+          tintColor={colors.primary}
+          colors={[colors.primary]}
+        />
       }
     >
       {children}

@@ -29,9 +29,9 @@ export const getAllEvents = async () => {
 
 export const getUpcomingEvents = async () => {
   try {
-    const response = await server.get("/events");
+    const response = await server.get("/events", { timeout: 10000 });
     return response.data;
-  } catch (error) {
+  } catch (error: any) {
     throw new Error(`Error fetching upcoming events: ${error.message}`);
   }
 };

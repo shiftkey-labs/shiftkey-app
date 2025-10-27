@@ -4,6 +4,7 @@ import {
   Text,
   SafeAreaView,
   ActivityIndicator,
+  Alert,
 } from "react-native";
 import tw from "../styles/tailwind";
 import EventCard from "@/components/home/EventCard";
@@ -43,18 +44,28 @@ const Home: React.FC = () => {
     if (loadingEventId) return;
 
     setLoadingEventId(eventId);
+
+    // Safety timeout to prevent infinite loading
+    const timeout = setTimeout(() => {
+      setLoadingEventId(null);
+    }, 10000); // 10 second timeout
+
     try {
       await events.fetchEventDetails(eventId);
+      clearTimeout(timeout);
       router.push(`/event/${eventId}`);
+      // Don't clear loading here - useFocusEffect will clear it when we return
     } catch (error) {
+      clearTimeout(timeout);
       console.error("Failed to load event details:", error);
+      Alert.alert("Error", "Failed to load event details. Please try again.");
       // Clear loading state on error so user can retry
       setLoadingEventId(null);
     }
   }, [events, router, loadingEventId]);
 
   const handlePressSeeAll = (section: string) => {
-    console.log("See all pressed for section:", section);
+    // TODO: Navigate to full events list
   };
 
   useEffect(() => {

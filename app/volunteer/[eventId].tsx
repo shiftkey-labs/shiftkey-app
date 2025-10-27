@@ -342,7 +342,7 @@ const EventAttendance = () => {
 
       setAttendees(normalisedAttendees);
     } catch (error) {
-      console.error(error);
+      console.error("Failed to fetch attendees:", error?.message);
       Alert.alert("Error", "Failed to fetch attendees.");
     } finally {
       setLoading(false);
@@ -358,12 +358,6 @@ const EventAttendance = () => {
     }
 
     try {
-      console.log(
-        checkIn ? "Checking in" : "Checking out",
-        "with dayLabel:", selectedDayLabel,
-        "for registration:", registrationId
-      );
-
       // Optimistically remove from UI
       setAttendees(prev => prev.filter(a => a.id !== registrationId));
 
@@ -389,8 +383,6 @@ const EventAttendance = () => {
       const decodedData = atob(data);
       const qrData = JSON.parse(decodedData);
 
-      console.log("QR Code decoded:", qrData);
-
       // Validate the structure
       if (!qrData.registrationId || !qrData.eventId) {
         Alert.alert("Invalid QR Code", "This QR code is not valid for attendance.");
@@ -410,7 +402,6 @@ const EventAttendance = () => {
       await markAttendance(qrData.registrationId, true);
       Alert.alert("Success", "Attendance marked successfully!");
     } catch (error) {
-      console.error("QR scan error:", error);
       Alert.alert("Error", "Failed to scan QR code. Please try again or mark attendance manually.");
     }
   };
