@@ -35,20 +35,18 @@ const fetchShifts = async (
 export const getAvailableShifts = async () =>
   fetchShifts({}, "Error fetching available shifts");
 
-export const getBookedShifts = async (userId: string) =>
+export const getBookedShifts = async () =>
   fetchShifts(
     {
       show: "booked",
-      userId,
     },
     "Error fetching booked shifts"
   );
 
-export const getPastShifts = async (userId: string) =>
+export const getPastShifts = async () =>
   fetchShifts(
     {
       show: "past",
-      userId,
     },
     "Error fetching past shifts"
   );
@@ -64,12 +62,12 @@ export const getShiftById = async (shiftId: string) => {
   }
 };
 
-export const claimShift = async (shiftId: string, userId: string) => {
+export const claimShift = async (shiftId: string) => {
   try {
     const response = await server.patch(
       `/shifts/${shiftId}`,
       {
-        User: [userId],
+        action: "claim",
       },
       {
         timeout: 10000,
@@ -86,7 +84,7 @@ export const dropShift = async (shiftId: string) => {
     const response = await server.patch(
       `/shifts/${shiftId}`,
       {
-        User: [],
+        action: "drop",
       },
       {
         timeout: 10000,

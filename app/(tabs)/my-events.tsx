@@ -130,14 +130,6 @@ const MyShifts = observer(() => {
 
   const fetchShiftsForTab = useCallback(
     async (tab: ShiftTab) => {
-      if ((tab === "booked" || tab === "past") && !userId) {
-        setShifts((prev) => ({
-          ...prev,
-          [tab]: { items: [], loaded: true },
-        }));
-        return;
-      }
-
       setIsLoading(true);
 
       try {
@@ -146,9 +138,9 @@ const MyShifts = observer(() => {
         if (tab === "available") {
           response = await getAvailableShifts();
         } else if (tab === "booked") {
-          response = await getBookedShifts(userId!);
+          response = await getBookedShifts();
         } else {
-          response = await getPastShifts(userId!);
+          response = await getPastShifts();
         }
 
         const normalised = normaliseShiftData(response);
@@ -204,7 +196,7 @@ const MyShifts = observer(() => {
 
       try {
         setClaimingShiftId(shift.id);
-        await claimShift(shift.id, userId);
+        await claimShift(shift.id);
         Alert.alert("Shift Claimed", "You have successfully claimed this shift.");
 
         setShifts((prev) => ({

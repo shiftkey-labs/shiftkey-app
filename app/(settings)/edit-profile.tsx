@@ -35,14 +35,17 @@ const EditProfile = () => {
 
     const handleSave = async () => {
         try {
-            // Update user state
-            state.user.userState.set({
+            // Merge formData with existing user data to preserve id, role, and token
+            const updatedUser = {
                 ...user,
                 ...formData,
-            });
+            };
 
-            // Store user data in AsyncStorage
-            await AsyncStorage.setItem("user", JSON.stringify(formData));
+            // Update user state
+            state.user.userState.set(updatedUser);
+
+            // Store user data in AsyncStorage (preserve id, role, token)
+            await AsyncStorage.setItem("user", JSON.stringify(updatedUser));
 
             // Here you would typically also update the user data in your backend
 
