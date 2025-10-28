@@ -52,3 +52,31 @@ export const getPastShifts = async (userId: string) =>
     },
     "Error fetching past shifts"
   );
+
+export const getShiftById = async (shiftId: string) => {
+  try {
+    const response = await server.get(`/shifts/${shiftId}`, {
+      timeout: 10000,
+    });
+    return response.data;
+  } catch (error: any) {
+    handleShiftError(error, "Error fetching shift details");
+  }
+};
+
+export const claimShift = async (shiftId: string, userId: string) => {
+  try {
+    const response = await server.patch(
+      `/shifts/${shiftId}`,
+      {
+        User: [userId],
+      },
+      {
+        timeout: 10000,
+      }
+    );
+    return response.data;
+  } catch (error: any) {
+    handleShiftError(error, "Error taking shift");
+  }
+};

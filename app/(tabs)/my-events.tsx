@@ -4,6 +4,8 @@ import {
   Text,
   TouchableOpacity,
   FlatList,
+  Alert,
+  ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import tw from "../styles/tailwind";
@@ -13,6 +15,8 @@ import {
   getAvailableShifts,
   getBookedShifts,
   getPastShifts,
+  getShiftById,
+  claimShift,
 } from "@/api/shiftApi";
 import state from "@/state";
 
@@ -117,6 +121,8 @@ const MyShifts = observer(() => {
   const [activeTab, setActiveTab] = useState<ShiftTab>("available");
   const [shifts, setShifts] = useState<ShiftState>(emptyShiftState);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [loadingShiftId, setLoadingShiftId] = useState<string | null>(null);
+  const [claimingShiftId, setClaimingShiftId] = useState<string | null>(null);
   const user = state.user.userState.get();
   const userId = user?.id ? String(user.id) : null;
 
@@ -180,6 +186,113 @@ const MyShifts = observer(() => {
     [userId]
   );
 
+  const handleClaimShift = useCallback(
+    async (shift: ShiftRecord) => {
+      if (!shift?.id) {
+        Alert.alert("Error", "Unable to identify this shift.");
+        return;
+      }
+
+      if (!userId) {
+        Alert.alert(
+          "Sign In Required",
+          "Please sign in to take this shift."
+        );
+        return;
+      }
+
+      if (claimingShiftId) {
+        return;
+      }
+
+      try {
+        setClaimingShiftId(shift.id);
+        await claimShift(shift.id, userId);
+        Alert.alert("Shift Booked", "You have successfully taken this shift.");
+
+        setShifts((prev) => ({
+          ...prev,
+          available: {
+            ...prev.available,
+            items: prev.available.items.filter((item) => item.id !== shift.id),
+            loaded: prev.available.loaded,
+          },
+        }));
+
+        await fetchShiftsForTab("available");
+      } catch (error: any) {
+        console.error("Failed to take shift:", error);
+        const message =
+          error?.message ?? "Failed to take the shift. Please try again.";
+        Alert.alert("Error", message);
+      } finally {
+        setClaimingShiftId(null);
+      }
+    },
+    [claimingShiftId, fetchShiftsForTab, userId]
+  );
+
+  const handleSelectShift = useCallback(
+    async (shift: ShiftRecord) => {
+      if (activeTab !== "available") {
+        return;
+      }
+
+      if (!shift?.id) {
+        Alert.alert("Error", "Unable to identify this shift.");
+        return;
+      }
+
+      if (!userId) {
+        Alert.alert(
+          "Sign In Required",
+          "Please sign in to take this shift."
+        );
+        return;
+      }
+
+      let details: any = null;
+      try {
+        setLoadingShiftId(shift.id);
+        details = await getShiftById(shift.id);
+      } catch (error: any) {
+        console.error("Failed to load shift details:", error);
+        const message =
+          error?.message ??
+          "Unable to load shift details. Please try again.";
+        Alert.alert("Error", message);
+        return;
+      } finally {
+        setLoadingShiftId(null);
+      }
+
+      if (!details) {
+        Alert.alert(
+          "Shift Unavailable",
+          "This shift is no longer available to take."
+        );
+        return;
+      }
+
+      Alert.alert(
+        "Take Shift",
+        `Do you want to take "${shift.title}"?`,
+        [
+          {
+            text: "Cancel",
+            style: "cancel",
+          },
+          {
+            text: "Confirm",
+            onPress: () => handleClaimShift(shift),
+          },
+        ],
+        { cancelable: true }
+      );
+    },
+    [activeTab, handleClaimShift, userId]
+  );
+
   useEffect(() => {
     fetchShiftsForTab(activeTab);
   }, [activeTab, fetchShiftsForTab]);
@@ -191,48 +304,69 @@ const MyShifts = observer(() => {
   const renderShiftRow = useCallback(
     ({ item }: { item: ShiftRecord }) => {
       const schedule = formatShiftWindow(item.startDate, item.endDate);
+      const isProcessing =
+        loadingShiftId === item.id || claimingShiftId === item.id;
+      const isAvailableTab = activeTab === "available";
+
       return (
-        <View
-          style={[
-            tw`p-4 mb-3 rounded-xl`,
-            {
-              backgroundColor: isDarkMode ? colors.lightGray : colors.white,
-            },
-          ]}
+        <TouchableOpacity
+          activeOpacity={isAvailableTab ? 0.7 : 1}
+          disabled={!isAvailableTab || isProcessing}
+          onPress={() => handleSelectShift(item)}
+          style={tw`mb-3`}
         >
-          <Text
-            style={{
-              color: colors.text,
-              fontSize: 18,
-              fontWeight: "600",
-            }}
+          <View
+            style={[
+              tw`p-4 rounded-xl`,
+              {
+                backgroundColor: isDarkMode ? colors.lightGray : colors.white,
+              },
+            ]}
           >
-            {item.title}
-          </Text>
-          <Text style={{ color: colors.gray, marginTop: 6 }}>{schedule}</Text>
-          {item.location ? (
-            <Text style={{ color: colors.gray, marginTop: 4 }}>
-              {item.location}
-            </Text>
-          ) : null}
-          {item.status ? (
-            <View
-              style={[
-                tw`self-start px-3 py-1 rounded-full mt-4`,
-                {
-                  backgroundColor: colors.primary,
-                },
-              ]}
+            <Text
+              style={{
+                color: colors.text,
+                fontSize: 18,
+                fontWeight: "600",
+              }}
             >
-              <Text style={{ color: colors.white, fontSize: 12 }}>
-                {item.status}
+              {item.title}
+            </Text>
+            <Text style={{ color: colors.gray, marginTop: 6 }}>{schedule}</Text>
+            {item.location ? (
+              <Text style={{ color: colors.gray, marginTop: 4 }}>
+                {item.location}
               </Text>
-            </View>
-          ) : null}
-        </View>
+            ) : null}
+            {item.status ? (
+              <View
+                style={[
+                  tw`self-start px-3 py-1 rounded-full mt-4`,
+                  {
+                    backgroundColor: colors.primary,
+                  },
+                ]}
+              >
+                <Text style={{ color: colors.white, fontSize: 12 }}>
+                  {item.status}
+                </Text>
+              </View>
+            ) : null}
+            {isProcessing ? (
+              <View style={tw`flex-row items-center mt-4`}>
+                <ActivityIndicator size="small" color={colors.primary} />
+                <Text style={{ color: colors.gray, marginLeft: 8 }}>
+                  {claimingShiftId === item.id
+                    ? "Booking shift..."
+                    : "Loading shift..."}
+                </Text>
+              </View>
+            ) : null}
+          </View>
+        </TouchableOpacity>
       );
     },
-    [colors, isDarkMode]
+    [activeTab, claimingShiftId, colors, handleSelectShift, isDarkMode, loadingShiftId]
   );
 
   const keyExtractor = useCallback((item: ShiftRecord) => item.id, []);
