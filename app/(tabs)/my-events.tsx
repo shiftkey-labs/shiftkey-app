@@ -5,7 +5,6 @@ import {
   TouchableOpacity,
   FlatList,
   Alert,
-  ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import tw from "../styles/tailwind";
@@ -19,6 +18,7 @@ import {
   claimShift,
 } from "@/api/shiftApi";
 import state from "@/state";
+import LoadingOverlay from "@/components/common/LoadingOverlay";
 
 type ShiftTab = "available" | "booked" | "past";
 
@@ -42,7 +42,7 @@ type ShiftState = Record<
 
 const TAB_ORDER: Array<{ key: ShiftTab; label: string }> = [
   { key: "available", label: "Available" },
-  { key: "booked", label: "Booked" },
+  { key: "booked", label: "Claimed" },
   { key: "past", label: "Past" },
 ];
 
@@ -208,7 +208,7 @@ const MyShifts = observer(() => {
       try {
         setClaimingShiftId(shift.id);
         await claimShift(shift.id, userId);
-        Alert.alert("Shift Booked", "You have successfully taken this shift.");
+        Alert.alert("Shift Claimed", "You have successfully claimed this shift.");
 
         setShifts((prev) => ({
           ...prev,
@@ -275,8 +275,8 @@ const MyShifts = observer(() => {
       }
 
       Alert.alert(
-        "Take Shift",
-        `Do you want to take "${shift.title}"?`,
+        "Claim Shift",
+        `Do you want to claim "${shift.title}"?`,
         [
           {
             text: "Cancel",
@@ -317,7 +317,7 @@ const MyShifts = observer(() => {
         >
           <View
             style={[
-              tw`p-4 rounded-xl`,
+              tw`p-4 rounded-xl relative`,
               {
                 backgroundColor: isDarkMode ? colors.lightGray : colors.white,
               },
@@ -352,16 +352,9 @@ const MyShifts = observer(() => {
                 </Text>
               </View>
             ) : null}
-            {isProcessing ? (
-              <View style={tw`flex-row items-center mt-4`}>
-                <ActivityIndicator size="small" color={colors.primary} />
-                <Text style={{ color: colors.gray, marginLeft: 8 }}>
-                  {claimingShiftId === item.id
-                    ? "Booking shift..."
-                    : "Loading shift..."}
-                </Text>
-              </View>
-            ) : null}
+            <LoadingOverlay
+              visible={isProcessing}
+            />
           </View>
         </TouchableOpacity>
       );

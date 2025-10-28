@@ -1,9 +1,10 @@
 import React from "react";
-import { View, Text, Image, TouchableOpacity, ActivityIndicator } from "react-native";
+import { View, Text, Image, TouchableOpacity } from "react-native";
 import tw from "@/app/styles/tailwind";
 import { EventCardProps } from "@/types/event";
 import { useTheme } from "@/context/ThemeContext";
 import { dummyImageUrl } from "@/constants/statics";
+import LoadingOverlay from "@/components/common/LoadingOverlay";
 
 const EventCard: React.FC<EventCardProps> = ({
   title,
@@ -43,11 +44,7 @@ const EventCard: React.FC<EventCardProps> = ({
       activeOpacity={0.8}
       disabled={isLoading}
     >
-      {isLoading ? (
-        <View style={tw`absolute z-10 w-full h-full justify-center items-center bg-black/30`}>
-          <ActivityIndicator size="large" color="#ffffff" />
-        </View>
-      ) : null}
+      <LoadingOverlay visible={isLoading} />
       <View style={tw`relative`}>
         <Image
           source={{ uri: resolvedImageUrl }}
