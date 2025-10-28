@@ -6,6 +6,7 @@ import {
   volunteerState,
 } from "./volunteerState";
 import { registrationState } from "./registrationState";
+import { appState, checkAppVersion, dismissOptionalUpdate } from "./appState";
 
 const state = {
   event: { eventState, initializeEvents, fetchEventDetails },
@@ -13,6 +14,11 @@ const state = {
   volunteer: { volunteerState, fetchUserVolunteeredEvents, volunteerForEvent },
   registration: {
     registrationState,
+  },
+  app: {
+    appState,
+    checkAppVersion,
+    dismissOptionalUpdate,
   },
 };
 

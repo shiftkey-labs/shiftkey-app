@@ -6,7 +6,7 @@ import {
   ThemeProvider as NavigationThemeProvider,
 } from "@react-navigation/native";
 import { useFonts } from "expo-font";
-import { Stack, useRouter } from "expo-router";
+import { Stack, useRouter, useSegments } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect, useState } from "react";
 import "react-native-reanimated";
@@ -17,6 +17,7 @@ import { initializeAuth, hasRequiredFields } from "@/state/userState";
 import state from "@/state";
 import Toast from "react-native-toast-message";
 import { ThemeProvider, useTheme } from "@/context/ThemeContext";
+import UpdateBanner from "@/components/common/UpdateBanner";
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -89,8 +90,26 @@ const RootLayoutNav = observer(() => {
   );
 });
 
-const AppContent = () => {
+const AppContent = observer(() => {
   const { isDarkMode, colors } = useTheme();
+  const router = useRouter();
+  const segments = useSegments();
+  const appStatus = state.app.appState.get();
+  const showUpdateBanner =
+    appStatus.updateAvailable &&
+    !appStatus.updateRequired &&
+    !appStatus.optionalUpdateDismissed;
+
+  useEffect(() => {
+    state.app.checkAppVersion();
+  }, []);
+
+  useEffect(() => {
+    if (appStatus.updateRequired) {
+      router.replace("/update-required");
+    }
+  }, [appStatus.updateRequired]);
+
   const navigationTheme = isDarkMode ? {
     ...DarkTheme,
     colors: {
@@ -115,6 +134,12 @@ const AppContent = () => {
     <NavigationThemeProvider value={navigationTheme}>
       <View style={tw`flex-1 bg-background dark:bg-dark-background`}>
         <Toast />
+        {showUpdateBanner ? (
+          <UpdateBanner
+            latestVersion={appStatus.latestVersion}
+            onDismiss={state.app.dismissOptionalUpdate}
+          />
+        ) : null}
         <Stack
           screenOptions={{
             headerStyle: {
@@ -146,10 +171,14 @@ const AppContent = () => {
             name="modal"
             options={{ presentation: "modal", headerShown: false }}
           />
+          <Stack.Screen
+            name="update-required"
+            options={{ headerShown: false, gestureEnabled: false }}
+          />
         </Stack>
       </View>
     </NavigationThemeProvider>
   );
-};
+});
 
 export default RootLayoutNav;
