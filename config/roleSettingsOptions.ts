@@ -11,14 +11,6 @@ export const roleSettingsOptions = {
             params: { view: "edit" },
           }),
       },
-      {
-        label: "Change Password",
-        action: () => console.log("Change Password pressed"),
-      },
-      {
-        label: "Notifications",
-        action: () => console.log("Notifications pressed"),
-      },
     ],
     moreOptions: [
       {
@@ -45,10 +37,6 @@ export const roleSettingsOptions = {
             params: { view: "edit" },
           }),
       },
-      {
-        label: "Change Password",
-        action: () => console.log("Change Password pressed"),
-      },
     ],
     moreOptions: [
       {
@@ -74,10 +62,6 @@ export const roleSettingsOptions = {
             pathname: "/(tabs)/profile",
             params: { view: "edit" },
           }),
-      },
-      {
-        label: "Change Password",
-        action: () => console.log("Change Password pressed"),
       },
       {
         label: "User Management",
