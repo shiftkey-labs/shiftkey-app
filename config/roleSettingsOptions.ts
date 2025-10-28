@@ -22,8 +22,8 @@ export const roleSettingsOptions = {
         action: () => console.log("Terms of Service pressed"),
       },
       {
-        label: "Help & Support",
-        action: () => console.log("Help & Support pressed"),
+        label: "Submit Feedback",
+        action: () => router.push("/feedback"),
       },
     ],
   },
@@ -48,8 +48,8 @@ export const roleSettingsOptions = {
         action: () => console.log("Terms of Service pressed"),
       },
       {
-        label: "Help & Support",
-        action: () => console.log("Help & Support pressed"),
+        label: "Submit Feedback",
+        action: () => router.push("/feedback"),
       },
     ],
   },
@@ -78,8 +78,8 @@ export const roleSettingsOptions = {
         action: () => console.log("Terms of Service pressed"),
       },
       {
-        label: "Help & Support",
-        action: () => console.log("Help & Support pressed"),
+        label: "Submit Feedback",
+        action: () => router.push("/feedback"),
       },
     ],
   },
