@@ -1,26 +1,10 @@
 import React from "react";
-import FontAwesome5 from "@expo/vector-icons/FontAwesome";
-import { Link, Tabs } from "expo-router";
-import { Pressable } from "react-native";
-import colors from "@/constants/colors";
-import { useColorScheme } from "@/components/useColorScheme";
-import { useClientOnlyValue } from "@/components/useClientOnlyValue";
+import { Tabs } from "expo-router";
 import Ionicons from "@expo/vector-icons/Ionicons";
-import state from "@/state";
 import { useTheme } from "@/context/ThemeContext";
 
-// You can explore the built-in icon families and icons on the web at https://icons.expo.fyi/
-function TabBarIcon(props: {
-  name: React.ComponentProps<typeof Ionicons>["name"];
-  color: string;
-}) {
-  return <Ionicons size={23} style={{ marginBottom: -3 }} {...props} />;
-}
-
 export default function TabLayout() {
-  const { isDarkMode, colors } = useTheme();
-  const user = state.user.userState.get();
-  const role = user.role;
+  const { colors } = useTheme();
 
   return (
     <Tabs
@@ -70,21 +54,18 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="my-volunteer"
-        options={{
-          title: "Volunteer",
-          tabBarIcon: ({ color }) => (
-            <Ionicons name="people-outline" color={color} size={24} />
-          ),
-        }}
-      />
-      <Tabs.Screen
         name="profile"
         options={{
           title: "Profile",
           tabBarIcon: ({ color }) => (
             <Ionicons name="settings-outline" color={color} size={24} />
           ),
+        }}
+      />
+      <Tabs.Screen
+        name="my-volunteer"
+        options={{
+          tabBarButton: () => null,
         }}
       />
     </Tabs>

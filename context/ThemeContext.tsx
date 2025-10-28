@@ -26,7 +26,17 @@ type ThemeContextType = {
 
 const THEME_PREFERENCE_KEY = "themePreference";
 
-const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
+const defaultContextValue: ThemeContextType = {
+  isDarkMode: false,
+  toggleTheme: () => {},
+  setManualTheme: () => {},
+  useSystemTheme: () => {},
+  themePreference: "system",
+  resolvedColorScheme: "light",
+  colors: colors.light,
+};
+
+const ThemeContext = createContext<ThemeContextType>(defaultContextValue);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const systemColorScheme = useNativeColorScheme();
@@ -131,9 +141,5 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 }
 
 export function useTheme() {
-  const context = useContext(ThemeContext);
-  if (context === undefined) {
-    throw new Error("useTheme must be used within a ThemeProvider");
-  }
-  return context;
+  return useContext(ThemeContext);
 }
