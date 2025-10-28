@@ -17,11 +17,13 @@ import { deleteUserById } from "@/api/userApi";
 import { useTheme } from "@/context/ThemeContext";
 import { defaultUserState } from "@/state/userState";
 import { setAuthToken } from "@/config/axios";
+import Constants from "expo-constants";
 
 const Profile = () => {
   const user = state.user.userState.get();
   const router = useRouter();
   const { isDarkMode, colors } = useTheme();
+  const appVersion = Constants.expoConfig?.version ?? "";
 
   const handleLogout = async () => {
     try {
@@ -62,9 +64,6 @@ const Profile = () => {
   return (
     <SafeAreaView style={[tw`flex-1`, { backgroundColor: colors.background }]}>
       <ScrollView style={[tw`flex-1 p-5`, { backgroundColor: colors.background }]}>
-        <Text style={{ color: colors.text, fontSize: 20, fontWeight: 'bold', marginBottom: 20 }}>
-          Links here are dummy, will be replaced with actual settings
-        </Text>
         <View style={tw`mb-5`}>
           <Text style={{ color: colors.text, fontSize: 24, fontWeight: 'bold' }}>
             {user.firstName || "John"} {user.lastName || "Doe"}
@@ -113,6 +112,17 @@ const Profile = () => {
         >
           <Text style={{ color: colors.error, textAlign: 'center' }}>Delete Account</Text>
         </TouchableOpacity>
+        {appVersion ? (
+          <Text
+            style={{
+              color: colors.gray,
+              textAlign: "center",
+              marginTop: 24,
+            }}
+          >
+            Version {appVersion}
+          </Text>
+        ) : null}
       </ScrollView>
     </SafeAreaView>
   );
