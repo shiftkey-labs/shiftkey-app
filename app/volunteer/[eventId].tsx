@@ -577,14 +577,15 @@ const EventAttendance = () => {
             visible={scanning}
             onRequestClose={() => setScanning(false)}
           >
-            <CameraView
-              style={tw`flex-1`}
-              onBarcodeScanned={handleBarCodeScanned}
-              barcodeScannerSettings={{
-                barcodeTypes: ["qr"],
-              }}
-            >
-              <View style={tw`flex-1 justify-end p-5`}>
+            <View style={tw`flex-1`}>
+              <CameraView
+                style={tw`flex-1`}
+                onBarcodeScanned={handleBarCodeScanned}
+                barcodeScannerSettings={{
+                  barcodeTypes: ["qr"],
+                }}
+              />
+              <View style={tw`absolute bottom-0 left-0 right-0 p-5`}>
                 <TouchableOpacity
                   style={[tw`p-4 rounded-lg mb-10`, { backgroundColor: colors.primary }]}
                   onPress={() => setScanning(false)}
@@ -592,7 +593,7 @@ const EventAttendance = () => {
                   <Text style={{ color: colors.white, textAlign: 'center', fontWeight: 'semibold' }}>Close Scanner</Text>
                 </TouchableOpacity>
               </View>
-            </CameraView>
+            </View>
           </Modal>
         )}
 
