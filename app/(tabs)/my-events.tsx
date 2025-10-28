@@ -16,6 +16,7 @@ import {
   getPastShifts,
   getShiftById,
   claimShift,
+  dropShift,
 } from "@/api/shiftApi";
 import state from "@/state";
 import LoadingOverlay from "@/components/common/LoadingOverlay";
@@ -123,6 +124,7 @@ const MyShifts = observer(() => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [loadingShiftId, setLoadingShiftId] = useState<string | null>(null);
   const [claimingShiftId, setClaimingShiftId] = useState<string | null>(null);
+  const [droppingShiftId, setDroppingShiftId] = useState<string | null>(null);
   const user = state.user.userState.get();
   const userId = user?.id ? String(user.id) : null;
 
@@ -188,11 +190,6 @@ const MyShifts = observer(() => {
 
   const handleClaimShift = useCallback(
     async (shift: ShiftRecord) => {
-      if (!shift?.id) {
-        Alert.alert("Error", "Unable to identify this shift.");
-        return;
-      }
-
       if (!userId) {
         Alert.alert(
           "Sign In Required",
@@ -232,65 +229,116 @@ const MyShifts = observer(() => {
     [claimingShiftId, fetchShiftsForTab, userId]
   );
 
+  const handleDropShift = useCallback(
+    async (shift: ShiftRecord) => {
+      if (!userId) {
+        Alert.alert("Sign In Required", "Please sign in to manage this shift.");
+        return;
+      }
+
+      if (droppingShiftId) {
+        return;
+      }
+
+      try {
+        setDroppingShiftId(shift.id);
+        await dropShift(shift.id);
+        Alert.alert("Shift Dropped", "You have dropped this shift.");
+
+        setShifts((prev) => ({
+          ...prev,
+          booked: {
+            ...prev.booked,
+            items: prev.booked.items.filter((item) => item.id !== shift.id),
+            loaded: prev.booked.loaded,
+          },
+        }));
+
+        await fetchShiftsForTab("booked");
+      } catch (error: any) {
+        console.error("Failed to drop shift:", error);
+        const message =
+          error?.message ?? "Failed to drop the shift. Please try again.";
+        Alert.alert("Error", message);
+      } finally {
+        setDroppingShiftId(null);
+      }
+    },
+    [droppingShiftId, fetchShiftsForTab, userId]
+  );
+
   const handleSelectShift = useCallback(
     async (shift: ShiftRecord) => {
-      if (activeTab !== "available") {
-        return;
-      }
-
-      if (!shift?.id) {
-        Alert.alert("Error", "Unable to identify this shift.");
-        return;
-      }
-
       if (!userId) {
         Alert.alert(
           "Sign In Required",
-          "Please sign in to take this shift."
+          "Please sign in to manage shifts."
         );
         return;
       }
 
-      let details: any = null;
-      try {
-        setLoadingShiftId(shift.id);
-        details = await getShiftById(shift.id);
-      } catch (error: any) {
-        console.error("Failed to load shift details:", error);
-        const message =
-          error?.message ??
-          "Unable to load shift details. Please try again.";
-        Alert.alert("Error", message);
-        return;
-      } finally {
-        setLoadingShiftId(null);
-      }
+      if (activeTab === "available") {
+        let details: any = null;
+        try {
+          setLoadingShiftId(shift.id);
+          details = await getShiftById(shift.id);
+        } catch (error: any) {
+          console.error("Failed to load shift details:", error);
+          const message =
+            error?.message ??
+            "Unable to load shift details. Please try again.";
+          Alert.alert("Error", message);
+          return;
+        } finally {
+          setLoadingShiftId(null);
+        }
 
-      if (!details) {
+        if (!details) {
+          Alert.alert(
+            "Shift Unavailable",
+            "This shift is no longer available to take."
+          );
+          return;
+        }
+
         Alert.alert(
-          "Shift Unavailable",
-          "This shift is no longer available to take."
+          "Claim Shift",
+          `Do you want to claim "${shift.title}"?`,
+          [
+            {
+              text: "Cancel",
+              style: "cancel",
+            },
+            {
+              text: "Confirm",
+              onPress: () => handleClaimShift(shift),
+            },
+          ],
+          { cancelable: true }
         );
         return;
       }
 
-      Alert.alert(
-        "Claim Shift",
-        `Do you want to claim "${shift.title}"?`,
-        [
-          {
-            text: "Cancel",
-            style: "cancel",
-          },
-          {
-            text: "Confirm",
-            onPress: () => handleClaimShift(shift),
-          },
-        ],
-        { cancelable: true }
-      );
+      if (activeTab === "booked") {
+        Alert.alert(
+          "Drop Shift",
+          `Do you want to drop "${shift.title}"?`,
+          [
+            {
+              text: "Cancel",
+              style: "cancel",
+            },
+            {
+              text: "Confirm",
+              style: "destructive",
+              onPress: () => handleDropShift(shift),
+            },
+          ],
+          { cancelable: true }
+        );
+      }
     },
-    [activeTab, handleClaimShift, userId]
+    [activeTab, handleClaimShift, handleDropShift, userId]
   );
 
   useEffect(() => {
@@ -305,13 +353,16 @@ const MyShifts = observer(() => {
     ({ item }: { item: ShiftRecord }) => {
       const schedule = formatShiftWindow(item.startDate, item.endDate);
       const isProcessing =
-        loadingShiftId === item.id || claimingShiftId === item.id;
-      const isAvailableTab = activeTab === "available";
+        loadingShiftId === item.id ||
+        claimingShiftId === item.id ||
+        droppingShiftId === item.id;
+      const isInteractiveTab =
+        activeTab === "available" || activeTab === "booked";
 
       return (
         <TouchableOpacity
-          activeOpacity={isAvailableTab ? 0.7 : 1}
-          disabled={!isAvailableTab || isProcessing}
+          activeOpacity={isInteractiveTab ? 0.7 : 1}
+          disabled={!isInteractiveTab || isProcessing}
           onPress={() => handleSelectShift(item)}
           style={tw`mb-3`}
         >
@@ -359,7 +410,15 @@ const MyShifts = observer(() => {
         </TouchableOpacity>
       );
     },
-    [activeTab, claimingShiftId, colors, handleSelectShift, isDarkMode, loadingShiftId]
+    [
+      activeTab,
+      claimingShiftId,
+      colors,
+      droppingShiftId,
+      handleSelectShift,
+      isDarkMode,
+      loadingShiftId,
+    ]
   );
 
   const keyExtractor = useCallback((item: ShiftRecord) => item.id, []);

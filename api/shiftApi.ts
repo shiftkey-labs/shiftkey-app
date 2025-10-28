@@ -80,3 +80,20 @@ export const claimShift = async (shiftId: string, userId: string) => {
     handleShiftError(error, "Error taking shift");
   }
 };
+
+export const dropShift = async (shiftId: string) => {
+  try {
+    const response = await server.patch(
+      `/shifts/${shiftId}`,
+      {
+        User: [],
+      },
+      {
+        timeout: 10000,
+      }
+    );
+    return response.data;
+  } catch (error: any) {
+    handleShiftError(error, "Error dropping shift");
+  }
+};
