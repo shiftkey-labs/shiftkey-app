@@ -1,6 +1,6 @@
-import { useColorScheme as useNativeColorScheme } from 'react-native';
+import { useTheme } from "@/context/ThemeContext";
 
 export function useColorScheme() {
-    const colorScheme = useNativeColorScheme();
-    return colorScheme;
+  const { resolvedColorScheme } = useTheme();
+  return resolvedColorScheme;
 }

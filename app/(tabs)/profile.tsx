@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   ScrollView,
   Alert,
+  Switch,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import tw from "../styles/tailwind";
@@ -22,8 +23,13 @@ import Constants from "expo-constants";
 const Profile = () => {
   const user = state.user.userState.get();
   const router = useRouter();
-  const { isDarkMode, colors } = useTheme();
+  const { isDarkMode, colors, themePreference, setManualTheme } = useTheme();
   const appVersion = Constants.expoConfig?.version ?? "";
+  const isDarkModeEnabled = themePreference === "dark";
+
+  const handleThemeToggle = (value: boolean) => {
+    setManualTheme(value);
+  };
 
   const handleLogout = async () => {
     try {
@@ -76,6 +82,16 @@ const Profile = () => {
           <Text style={{ color: colors.text, fontSize: 20, fontWeight: 'bold', marginBottom: 12 }}>
             Account Settings
           </Text>
+          <View style={tw`flex-row items-center justify-between mb-3`}>
+            <Text style={{ color: colors.text }}>Enable dark mode</Text>
+            <Switch
+              value={isDarkModeEnabled}
+              onValueChange={handleThemeToggle}
+              trackColor={{ false: colors.gray, true: colors.primary }}
+              thumbColor={isDarkModeEnabled ? colors.white : colors.lightGray}
+              ios_backgroundColor={colors.gray}
+            />
+          </View>
           {accountSettings.map((item, index) => (
             <TouchableOpacity
               key={index}

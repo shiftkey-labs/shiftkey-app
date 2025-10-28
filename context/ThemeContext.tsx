@@ -1,55 +1,139 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { useColorScheme as useNativeColorScheme } from 'react-native';
-import colors from '@/constants/colors';
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+import { useColorScheme as useNativeColorScheme } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import tw from "@/app/styles/tailwind";
+import colors from "@/constants/colors";
+
+type ThemePreference = "system" | "light" | "dark";
+type ColorScheme = "light" | "dark";
 
 type ThemeContextType = {
-    isDarkMode: boolean;
-    toggleTheme: () => void;
-    colors: typeof colors.light | typeof colors.dark;
-    setManualTheme: (isDark: boolean) => void;
+  isDarkMode: boolean;
+  toggleTheme: () => void;
+  colors: typeof colors.light | typeof colors.dark;
+  setManualTheme: (isDark: boolean) => void;
+  useSystemTheme: () => void;
+  themePreference: ThemePreference;
+  resolvedColorScheme: ColorScheme;
 };
+
+const THEME_PREFERENCE_KEY = "themePreference";
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-    const systemColorScheme = useNativeColorScheme();
-    const [isManuallySet, setIsManuallySet] = useState(false);
-    const [isDarkMode, setIsDarkMode] = useState(systemColorScheme === 'dark');
+  const systemColorScheme = useNativeColorScheme();
+  const [themePreference, setThemePreference] =
+    useState<ThemePreference>("system");
 
-    useEffect(() => {
-        if (!isManuallySet) {
-            setIsDarkMode(systemColorScheme === 'dark');
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadPreference = async () => {
+      try {
+        const storedPreference = await AsyncStorage.getItem(
+          THEME_PREFERENCE_KEY
+        );
+
+        if (
+          isMounted &&
+          (storedPreference === "dark" ||
+            storedPreference === "light" ||
+            storedPreference === "system")
+        ) {
+          setThemePreference(storedPreference);
         }
-    }, [systemColorScheme, isManuallySet]);
-
-    const toggleTheme = () => {
-        setIsManuallySet(true);
-        setIsDarkMode(prev => !prev);
+      } catch (error) {
+        console.error("Failed to load theme preference:", error);
+      }
     };
 
-    const setManualTheme = (isDark: boolean) => {
-        setIsManuallySet(true);
-        setIsDarkMode(isDark);
-    };
+    void loadPreference();
 
-    const value = {
-        isDarkMode,
-        toggleTheme,
-        setManualTheme,
-        colors: isDarkMode ? colors.dark : colors.light,
+    return () => {
+      isMounted = false;
     };
+  }, []);
 
-    return (
-        <ThemeContext.Provider value={value}>
-            {children}
-        </ThemeContext.Provider>
-    );
+  const resolvedColorScheme: ColorScheme = useMemo(() => {
+    if (themePreference === "system") {
+      return systemColorScheme === "dark" ? "dark" : "light";
+    }
+    return themePreference;
+  }, [systemColorScheme, themePreference]);
+
+  useEffect(() => {
+    tw.setColorScheme(resolvedColorScheme);
+  }, [resolvedColorScheme]);
+
+  const persistPreference = useCallback((preference: ThemePreference) => {
+    setThemePreference(preference);
+
+    if (preference === "system") {
+      AsyncStorage.removeItem(THEME_PREFERENCE_KEY).catch((error) => {
+        console.error("Failed to clear theme preference:", error);
+      });
+      return;
+    }
+
+    AsyncStorage.setItem(THEME_PREFERENCE_KEY, preference).catch((error) => {
+      console.error("Failed to save theme preference:", error);
+    });
+  }, []);
+
+  const toggleTheme = useCallback(() => {
+    const nextPreference = resolvedColorScheme === "dark" ? "light" : "dark";
+    persistPreference(nextPreference);
+  }, [persistPreference, resolvedColorScheme]);
+
+  const setManualTheme = useCallback(
+    (isDark: boolean) => {
+      persistPreference(isDark ? "dark" : "light");
+    },
+    [persistPreference]
+  );
+
+  const useSystemTheme = useCallback(() => {
+    persistPreference("system");
+  }, [persistPreference]);
+
+  const contextValue = useMemo(
+    () => ({
+      isDarkMode: resolvedColorScheme === "dark",
+      toggleTheme,
+      setManualTheme,
+      useSystemTheme,
+      themePreference,
+      resolvedColorScheme,
+      colors: resolvedColorScheme === "dark" ? colors.dark : colors.light,
+    }),
+    [
+      resolvedColorScheme,
+      setManualTheme,
+      themePreference,
+      toggleTheme,
+      useSystemTheme,
+    ]
+  );
+
+  return (
+    <ThemeContext.Provider value={contextValue}>
+      {children}
+    </ThemeContext.Provider>
+  );
 }
 
 export function useTheme() {
-    const context = useContext(ThemeContext);
-    if (context === undefined) {
-        throw new Error('useTheme must be used within a ThemeProvider');
-    }
-    return context;
-} 
+  const context = useContext(ThemeContext);
+  if (context === undefined) {
+    throw new Error("useTheme must be used within a ThemeProvider");
+  }
+  return context;
+}
