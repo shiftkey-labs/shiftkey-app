@@ -1,126 +1,189 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
-    View,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    ScrollView,
-    Alert,
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  ScrollView,
+  Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import tw from "../styles/tailwind";
 import { useRouter } from "expo-router";
 import state from "@/state";
-import { Picker } from "@react-native-picker/picker";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useTheme } from "@/context/ThemeContext";
 
-const EditProfile = () => {
-    const user = state.user.userState.get();
-    const router = useRouter();
-
-    const [formData, setFormData] = useState({
-        firstName: user.firstName || "",
-        lastName: user.lastName || "",
-        email: user.email || "",
-        pronouns: user.pronouns || "",
-        currentDegree: user.currentDegree || "",
-        faculty: user.faculty || "",
-        school: user.school || "",
-        university: user.university || "",
-        program: user.program || "",
-        year: user.year || "",
-        isInternational: user.isInternational || false,
-        isStudent: user.isStudent || false,
-    });
-
-    const handleSave = async () => {
-        try {
-            // Merge formData with existing user data to preserve id, role, and token
-            const updatedUser = {
-                ...user,
-                ...formData,
-            };
-
-            // Update user state
-            state.user.userState.set(updatedUser);
-
-            // Store user data in AsyncStorage (preserve id, role, token)
-            await AsyncStorage.setItem("user", JSON.stringify(updatedUser));
-
-            // Here you would typically also update the user data in your backend
-
-            Alert.alert("Success", "Profile updated successfully");
-            router.back();
-        } catch (error) {
-            if (error instanceof Error) {
-                Alert.alert("Error", error.message);
-            } else {
-                Alert.alert("Error", "An unknown error occurred");
-            }
-        }
-    };
-
-    return (
-        <SafeAreaView style={tw`flex-1 bg-background`}>
-            <ScrollView style={tw`flex-1 p-5`}>
-                <Text style={tw`text-3xl font-bold mb-5`}>Edit Profile</Text>
-
-                <View style={tw`mb-4`}>
-                    <Text style={tw`text-sm font-medium mb-1`}>First Name</Text>
-                    <TextInput
-                        style={tw`bg-white p-3 rounded-lg`}
-                        value={formData.firstName}
-                        onChangeText={(text) => setFormData({ ...formData, firstName: text })}
-                    />
-                </View>
-
-                <View style={tw`mb-4`}>
-                    <Text style={tw`text-sm font-medium mb-1`}>Last Name</Text>
-                    <TextInput
-                        style={tw`bg-white p-3 rounded-lg`}
-                        value={formData.lastName}
-                        onChangeText={(text) => setFormData({ ...formData, lastName: text })}
-                    />
-                </View>
-
-                <View style={tw`mb-4`}>
-                    <Text style={tw`text-sm font-medium mb-1`}>Email</Text>
-                    <TextInput
-                        style={tw`bg-white p-3 rounded-lg`}
-                        value={formData.email}
-                        onChangeText={(text) => setFormData({ ...formData, email: text })}
-                        keyboardType="email-address"
-                        editable={false}
-                    />
-                </View>
-
-                <View style={tw`mb-4`}>
-                    <Text style={tw`text-sm font-medium mb-1`}>Pronouns</Text>
-                    <TextInput
-                        style={tw`bg-white p-3 rounded-lg`}
-                        value={formData.pronouns}
-                        onChangeText={(text) => setFormData({ ...formData, pronouns: text })}
-                    />
-                </View>
-
-                <View style={tw`mb-4`}>
-                    <Text style={tw`text-sm font-medium mb-1`}>Current Degree</Text>
-                    <TextInput
-                        style={tw`bg-white p-3 rounded-lg`}
-                        value={formData.currentDegree}
-                        onChangeText={(text) => setFormData({ ...formData, currentDegree: text })}
-                    />
-                </View>
-
-                <TouchableOpacity
-                    style={tw`bg-primary p-4 rounded-lg mt-4`}
-                    onPress={handleSave}
-                >
-                    <Text style={tw`text-white text-center font-bold`}>Save Changes</Text>
-                </TouchableOpacity>
-            </ScrollView>
-        </SafeAreaView>
-    );
+type EditProfileFormProps = {
+  onSubmitSuccess?: () => void;
+  showHeading?: boolean;
 };
 
-export default EditProfile; 
+export const EditProfileForm: React.FC<EditProfileFormProps> = ({
+  onSubmitSuccess,
+  showHeading = true,
+}) => {
+  const user = state.user.userState.get();
+  const { colors, isDarkMode } = useTheme();
+
+  const [formData, setFormData] = useState({
+    firstName: user.firstName || "",
+    lastName: user.lastName || "",
+    email: user.email || "",
+    pronouns: user.pronouns || "",
+    currentDegree: user.currentDegree || "",
+    faculty: user.faculty || "",
+    school: user.school || "",
+    university: user.university || "",
+    program: user.program || "",
+    year: user.year || "",
+    isInternational: user.isInternational || false,
+    isStudent: user.isStudent || false,
+  });
+
+  const inputStyle = useMemo(
+    () => [
+      tw`p-3 rounded-lg`,
+      {
+        backgroundColor: isDarkMode ? colors.lightGray : colors.white,
+        color: colors.text,
+      },
+    ],
+    [colors.lightGray, colors.text, colors.white, isDarkMode]
+  );
+
+  const labelStyle = useMemo(
+    () => [tw`text-sm font-medium mb-1`, { color: colors.gray }],
+    [colors.gray]
+  );
+
+  const handleSave = async () => {
+    try {
+      const updatedUser = {
+        ...user,
+        ...formData,
+      };
+
+      state.user.userState.set(updatedUser);
+      await AsyncStorage.setItem("user", JSON.stringify(updatedUser));
+
+      Alert.alert("Success", "Profile updated successfully");
+      onSubmitSuccess?.();
+    } catch (error) {
+      if (error instanceof Error) {
+        Alert.alert("Error", error.message);
+      } else {
+        Alert.alert("Error", "An unknown error occurred");
+      }
+    }
+  };
+
+  return (
+    <ScrollView
+      style={[tw`flex-1`, { backgroundColor: colors.background }]}
+      contentContainerStyle={tw`pb-10 px-5`}
+    >
+      {showHeading ? (
+        <Text
+          style={{
+            color: colors.text,
+            fontSize: 30,
+            fontWeight: "bold",
+            marginBottom: 20,
+          }}
+        >
+          Edit Profile
+        </Text>
+      ) : null}
+
+      <View style={tw`mb-4`}>
+        <Text style={labelStyle}>First Name</Text>
+        <TextInput
+          style={inputStyle}
+          placeholder="First Name"
+          placeholderTextColor={colors.gray}
+          value={formData.firstName}
+          onChangeText={(text) => setFormData({ ...formData, firstName: text })}
+        />
+      </View>
+
+      <View style={tw`mb-4`}>
+        <Text style={labelStyle}>Last Name</Text>
+        <TextInput
+          style={inputStyle}
+          placeholder="Last Name"
+          placeholderTextColor={colors.gray}
+          value={formData.lastName}
+          onChangeText={(text) => setFormData({ ...formData, lastName: text })}
+        />
+      </View>
+
+      <View style={tw`mb-4`}>
+        <Text style={labelStyle}>Email</Text>
+        <TextInput
+          style={inputStyle}
+          placeholder="Email"
+          placeholderTextColor={colors.gray}
+          value={formData.email}
+          onChangeText={(text) => setFormData({ ...formData, email: text })}
+          keyboardType="email-address"
+          editable={false}
+        />
+      </View>
+
+      <View style={tw`mb-4`}>
+        <Text style={labelStyle}>Pronouns</Text>
+        <TextInput
+          style={inputStyle}
+          placeholder="Pronouns"
+          placeholderTextColor={colors.gray}
+          value={formData.pronouns}
+          onChangeText={(text) => setFormData({ ...formData, pronouns: text })}
+        />
+      </View>
+
+      <View style={tw`mb-4`}>
+        <Text style={labelStyle}>Current Degree</Text>
+        <TextInput
+          style={inputStyle}
+          placeholder="Current Degree"
+          placeholderTextColor={colors.gray}
+          value={formData.currentDegree}
+          onChangeText={(text) =>
+            setFormData({ ...formData, currentDegree: text })
+          }
+        />
+      </View>
+
+      <TouchableOpacity
+        style={[tw`p-4 rounded-lg mt-4`, { backgroundColor: colors.primary }]}
+        onPress={handleSave}
+      >
+        <Text
+          style={{
+            color: colors.white,
+            textAlign: "center",
+            fontWeight: "600",
+          }}
+        >
+          Save Changes
+        </Text>
+      </TouchableOpacity>
+    </ScrollView>
+  );
+};
+
+const EditProfile = () => {
+  const router = useRouter();
+  const { colors } = useTheme();
+
+  return (
+    <SafeAreaView
+      style={[tw`flex-1`, { backgroundColor: colors.background }]}
+    >
+      <EditProfileForm onSubmitSuccess={() => router.back()} />
+    </SafeAreaView>
+  );
+};
+
+export default EditProfile;

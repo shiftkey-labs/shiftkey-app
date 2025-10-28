@@ -5,7 +5,11 @@ export const roleSettingsOptions = {
     accountSettings: [
       {
         label: "Edit Profile",
-        action: () => router.push("/(settings)/edit-profile"),
+        action: () =>
+          router.push({
+            pathname: "/(tabs)/profile",
+            params: { view: "edit" },
+          }),
       },
       {
         label: "Change Password",
@@ -35,7 +39,11 @@ export const roleSettingsOptions = {
     accountSettings: [
       {
         label: "Edit Profile",
-        action: () => console.log("Edit Profile pressed"),
+        action: () =>
+          router.push({
+            pathname: "/(tabs)/profile",
+            params: { view: "edit" },
+          }),
       },
       {
         label: "Change Password",
@@ -61,7 +69,11 @@ export const roleSettingsOptions = {
     accountSettings: [
       {
         label: "Edit Profile",
-        action: () => console.log("Edit Profile pressed"),
+        action: () =>
+          router.push({
+            pathname: "/(tabs)/profile",
+            params: { view: "edit" },
+          }),
       },
       {
         label: "Change Password",

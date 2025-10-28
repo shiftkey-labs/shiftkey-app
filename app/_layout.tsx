@@ -160,6 +160,10 @@ const AppContent = observer(() => {
             options={{ headerShown: false, gestureEnabled: false }}
           />
           <Stack.Screen
+            name="(settings)"
+            options={{ headerShown: false, gestureEnabled: true }}
+          />
+          <Stack.Screen
             name="event"
             options={{ headerShown: false, gestureEnabled: false }}
           />
