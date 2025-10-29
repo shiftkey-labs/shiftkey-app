@@ -4,8 +4,8 @@ import {
   Text,
   TouchableOpacity,
   FlatList,
-  Alert,
 } from "react-native";
+import { Alert } from "@/utils/alert";
 import { SafeAreaView } from "react-native-safe-area-context";
 import tw from "../styles/tailwind";
 import { useTheme } from "@/context/ThemeContext";

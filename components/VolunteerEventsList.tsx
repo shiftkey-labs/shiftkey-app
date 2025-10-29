@@ -1,7 +1,8 @@
 import tw from "@/app/styles/tailwind";
 import { Link, useRouter } from "expo-router";
 import React, { useState } from "react";
-import { View, Text, ScrollView, Pressable, RefreshControl, Alert } from "react-native";
+import { View, Text, ScrollView, Pressable, RefreshControl } from "react-native";
+import { Alert } from "@/utils/alert";
 import EventCard from "./home/EventCard";
 import BigBoyCard from "./home/BigBoyCard";
 import { useTheme } from "@/context/ThemeContext";
