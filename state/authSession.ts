@@ -1,10 +1,9 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import state from "@/state";
 import { setAuthToken } from "@/config/axiosAuth";
-import { hasRequiredFields, defaultUserState } from "@/state/userState";
+import { hasRequiredFields, defaultUserState, userState } from "@/state/userState";
 
 export const persistAuthSession = async (userData: any, token?: string | null) => {
-  state.user.userState.set({
+  userState.set({
     ...userData,
     token: token ?? "",
   });
@@ -30,7 +29,7 @@ export const persistAuthSession = async (userData: any, token?: string | null) =
 export const clearAuthSession = async () => {
   try {
     // Clear user state
-    state.user.userState.set({ ...defaultUserState });
+    userState.set({ ...defaultUserState });
 
     // Clear AsyncStorage
     await AsyncStorage.multiRemove(["user", "token"]);
