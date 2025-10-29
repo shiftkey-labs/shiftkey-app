@@ -17,6 +17,7 @@
       "bundleIdentifier": "com.shiftkey.app",
       "buildNumber": "18",
       "minVersion": "17.0",
+      "googleServicesFile": "./GoogleService-Info.plist",
       "infoPlist": {
         "NSCameraUsageDescription": "This app uses the camera to scan QR codes for events.",
         "ITSAppUsesNonExemptEncryption": false
@@ -27,7 +28,8 @@
         "foregroundImage": "./assets/images/adaptive-icon.jpeg",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.shiftkey.app"
+      "package": "com.shiftkey.app",
+      "googleServicesFile": "./google-services.json"
     },
     "web": {
       "bundler": "metro",
@@ -36,7 +38,10 @@
     },
     "plugins": [
       "expo-router",
-      "expo-font"
+      "expo-font",
+      "@react-native-firebase/app",
+      "@react-native-firebase/crashlytics",
+      "./plugins/withModularHeaders"
     ],
     "experiments": {
       "typedRoutes": true

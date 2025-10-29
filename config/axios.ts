@@ -1,5 +1,6 @@
 import axios from "axios";
 import environment from "./environment";
+import { setAxiosInstance, setAuthToken } from "./axiosAuth";
 import { clearAuthSession } from "@/state/authSession";
 import { Alert } from "@/utils/alert";
 
@@ -21,6 +22,8 @@ const server = axios.create({
     return (status >= 200 && status < 300) || status === 302 || status === 304;
   },
 });
+
+setAxiosInstance(server);
 
 // Global response interceptor to handle errors and success:false responses
 server.interceptors.response.use(
@@ -73,15 +76,8 @@ server.interceptors.response.use(
   }
 );
 
-export const setAuthToken = (token?: string | null) => {
-  if (token) {
-    server.defaults.headers.common.Authorization = `Bearer ${token}`;
-  } else {
-    delete server.defaults.headers.common.Authorization;
-  }
-};
-
 // Log current environment for debugging
 console.log(`API configured for ${environment.env} environment: ${environment.apiUrl}`);
 
+export { setAuthToken };
 export default server;

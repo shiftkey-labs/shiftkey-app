@@ -10,7 +10,7 @@ import { Stack, useRouter, useSegments } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect, useState } from "react";
 import "react-native-reanimated";
-import { ActivityIndicator, View, useColorScheme as useNativeColorScheme } from "react-native";
+import { ActivityIndicator, Platform, View, useColorScheme as useNativeColorScheme } from "react-native";
 import tw from "./styles/tailwind";
 import { observer } from "@legendapp/state/react";
 import { initializeAuth, hasRequiredFields } from "@/state/userState";
@@ -20,6 +20,15 @@ import { ThemeProvider, useTheme } from "@/context/ThemeContext";
 import { AlertProvider } from "@/context/AlertContext";
 import UpdateBanner from "@/components/common/UpdateBanner";
 import { setNavigateToLogin } from "@/config/axios";
+
+let crashlyticsModule: typeof import("@react-native-firebase/crashlytics") | null = null;
+if (Platform.OS === "android" || Platform.OS === "ios") {
+  try {
+    crashlyticsModule = require("@react-native-firebase/crashlytics");
+  } catch (error) {
+    crashlyticsModule = null;
+  }
+}
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -49,6 +58,15 @@ const RootLayoutNav = observer(() => {
   useEffect(() => {
     if (error) throw error;
   }, [error]);
+
+  useEffect(() => {
+    if (Platform.OS === "android" || Platform.OS === "ios") {
+      const instance = crashlyticsModule?.getCrashlytics();
+      if (instance) {
+        void crashlyticsModule.setCrashlyticsCollectionEnabled(instance, true);
+      }
+    }
+  }, []);
 
   useEffect(() => {
     if (loaded) {

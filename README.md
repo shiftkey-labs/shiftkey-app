@@ -51,6 +51,13 @@ ShiftKey Labs Events Application is a mobile platform built with React Native us
    expo start
    ```
 
+### Firebase Crashlytics
+
+- Create a Firebase project (or reuse an existing one) with Crashlytics enabled.
+- Download `google-services.json` from the Firebase console and place it in `android/app/`.
+- Download `GoogleService-Info.plist` and place it in `ios/` after running `npx expo prebuild --ios` (or via EAS build).
+- Ensure native changes from `app.json` plugins are applied by running `npx expo prebuild` before building locally, or allow EAS Build to apply them automatically.
+
 ## Usage
 
 ### Authentication

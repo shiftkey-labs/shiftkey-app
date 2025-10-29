@@ -1,6 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import state from "@/state";
-import { setAuthToken } from "@/config/axios";
+import { setAuthToken } from "@/config/axiosAuth";
 import { hasRequiredFields, defaultUserState } from "@/state/userState";
 
 export const persistAuthSession = async (userData: any, token?: string | null) => {

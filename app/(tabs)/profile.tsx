@@ -1,11 +1,12 @@
 // app/profile.tsx
-import React from "react";
+import React, { useMemo } from "react";
 import {
   View,
   Text,
   TouchableOpacity,
   ScrollView,
   Switch,
+  Platform,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import tw from "../styles/tailwind";
@@ -18,6 +19,15 @@ import Constants from "expo-constants";
 import { EditProfileForm } from "@/app/(settings)/edit-profile";
 import { clearAuthSession } from "@/state/authSession";
 import { Alert } from "@/utils/alert";
+type CrashlyticsModule = typeof import("@react-native-firebase/crashlytics");
+let crashlyticsModule: CrashlyticsModule | null = null;
+if (Platform.OS === "android" || Platform.OS === "ios") {
+  try {
+    crashlyticsModule = require("@react-native-firebase/crashlytics");
+  } catch (error) {
+    crashlyticsModule = null;
+  }
+}
 
 const Profile = () => {
   const user = state.user.userState.get();
@@ -27,6 +37,9 @@ const Profile = () => {
   const { isDarkMode, colors, themePreference, setManualTheme } = useTheme();
   const appVersion = Constants.expoConfig?.version ?? "";
   const isDarkModeEnabled = themePreference === "dark";
+  const crashlyticsInstance = useMemo(() => {
+    return crashlyticsModule?.getCrashlytics() ?? null;
+  }, []);
 
   const handleThemeToggle = (value: boolean) => {
     setManualTheme(value);
@@ -100,6 +113,21 @@ const Profile = () => {
   const { accountSettings, moreOptions } =
     roleSettingsOptions[user.role as keyof typeof roleSettingsOptions] || roleSettingsOptions.STUDENT;
 
+  const devCrashOption =
+    __DEV__ && crashlyticsInstance
+      ? [
+          {
+            label: "Trigger Crashlytics Test Crash",
+            action: () => {
+              if (crashlyticsModule) {
+                crashlyticsModule.crash(crashlyticsInstance);
+              }
+            },
+          },
+        ]
+      : [];
+  const combinedMoreOptions = [...moreOptions, ...devCrashOption];
+
   return (
     <SafeAreaView style={[tw`flex-1`, { backgroundColor: colors.background }]}>
       <ScrollView style={[tw`flex-1 p-5`, { backgroundColor: colors.background }]}>
@@ -139,7 +167,7 @@ const Profile = () => {
           <Text style={{ color: colors.text, fontSize: 20, fontWeight: 'bold', marginBottom: 12 }}>
             More Options
           </Text>
-          {moreOptions.map((item, index) => (
+          {combinedMoreOptions.map((item, index) => (
             <TouchableOpacity
               key={index}
               style={tw`flex-row items-center justify-between mb-3`}
