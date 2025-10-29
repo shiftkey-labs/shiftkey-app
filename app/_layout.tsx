@@ -19,6 +19,7 @@ import Toast from "react-native-toast-message";
 import { ThemeProvider, useTheme } from "@/context/ThemeContext";
 import { AlertProvider } from "@/context/AlertContext";
 import UpdateBanner from "@/components/common/UpdateBanner";
+import { setNavigateToLogin } from "@/config/axios";
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -106,6 +107,13 @@ const AppContent = observer(() => {
   useEffect(() => {
     state.app.checkAppVersion();
   }, []);
+
+  // Register navigation callback for 401 errors
+  useEffect(() => {
+    setNavigateToLogin(() => {
+      router.replace("/(auth)/login");
+    });
+  }, [router]);
 
   useEffect(() => {
     if (appStatus.updateRequired) {

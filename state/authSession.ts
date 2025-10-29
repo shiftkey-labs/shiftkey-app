@@ -1,7 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import state from "@/state";
 import { setAuthToken } from "@/config/axios";
-import { hasRequiredFields } from "@/state/userState";
+import { hasRequiredFields, defaultUserState } from "@/state/userState";
 
 export const persistAuthSession = async (userData: any, token?: string | null) => {
   state.user.userState.set({
@@ -24,4 +24,23 @@ export const persistAuthSession = async (userData: any, token?: string | null) =
   await Promise.all(tasks);
 
   return hasRequiredFields(userData);
+};
+
+// Centralized logout function
+export const clearAuthSession = async () => {
+  try {
+    // Clear user state
+    state.user.userState.set({ ...defaultUserState });
+
+    // Clear AsyncStorage
+    await AsyncStorage.multiRemove(["user", "token"]);
+
+    // Clear auth token from axios headers
+    setAuthToken(null);
+
+    return true;
+  } catch (error) {
+    console.error("Failed to clear auth session:", error);
+    return false;
+  }
 };

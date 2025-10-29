@@ -5,7 +5,6 @@ import {
   Text,
   TouchableOpacity,
   ScrollView,
-  Alert,
   Switch,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -13,13 +12,12 @@ import tw from "../styles/tailwind";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import state from "@/state";
 import { roleSettingsOptions } from "@/config/roleSettingsOptions";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { deleteUserById } from "@/api/userApi";
 import { useTheme } from "@/context/ThemeContext";
-import { defaultUserState } from "@/state/userState";
-import { setAuthToken } from "@/config/axios";
 import Constants from "expo-constants";
 import { EditProfileForm } from "@/app/(settings)/edit-profile";
+import { clearAuthSession } from "@/state/authSession";
+import { Alert } from "@/utils/alert";
 
 const Profile = () => {
   const user = state.user.userState.get();
@@ -40,9 +38,7 @@ const Profile = () => {
 
   const handleLogout = async () => {
     try {
-      state.user.userState.set({ ...defaultUserState });
-      await AsyncStorage.multiRemove(["user", "token"]);
-      setAuthToken(null);
+      await clearAuthSession();
       router.replace("/(auth)/login");
     } catch (error) {
       Alert.alert("Logout Error", error.message);
@@ -55,9 +51,7 @@ const Profile = () => {
         await deleteUserById(user.id);
       }
 
-      state.user.userState.set({ ...defaultUserState });
-      await AsyncStorage.multiRemove(["user", "token"]);
-      setAuthToken(null);
+      await clearAuthSession();
       router.replace("/(auth)/login");
 
     } catch (error) {

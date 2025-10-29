@@ -1,6 +1,14 @@
 import axios from "axios";
-import { Alert } from "react-native";
 import environment from "./environment";
+import { clearAuthSession } from "@/state/authSession";
+import { Alert } from "@/utils/alert";
+
+// Global callback for handling navigation after logout
+let globalNavigateToLogin: (() => void) | null = null;
+
+export const setNavigateToLogin = (callback: () => void) => {
+  globalNavigateToLogin = callback;
+};
 
 const server = axios.create({
   baseURL: environment.apiUrl,
@@ -31,12 +39,30 @@ server.interceptors.response.use(
     // 302 and 304 responses are valid - just return the response as-is
     return response;
   },
-  (error) => {
+  async (error) => {
     // Extract error message from server response
     const status = error.response?.status;
     const errorMessage = error.response?.data?.message || error.message || "An error occurred";
 
-    // Show alert for 400+ errors
+    // Handle 401 Unauthorized - Invalid or expired token
+    if (status === 401 && errorMessage.toLowerCase().includes("invalid or expired token")) {
+      console.log("Token expired - logging out user");
+
+      // Clear auth session
+      await clearAuthSession();
+
+      // Navigate to login if callback is set
+      if (globalNavigateToLogin) {
+        globalNavigateToLogin();
+      }
+
+      // Show alert to user
+      Alert.alert("Session Expired", "Your session has expired. Please log in again.");
+
+      return Promise.reject(error);
+    }
+
+    // Show alert for other 400+ errors
     if (status && status >= 400) {
       Alert.alert("Error", errorMessage);
     }
