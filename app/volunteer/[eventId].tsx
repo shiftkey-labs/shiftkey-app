@@ -429,6 +429,10 @@ const EventAttendance = () => {
         return attendee;
       });
 
+      if (initialDayKeyFromParams) {
+        dayKeySet.add(initialDayKeyFromParams);
+      }
+
       const sortedDayKeys = Array.from(dayKeySet).sort(
         (a, b) => parseInt(a.replace("day", ""), 10) - parseInt(b.replace("day", ""), 10)
       );
@@ -443,12 +447,9 @@ const EventAttendance = () => {
         if (initialDayKeyFromParams && sortedDayKeys.includes(initialDayKeyFromParams)) {
           return initialDayKeyFromParams;
         }
-        // Auto-select if only one day or if we have days available
+        // Auto-select only when there's a single option
         if (sortedDayKeys.length === 1) {
           return sortedDayKeys[0];
-        }
-        if (!current && sortedDayKeys.length > 0) {
-          return sortedDayKeys[0]; // Auto-select first day
         }
         return null;
       });
