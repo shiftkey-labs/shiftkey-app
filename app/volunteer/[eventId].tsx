@@ -220,6 +220,8 @@ const SwipeableAttendeeItem: React.FC<{
           // Snap back
           Animated.spring(translateX, {
             toValue: 0,
+            friction: 8,
+            tension: 80,
             useNativeDriver: true,
           }).start();
         }
