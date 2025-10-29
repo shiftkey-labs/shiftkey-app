@@ -31,6 +31,14 @@ const Login = () => {
     }
 
     setLoading(true);
+
+    // Navigate immediately to OTP page
+    router.push({
+      pathname: "/(auth)/verify-otp",
+      params: { email, message: "Sending verification code..." },
+    });
+
+    // Send OTP request in the background
     try {
       const response = await server.post(`/auth/send-otp`, {
         email,
@@ -40,16 +48,10 @@ const Login = () => {
       const isSuccess = response.status === 200 && successFlag !== false;
 
       if (isSuccess) {
-        const successMessage = response.data?.message || "OTP sent successfully.";
         const token = response.data?.token;
         const userData = response.data?.user;
 
-        setStatusMessage(successMessage);
-        Toast.show({
-          type: "success",
-          text1: successMessage,
-        });
-
+        // If user is already authenticated (no OTP needed)
         if (token && userData) {
           const hasRequiredProfile = await persistAuthSession(userData, token);
 
@@ -58,23 +60,13 @@ const Login = () => {
           } else {
             router.replace("/");
           }
-        } else {
-          router.push({
-            pathname: "/(auth)/verify-otp",
-            params: { email, message: successMessage },
-          });
         }
+        // Otherwise, user stays on OTP page waiting for code
       } else {
-        const errorMessage = response.data?.message || "Failed to send verification code. Please try again.";
-        setStatusMessage(errorMessage);
-        Alert.alert("Request Failed", errorMessage);
+        // Error handled by axios interceptor
       }
     } catch (error: any) {
-      // Handle error response from API
-      const errorMessage = error.response?.data?.message || "Failed to send verification code. Please try again.";
-      setStatusMessage(errorMessage);
-
-      Alert.alert("Request Failed", errorMessage);
+      // Error handled by axios interceptor
     } finally {
       setLoading(false);
     }
