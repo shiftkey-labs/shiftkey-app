@@ -49,6 +49,12 @@ const EventDetails = () => {
         return;
       }
 
+      // If event is already loaded and matches the requested ID, skip loading
+      if (currentEvent && String(currentEvent.id) === String(eventId)) {
+        setLoading(false);
+        return;
+      }
+
       setLoading(true);
       try {
         const event = await state.event.fetchEventDetails(eventId);

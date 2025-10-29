@@ -9,6 +9,7 @@ import tw from "../styles/tailwind";
 import EventCard from "@/components/home/EventCard";
 import SectionHeader from "@/components/home/SectionHeader";
 import RefreshableScrollView from "@/components/common/RefreshableScrollView";
+import FullScreenLoader from "@/components/common/FullScreenLoader";
 import { useRouter, useFocusEffect } from "expo-router";
 import state from "@/state";
 import { initializeAuth } from "@/state/userState";
@@ -22,6 +23,7 @@ const Home: React.FC = () => {
   const [eventsList, setEventsList] = useState<UpcomingEvent[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [loadingEventId, setLoadingEventId] = useState<string | null>(null);
+  const [loadingEventName, setLoadingEventName] = useState<string>("");
   const { isDarkMode, colors } = useTheme();
 
   const loadEvents = useCallback(async () => {
@@ -38,28 +40,32 @@ const Home: React.FC = () => {
     }
   }, []);
 
-  const handlePressEvent = useCallback(async (eventId: string) => {
+  const handlePressEvent = useCallback(async (eventId: string, eventName: string) => {
     // Prevent multiple simultaneous presses
     if (loadingEventId) return;
 
     setLoadingEventId(eventId);
+    setLoadingEventName(eventName);
 
     // Safety timeout to prevent infinite loading
     const timeout = setTimeout(() => {
       setLoadingEventId(null);
+      setLoadingEventName("");
     }, 10000); // 10 second timeout
 
     try {
       await events.fetchEventDetails(eventId);
       clearTimeout(timeout);
+      setLoadingEventId(null);
+      setLoadingEventName("");
       router.push(`/event/${eventId}`);
-      // Don't clear loading here - useFocusEffect will clear it when we return
     } catch (error) {
       clearTimeout(timeout);
       console.error("Failed to load event details:", error);
       // Alert is handled by axios interceptor
       // Clear loading state on error so user can retry
       setLoadingEventId(null);
+      setLoadingEventName("");
     }
   }, [events, router, loadingEventId]);
 
@@ -85,6 +91,7 @@ const Home: React.FC = () => {
   useFocusEffect(
     useCallback(() => {
       setLoadingEventId(null);
+      setLoadingEventName("");
     }, [])
   );
 
@@ -120,7 +127,7 @@ const Home: React.FC = () => {
               location={event.location || "No Location"}
               date={event.startDate || ""}
               imageUrl={event.image}
-              onPress={() => handlePressEvent(event.id)}
+              onPress={() => handlePressEvent(event.id, event.eventName || "Event")}
               isLoading={loadingEventId === event.id}
             />
           );
@@ -131,6 +138,11 @@ const Home: React.FC = () => {
           </Text>
         )}
       </RefreshableScrollView>
+      <FullScreenLoader
+        visible={!!loadingEventId}
+        message={`Opening ${loadingEventName}`}
+        subMessage="Please wait..."
+      />
     </SafeAreaView>
   );
 };

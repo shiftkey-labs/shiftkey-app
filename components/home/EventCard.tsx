@@ -4,7 +4,6 @@ import tw from "@/app/styles/tailwind";
 import { EventCardProps } from "@/types/event";
 import { useTheme } from "@/context/ThemeContext";
 import { dummyImageUrl } from "@/constants/statics";
-import LoadingOverlay from "@/components/common/LoadingOverlay";
 
 const EventCard: React.FC<EventCardProps> = ({
   title,
@@ -44,7 +43,6 @@ const EventCard: React.FC<EventCardProps> = ({
       activeOpacity={0.8}
       disabled={isLoading}
     >
-      <LoadingOverlay visible={isLoading} />
       <View style={tw`relative`}>
         <Image
           source={{ uri: resolvedImageUrl }}
