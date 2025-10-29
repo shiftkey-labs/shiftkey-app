@@ -5,13 +5,13 @@ import {
   FlatList,
   TouchableOpacity,
   ActivityIndicator,
-  Alert,
   Modal,
   TextInput,
   Animated,
   PanResponder,
   RefreshControl,
 } from "react-native";
+import { Alert } from "@/utils/alert";
 import { useRouter, useLocalSearchParams, Stack } from "expo-router";
 import { AntDesign } from "@expo/vector-icons";
 import { Camera, CameraView } from "expo-camera";

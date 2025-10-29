@@ -17,6 +17,7 @@ import { initializeAuth, hasRequiredFields } from "@/state/userState";
 import state from "@/state";
 import Toast from "react-native-toast-message";
 import { ThemeProvider, useTheme } from "@/context/ThemeContext";
+import { AlertProvider } from "@/context/AlertContext";
 import UpdateBanner from "@/components/common/UpdateBanner";
 
 export {
@@ -85,7 +86,9 @@ const RootLayoutNav = observer(() => {
 
   return (
     <ThemeProvider>
-      <AppContent />
+      <AlertProvider>
+        <AppContent />
+      </AlertProvider>
     </ThemeProvider>
   );
 });

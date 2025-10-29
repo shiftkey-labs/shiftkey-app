@@ -7,11 +7,11 @@ interface EnvironmentConfig {
 
 const ENV: Record<string, EnvironmentConfig> = {
   development: {
-    apiUrl: 'http://192.168.0.243:3000',
+    apiUrl: 'https://d3yvyt3tmm.us-east-1.awsapprunner.com',
     env: 'development',
   },
   production: {
-    apiUrl: 'https://shiftkey.vanshsood.com',
+    apiUrl: 'https://d3yvyt3tmm.us-east-1.awsapprunner.com',
     env: 'production',
   },
 };
