@@ -296,6 +296,8 @@ const EventAttendance = () => {
   const [attendees, setAttendees] = useState<Attendee[]>([]);
   const [loading, setLoading] = useState(true);
   const [scanning, setScanning] = useState(false);
+  const [processingQR, setProcessingQR] = useState(false);
+  const [processingName, setProcessingName] = useState<string>("");
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
   const [eventTitle, setEventTitle] = useState(eventNameParam ?? "Event");
   const [searchQuery, setSearchQuery] = useState("");
@@ -394,6 +396,7 @@ const EventAttendance = () => {
 
   const handleBarCodeScanned = async ({ type, data }: { type: string; data: string }) => {
     setScanning(false);
+
     try {
       // Decode base64 QR code data
       const decodedData = atob(data);
@@ -414,10 +417,22 @@ const EventAttendance = () => {
         return;
       }
 
+      // Find the attendee's name
+      const attendee = attendees.find(a => a.id === qrData.registrationId);
+      const attendeeName = attendee?.fullName || "Attendee";
+
+      // Show processing overlay with name
+      setProcessingName(attendeeName);
+      setProcessingQR(true);
+
       // Mark attendance using the registration ID
       await markAttendance(qrData.registrationId, true);
+      setProcessingQR(false);
+      setProcessingName("");
       Alert.alert("Success", "Attendance marked successfully!");
     } catch (error) {
+      setProcessingQR(false);
+      setProcessingName("");
       Alert.alert("Error", "Failed to scan QR code. Please try again or mark attendance manually.");
     }
   };
@@ -676,6 +691,21 @@ const EventAttendance = () => {
       >
         <AntDesign name="qrcode" size={28} color={colors.white} />
       </TouchableOpacity>
+
+      {/* Processing QR Code Overlay */}
+      {processingQR && (
+        <View style={[tw`absolute inset-0 items-center justify-center`, { backgroundColor: 'rgba(0, 0, 0, 0.7)' }]}>
+          <View style={[tw`p-8 rounded-2xl items-center max-w-sm mx-4`, { backgroundColor: isDarkMode ? colors.lightGray : colors.white }]}>
+            <ActivityIndicator size="large" color={colors.primary} style={tw`mb-4`} />
+            <Text style={{ color: colors.text, fontSize: 18, fontWeight: '600', marginBottom: 8, textAlign: 'center' }}>
+              Checking {processingName} in
+            </Text>
+            <Text style={{ color: colors.gray, fontSize: 14, textAlign: 'center' }}>
+              Please wait...
+            </Text>
+          </View>
+        </View>
+      )}
     </SafeAreaView>
   );
 };
