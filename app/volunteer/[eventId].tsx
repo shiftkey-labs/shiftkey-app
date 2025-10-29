@@ -22,17 +22,13 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import state from "@/state";
 
 // Define the Attendee type to fix TypeScript errors
-type DayKey = "day1" | "day2" | "day3" | "day4";
+type DayKey = `day${number}`;
 
-interface Attendee {
+type Attendee = {
   id: string;
   userId: string;
   fullName: string;
-  day1?: boolean;
-  day2?: boolean;
-  day3?: boolean;
-  day4?: boolean;
-}
+} & Partial<Record<DayKey, boolean>>;
 
 // Draggable Checked-In Modal Component
 const CheckedInModal: React.FC<{
@@ -169,27 +165,65 @@ const SwipeableAttendeeItem: React.FC<{
 }> = ({ attendee, onSwipe, colors, isDarkMode, swipeDirection }) => {
   const translateX = useRef(new Animated.Value(0)).current;
   const [isSwiping, setIsSwiping] = useState(false);
+  const [isTouching, setIsTouching] = useState(false);
+  const touchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const isRightSwipe = swipeDirection === 'right';
 
+  const clearTouchTimeout = () => {
+    if (touchTimeoutRef.current) {
+      clearTimeout(touchTimeoutRef.current);
+      touchTimeoutRef.current = null;
+    }
+  };
+
   const panResponder = useRef(
     PanResponder.create({
-      onStartShouldSetPanResponder: () => true,
+      onStartShouldSetPanResponder: () => {
+        clearTouchTimeout();
+        setIsTouching(true);
+        // Auto-clear touch state after 200ms if no gesture is captured
+        touchTimeoutRef.current = setTimeout(() => {
+          setIsTouching(false);
+        }, 100);
+        return false; // Don't capture yet
+      },
       onMoveShouldSetPanResponder: (_, gestureState) => {
-        // Only capture if it's clearly a horizontal swipe (dx > dy)
-        const isHorizontal = Math.abs(gestureState.dx) > Math.abs(gestureState.dy);
-        const hasMovedEnough = Math.abs(gestureState.dx) > 5;
+        // Require MORE horizontal movement to differentiate from scrolling
+        const isHorizontal = Math.abs(gestureState.dx) > Math.abs(gestureState.dy) * 2;
+        const hasMovedEnough = Math.abs(gestureState.dx) > 20; // Increased from 5 to 20
 
         // Check if swipe is in the correct direction
         const isCorrectDirection = isRightSwipe
           ? gestureState.dx > 0  // Right swipe needs positive dx
           : gestureState.dx < 0; // Left swipe needs negative dx
 
-        return isHorizontal && hasMovedEnough && isCorrectDirection;
+        const shouldCapture = isHorizontal && hasMovedEnough && isCorrectDirection;
+
+        // If we're capturing, set swiping state and clear touch
+        if (shouldCapture) {
+          clearTouchTimeout();
+          setIsSwiping(true);
+          setIsTouching(false);
+        } else if (Math.abs(gestureState.dy) > 10) {
+          // User is scrolling vertically, clear touch state
+          clearTouchTimeout();
+          setIsTouching(false);
+        }
+
+        return shouldCapture;
       },
-      onPanResponderTerminationRequest: () => false, // Don't allow termination once we've started
+      onPanResponderTerminationRequest: () => {
+        // Allow termination and clear states
+        clearTouchTimeout();
+        setIsSwiping(false);
+        setIsTouching(false);
+        return true;
+      },
       onPanResponderGrant: () => {
+        clearTouchTimeout();
         setIsSwiping(true);
+        setIsTouching(false);
       },
       onPanResponderMove: (_, gestureState) => {
         // Allow right swipe for check-in (positive dx) or left swipe for check-out (negative dx)
@@ -200,7 +234,9 @@ const SwipeableAttendeeItem: React.FC<{
         }
       },
       onPanResponderRelease: (_, gestureState) => {
+        clearTouchTimeout();
         setIsSwiping(false);
+        setIsTouching(false);
         const threshold = 100; // Swipe threshold
 
         const swipeSuccess = isRightSwipe
@@ -258,14 +294,21 @@ const SwipeableAttendeeItem: React.FC<{
         style={[
           tw`flex-row justify-between items-center p-4 rounded-lg shadow-sm`,
           {
-            backgroundColor: isDarkMode ? colors.lightGray : colors.white,
+            backgroundColor: isTouching
+              ? (isDarkMode ? colors.background : '#f3f4f6')
+              : (isDarkMode ? colors.lightGray : colors.white),
             transform: [{ translateX }],
+            opacity: isSwiping ? 0.9 : 1,
           }
         ]}
         {...panResponder.panHandlers}
       >
         <View>
-          <Text style={{ color: colors.text, fontSize: 18, fontWeight: 'semibold' }}>
+          <Text style={{
+            color: colors.text,
+            fontSize: 18,
+            fontWeight: 'semibold',
+          }}>
             {attendee.fullName || "Unknown attendee"}
           </Text>
         </View>
@@ -303,12 +346,27 @@ const EventAttendance = () => {
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
   const [eventTitle, setEventTitle] = useState(eventNameParam ?? "Event");
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedDay, setSelectedDay] = useState<string | null>(initialDayParam ?? null);
-  const [selectedDayLabel, setSelectedDayLabel] = useState<string | null>(initialDayLabelParam ?? null);
+  const [selectedDayKey, setSelectedDayKey] = useState<DayKey | null>(null);
+  const [availableDayKeys, setAvailableDayKeys] = useState<DayKey[]>([]);
+  const [initialDayKeyFromParams, setInitialDayKeyFromParams] = useState<DayKey | null>(() => {
+    // Derive initial day from URL params
+    if (initialDayLabelParam && /^day\d+$/.test(initialDayLabelParam)) {
+      return initialDayLabelParam as DayKey;
+    }
+    if (initialDayParam && /^\d+$/.test(initialDayParam)) {
+      return `day${initialDayParam}` as DayKey;
+    }
+    return null;
+  });
   const [showDayModal, setShowDayModal] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [showCheckedInModal, setShowCheckedInModal] = useState(false);
   const { isDarkMode, colors } = useTheme();
+  const selectedDayNumber = useMemo(() => {
+    if (!selectedDayKey) return null;
+    const parsed = parseInt(selectedDayKey.replace("day", ""), 10);
+    return Number.isNaN(parsed) ? null : parsed;
+  }, [selectedDayKey]);
 
   useEffect(() => {
     if (eventId) {
@@ -316,12 +374,14 @@ const EventAttendance = () => {
     }
   }, [eventId]);
 
-  // Prompt user to select day if not set
+  // Prompt user to select day if not set (only needed if auto-selection didn't work)
   useEffect(() => {
-    if (!loading && !selectedDay) {
+    if (!loading && !selectedDayKey && availableDayKeys.length > 1) {
+      // Only show modal if there are multiple days and none is selected
+      // (single day is auto-selected in fetchAttendees)
       setShowDayModal(true);
     }
-  }, [loading, selectedDay]);
+  }, [loading, selectedDayKey, availableDayKeys.length]);
 
   useEffect(() => {
     (async () => {
@@ -350,15 +410,48 @@ const EventAttendance = () => {
         return;
       }
 
-      const normalisedAttendees: Attendee[] = payload.data.map((record: any) => ({
-        id: String(record?.id ?? record?.userId ?? Math.random()),
-        userId: String(record?.userId ?? ""),
-        fullName: record?.fullName?.toString() ?? "Unknown attendee",
-        day1: Boolean(record?.day1),
-        day2: Boolean(record?.day2),
-        day3: Boolean(record?.day3),
-        day4: Boolean(record?.day4),
-      }));
+      const dayKeySet = new Set<DayKey>();
+      const normalisedAttendees: Attendee[] = payload.data.map((record: any) => {
+        const attendee: Attendee = {
+          id: String(record?.id ?? record?.userId ?? Math.random()),
+          userId: String(record?.userId ?? ""),
+          fullName: record?.fullName?.toString() ?? "Unknown attendee",
+        };
+
+        Object.keys(record || {}).forEach((key) => {
+          if (/^day\d+$/.test(key)) {
+            const dayKey = key as DayKey;
+            dayKeySet.add(dayKey);
+            attendee[dayKey] = Boolean(record?.[key]);
+          }
+        });
+
+        return attendee;
+      });
+
+      const sortedDayKeys = Array.from(dayKeySet).sort(
+        (a, b) => parseInt(a.replace("day", ""), 10) - parseInt(b.replace("day", ""), 10)
+      );
+
+      setAvailableDayKeys(sortedDayKeys);
+      setSelectedDayKey((current) => {
+        // Keep current selection if still valid
+        if (current && sortedDayKeys.includes(current)) {
+          return current;
+        }
+        // Try to use initial day from params if valid
+        if (initialDayKeyFromParams && sortedDayKeys.includes(initialDayKeyFromParams)) {
+          return initialDayKeyFromParams;
+        }
+        // Auto-select if only one day or if we have days available
+        if (sortedDayKeys.length === 1) {
+          return sortedDayKeys[0];
+        }
+        if (!current && sortedDayKeys.length > 0) {
+          return sortedDayKeys[0]; // Auto-select first day
+        }
+        return null;
+      });
 
       setAttendees(normalisedAttendees);
     } catch (error) {
@@ -371,7 +464,7 @@ const EventAttendance = () => {
   };
 
   const markAttendance = async (registrationId: string, checkIn: boolean = true) => {
-    if (!selectedDayLabel) {
+    if (!selectedDayKey) {
       Alert.alert("Error", "Please select a day first.");
       setShowDayModal(true);
       return;
@@ -383,7 +476,7 @@ const EventAttendance = () => {
 
       // PATCH the registration record with the day field
       await server.patch(`/registration/${registrationId}`, {
-        [selectedDayLabel]: checkIn
+        [selectedDayKey]: checkIn
       });
 
       // Refresh the list from server in the background
@@ -457,17 +550,17 @@ const EventAttendance = () => {
   const attendanceStats = useMemo(() => {
     // Total registered is always the full list count
     const totalRegistered = attendees.length;
-    const checkedIn = selectedDayLabel
-      ? attendees.filter((attendee) => Boolean(attendee[selectedDayLabel as DayKey])).length
+    const checkedIn = selectedDayKey
+      ? attendees.filter((attendee) => Boolean(attendee[selectedDayKey])).length
       : 0;
 
     return { totalRegistered, checkedIn };
-  }, [attendees, selectedDayLabel]);
+  }, [attendees, selectedDayKey]);
 
   const filteredAttendees = useMemo(() => {
     // First filter out already checked-in users for the selected day
-    const uncheckedAttendees = selectedDayLabel
-      ? attendees.filter((attendee) => !Boolean(attendee[selectedDayLabel as DayKey]))
+    const uncheckedAttendees = selectedDayKey
+      ? attendees.filter((attendee) => !Boolean(attendee[selectedDayKey]))
       : attendees;
 
     // Then apply search filter
@@ -479,14 +572,14 @@ const EventAttendance = () => {
     return uncheckedAttendees.filter((attendee) =>
       attendee.fullName?.toLowerCase().includes(normalisedQuery)
     );
-  }, [attendees, searchQuery, selectedDayLabel]);
+  }, [attendees, searchQuery, selectedDayKey]);
 
   const checkedInAttendees = useMemo(() => {
     // Filter to show only checked-in users for the selected day
-    return selectedDayLabel
-      ? attendees.filter((attendee) => Boolean(attendee[selectedDayLabel as DayKey]))
+    return selectedDayKey
+      ? attendees.filter((attendee) => Boolean(attendee[selectedDayKey]))
       : [];
-  }, [attendees, selectedDayLabel]);
+  }, [attendees, selectedDayKey]);
 
   if (loading) {
     return (
@@ -518,11 +611,11 @@ const EventAttendance = () => {
                 onPress={() => setShowDayModal(true)}
                 style={[
                   tw`ml-1 px-3 py-1 rounded-full`,
-                  { backgroundColor: selectedDay ? colors.primary : colors.gray }
+                  { backgroundColor: selectedDayNumber ? colors.primary : colors.gray }
                 ]}
               >
                 <Text style={{ color: colors.white, fontSize: 12, fontWeight: '600' }}>
-                  {selectedDay ? `Day ${selectedDay}` : 'Select Day'}
+                  {selectedDayNumber ? `Day ${selectedDayNumber}` : 'Select Day'}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -621,7 +714,7 @@ const EventAttendance = () => {
             visible={showDayModal}
             onRequestClose={() => {
               // Only allow closing if a day is already selected
-              if (selectedDay) {
+              if (selectedDayKey) {
                 setShowDayModal(false);
               }
             }}
@@ -631,33 +724,58 @@ const EventAttendance = () => {
                 <Text style={{ color: colors.text, fontSize: 18, fontWeight: 'bold', marginBottom: 16 }}>
                   Select Day
                 </Text>
-                {[1, 2, 3, 4].map((day) => (
-                  <TouchableOpacity
-                    key={day}
-                    onPress={() => {
-                      setSelectedDay(String(day));
-                      setSelectedDayLabel(`day${day}`);
-                      setShowDayModal(false);
-                    }}
-                    style={[
-                      tw`p-4 mb-2 rounded-lg`,
-                      {
-                        backgroundColor: selectedDay === String(day)
-                          ? colors.primary
-                          : (isDarkMode ? colors.background : colors.lightGray)
-                      }
-                    ]}
-                  >
-                    <Text style={{
-                      color: selectedDay === String(day) ? colors.white : colors.text,
-                      fontSize: 16,
-                      fontWeight: selectedDay === String(day) ? '600' : 'normal'
-                    }}>
-                      Day {day}
+                {availableDayKeys.length > 0 ? (
+                  availableDayKeys.map((dayKey) => {
+                    const dayNumber = parseInt(dayKey.replace("day", ""), 10);
+                    const isSelected = selectedDayKey === dayKey;
+
+                    return (
+                      <TouchableOpacity
+                        key={dayKey}
+                        onPress={() => {
+                          setSelectedDayKey(dayKey);
+                          setShowDayModal(false);
+                        }}
+                        style={[
+                          tw`p-4 mb-2 rounded-lg`,
+                          {
+                            backgroundColor: isSelected
+                              ? colors.primary
+                              : (isDarkMode ? colors.background : colors.lightGray)
+                          }
+                        ]}
+                      >
+                        <Text
+                          style={{
+                            color: isSelected ? colors.white : colors.text,
+                            fontSize: 16,
+                            fontWeight: isSelected ? '600' : 'normal'
+                          }}
+                        >
+                          Day {dayNumber}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })
+                ) : (
+                  <>
+                    <Text style={{ color: colors.gray, textAlign: "center", marginBottom: 16 }}>
+                      No day information available for this event.
                     </Text>
-                  </TouchableOpacity>
-                ))}
-                {selectedDay && (
+                    <TouchableOpacity
+                      onPress={() => {
+                        setShowDayModal(false);
+                        router.back();
+                      }}
+                      style={[tw`p-4 rounded-lg`, { backgroundColor: colors.primary }]}
+                    >
+                      <Text style={{ color: colors.white, fontSize: 16, textAlign: 'center', fontWeight: '600' }}>
+                        Go Back
+                      </Text>
+                    </TouchableOpacity>
+                  </>
+                )}
+                {selectedDayKey && availableDayKeys.length > 0 && (
                   <TouchableOpacity
                     onPress={() => setShowDayModal(false)}
                     style={[tw`p-4 mt-2 rounded-lg border`, { borderColor: colors.gray }]}
