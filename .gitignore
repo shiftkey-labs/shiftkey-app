@@ -48,9 +48,6 @@ expo-env.d.ts
 
 yarn.lock
 
-google-services.json
-GoogleService-Info.plist
-
 credentials.json
 keystore.jks
 shiftkey-app.jks

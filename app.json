@@ -16,7 +16,6 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.shiftkey.app",
       "buildNumber": "25",
-      "minVersion": "17.0",
       "googleServicesFile": "./GoogleService-Info.plist",
       "infoPlist": {
         "NSCameraUsageDescription": "This app uses the camera to scan QR codes for events.",

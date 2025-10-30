@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1066834460991",
+    "project_id": "shiftkeyapp",
+    "storage_bucket": "shiftkeyapp.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1066834460991:android:8d634c7f5005f893e5938a",
+        "android_client_info": {
+          "package_name": "com.shiftkey.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCvFm8Yemu2_ZYN3RcV_kceywmo7hVt5tM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
