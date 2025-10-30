@@ -8,11 +8,8 @@ node_modules/
 dist/
 web-build/
 
-
-android/
-
 AGENTS.md
-ios/
+
 
 # Native
 *.orig.*
@@ -52,3 +49,8 @@ yarn.lock
 google-services.json
 GoogleService-Info.plist
 
+credentials.json
+android/
+ios/
+keystore.jks
+shiftkey-app.jks
