@@ -17,14 +17,20 @@ export default function TabLayout() {
           paddingVertical: 10,
           backgroundColor: colors.background,
           borderTopColor: colors.lightGray,
+          justifyContent: 'space-around',
         },
-        tabBarShowLabel: false,
+        tabBarShowLabel: true,
+        tabBarLabelStyle: {
+          fontSize: 12,
+          fontWeight: '500',
+          marginTop: 4,
+        },
       }}
     >
       <Tabs.Screen
         name="index"
         options={{
-          title: "Explore",
+          title: "Events",
           tabBarIcon: ({ color }) => (
             <Ionicons name="home-outline" size={24} color={color} />
           ),
@@ -47,7 +53,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="my-events"
         options={{
-          title: "My Events",
+          title: "Shifts",
           tabBarIcon: ({ color }) => (
             <Ionicons name="calendar-outline" color={color} size={24} />
           ),
@@ -65,7 +71,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="my-volunteer"
         options={{
-          tabBarButton: () => null,
+          href: null,
         }}
       />
     </Tabs>
