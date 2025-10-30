@@ -1,7 +1,7 @@
 import { getUserById } from "@/api/userApi";
 import { observable } from "@legendapp/state";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { setAuthToken } from "@/config/axios";
+import { setAuthToken } from "@/config/axiosAuth";
 
 const defaultUserState = {
   id: null,
