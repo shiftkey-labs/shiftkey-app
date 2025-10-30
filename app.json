@@ -2,7 +2,7 @@
   "expo": {
     "name": "ShiftKey",
     "slug": "shiftkey-app",
-    "version": "0.1.5",
+    "version": "0.2.0",
     "orientation": "portrait",
     "icon": "./assets/images/adaptive-icon.jpeg",
     "scheme": "myapp",
@@ -15,7 +15,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.shiftkey.app",
-      "buildNumber": "19",
+      "buildNumber": "25",
       "minVersion": "17.0",
       "googleServicesFile": "./GoogleService-Info.plist",
       "infoPlist": {
@@ -29,6 +29,7 @@
         "backgroundColor": "#ffffff"
       },
       "package": "com.shiftkey.app",
+      "versionCode": 25,
       "googleServicesFile": "./google-services.json"
     },
     "web": {

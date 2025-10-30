@@ -10,6 +10,8 @@ web-build/
 
 AGENTS.md
 
+ios/
+android/
 
 # Native
 *.orig.*
@@ -50,7 +52,9 @@ google-services.json
 GoogleService-Info.plist
 
 credentials.json
-android/
-ios/
 keystore.jks
 shiftkey-app.jks
+
+*.keystore
+*.jks
+gradle.properties
