@@ -606,12 +606,22 @@ const EventAttendance = () => {
             <Text style={{ color: colors.text, fontSize: 16, fontWeight: 'bold', textAlign: 'center' }}>{eventTitle}</Text>
             <View style={tw`flex-row items-center mt-2`}>
               <Text style={{ color: colors.gray, fontSize: 14 }}>
-                Registered: {attendanceStats.totalRegistered}  •  Checked In: {attendanceStats.checkedIn}  •
+                Registered: {attendanceStats.totalRegistered}
               </Text>
+              <Text style={{ color: colors.gray, fontSize: 14, marginHorizontal: 6 }}>•</Text>
+              <TouchableOpacity
+                onPress={() => setShowCheckedInModal(true)}
+                disabled={checkedInAttendees.length === 0}
+              >
+                <Text style={{ color: checkedInAttendees.length > 0 ? colors.primary : colors.gray, fontSize: 14, fontWeight: checkedInAttendees.length > 0 ? '600' : 'normal' }}>
+                  Checked In: {attendanceStats.checkedIn}
+                </Text>
+              </TouchableOpacity>
+              <Text style={{ color: colors.gray, fontSize: 14, marginHorizontal: 6 }}>•</Text>
               <TouchableOpacity
                 onPress={() => setShowDayModal(true)}
                 style={[
-                  tw`ml-1 px-3 py-1 rounded-full`,
+                  tw`px-3 py-1 rounded-full`,
                   { backgroundColor: selectedDayNumber ? colors.primary : colors.gray }
                 ]}
               >
@@ -666,18 +676,6 @@ const EventAttendance = () => {
               tintColor={colors.primary}
               colors={[colors.primary]}
             />
-          }
-          ListFooterComponent={
-            checkedInAttendees.length > 0 ? (
-              <TouchableOpacity
-                onPress={() => setShowCheckedInModal(true)}
-                style={tw`mt-6 mb-4 py-4 items-center`}
-              >
-                <Text style={{ color: colors.primary, fontSize: 15, fontWeight: '600' }}>
-                  View {checkedInAttendees.length} Checked In
-                </Text>
-              </TouchableOpacity>
-            ) : null
           }
         />
 
