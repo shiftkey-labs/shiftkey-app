@@ -7,6 +7,8 @@ import {
   ScrollView,
   ActivityIndicator,
   Alert,
+  Modal,
+  Share,
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -16,6 +18,7 @@ import state from "@/state";
 import { useTheme } from "@/context/ThemeContext";
 import { EventDetails as EventDetailsType } from "@/types/event";
 import { dummyImageUrl } from "@/constants/statics";
+import QRCode from "react-native-qrcode-svg";
 
 const EventDetails = () => {
   const params = useLocalSearchParams();
@@ -23,9 +26,11 @@ const EventDetails = () => {
   const router = useRouter();
   const currentEvent = state.event.eventState.currentEvent.get() as EventDetailsType | null;
   const [loading, setLoading] = useState(true);
+  const [showQRModal, setShowQRModal] = useState(false);
 
   const { isDarkMode, colors } = useTheme();
   const currentEventId = currentEvent?.id ?? eventId ?? null;
+  const registrationLink = currentEvent?.registrationLink;
 
   const parseDate = (value?: string | null) => {
     if (!value) return null;
@@ -91,6 +96,22 @@ const EventDetails = () => {
 
   const handleBack = () => {
     router.back();
+  };
+
+  const handleShare = async () => {
+    if (!registrationLink) {
+      Alert.alert("No Link", "This event doesn't have a registration link.");
+      return;
+    }
+
+    try {
+      await Share.share({
+        message: `Register for ${currentEvent?.eventName || 'this event'}: ${registrationLink}`,
+        url: registrationLink,
+      });
+    } catch (error) {
+      console.error("Error sharing:", error);
+    }
   };
 
   const handleMarkAttendance = () => {
@@ -196,6 +217,17 @@ const EventDetails = () => {
         >
           <FontAwesome name="chevron-left" size={20} color={colors.text} />
         </TouchableOpacity>
+        {registrationLink && (
+          <TouchableOpacity
+            onPress={() => setShowQRModal(true)}
+            style={[
+              tw`absolute top-5 right-5 z-10 p-3 rounded-md shadow-md`,
+              { backgroundColor: isDarkMode ? colors.lightGray : colors.white }
+            ]}
+          >
+            <FontAwesome name="share-alt" size={20} color={colors.primary} />
+          </TouchableOpacity>
+        )}
         <ScrollView style={tw`flex-1`} contentContainerStyle={tw`pt-72`}>
           <View style={[
             tw`p-5 rounded-t-lg mt-[-10]`,
@@ -258,6 +290,48 @@ const EventDetails = () => {
           </View>
         </ScrollView>
       </View>
+
+      {/* QR Code Modal */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={showQRModal}
+        onRequestClose={() => setShowQRModal(false)}
+      >
+        <View style={tw`flex-1 bg-black/70 justify-center items-center`}>
+          <View style={[tw`w-11/12 max-w-md rounded-2xl p-6`, { backgroundColor: isDarkMode ? colors.lightGray : colors.white }]}>
+            <Text style={[tw`text-2xl font-bold text-center mb-4`, { color: colors.text }]}>
+              {currentEvent?.eventName || "Event"}
+            </Text>
+
+            <Text style={[tw`text-center mb-6`, { color: colors.gray }]}>
+              Scan this QR Code to register for this event
+            </Text>
+
+            <View style={tw`items-center mb-6`}>
+              {registrationLink ? (
+                <QRCode
+                  value={registrationLink}
+                  size={200}
+                  backgroundColor={isDarkMode ? colors.lightGray : colors.white}
+                  color={isDarkMode ? colors.text : colors.black}
+                />
+              ) : (
+                <Text style={{ color: colors.gray }}>No registration link available</Text>
+              )}
+            </View>
+
+            <TouchableOpacity
+              onPress={() => setShowQRModal(false)}
+              style={[tw`py-4 rounded-lg`, { backgroundColor: colors.primary }]}
+            >
+              <Text style={[tw`text-center font-semibold`, { color: colors.white }]}>
+                Close
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 };

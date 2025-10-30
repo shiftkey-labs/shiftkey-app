@@ -26,8 +26,12 @@ const fetchEventDetails = async (id: string) => {
   try {
     const response = await getEventById(id);
     const event = response?.event ?? null;
+    const registrationLink = response?.registrationLink ?? null;
 
-    eventState.currentEvent.set(event);
+    // Merge registrationLink into the event object
+    const eventWithLink = event ? { ...event, registrationLink } : null;
+
+    eventState.currentEvent.set(eventWithLink);
     eventState.attendanceContext.set({
       parentEventId:
         (event?.parentEventID && typeof event.parentEventID === "string"
@@ -39,7 +43,7 @@ const fetchEventDetails = async (id: string) => {
           ? event.dayLabel
           : null),
     });
-    return event;
+    return eventWithLink;
   } catch (error) {
     console.error("Failed to fetch event:", error);
     throw error;

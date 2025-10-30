@@ -4,7 +4,7 @@ export const roleSettingsOptions = {
   STUDENT: {
     accountSettings: [
       {
-        label: "Edit Profile",
+        label: "View Profile",
         action: () =>
           router.push({
             pathname: "/(tabs)/profile",
@@ -30,7 +30,7 @@ export const roleSettingsOptions = {
   VOLUNTEER: {
     accountSettings: [
       {
-        label: "Edit Profile",
+        label: "View Profile",
         action: () =>
           router.push({
             pathname: "/(tabs)/profile",
@@ -56,7 +56,7 @@ export const roleSettingsOptions = {
   ADMIN: {
     accountSettings: [
       {
-        label: "Edit Profile",
+        label: "View Profile",
         action: () =>
           router.push({
             pathname: "/(tabs)/profile",

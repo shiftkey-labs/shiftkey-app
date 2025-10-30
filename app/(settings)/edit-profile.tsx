@@ -92,7 +92,7 @@ export const EditProfileForm: React.FC<EditProfileFormProps> = ({
             marginBottom: 20,
           }}
         >
-          Edit Profile
+          View Profile
         </Text>
       ) : null}
 

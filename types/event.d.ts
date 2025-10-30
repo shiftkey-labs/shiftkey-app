@@ -114,4 +114,5 @@ export type UpcomingEvent = {
 export type EventDetails = UpcomingEvent & {
   volunteers?: string[];
   description?: string | null;
+  registrationLink?: string | null;
 };
