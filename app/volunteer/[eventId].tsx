@@ -339,6 +339,7 @@ const EventAttendance = () => {
   const eventId = eventIdParam ? String(eventIdParam) : "";
 
   const [attendees, setAttendees] = useState<Attendee[]>([]);
+  const [totalRegistered, setTotalRegistered] = useState(0);
   const [loading, setLoading] = useState(true);
   const [scanning, setScanning] = useState(false);
   const [processingQR, setProcessingQR] = useState(false);
@@ -455,6 +456,7 @@ const EventAttendance = () => {
       });
 
       setAttendees(normalisedAttendees);
+      setTotalRegistered(normalisedAttendees.length);
     } catch (error) {
       console.error("Failed to fetch attendees:", error?.message);
       Alert.alert("Error", "Failed to fetch attendees.");
@@ -549,14 +551,13 @@ const EventAttendance = () => {
   };
 
   const attendanceStats = useMemo(() => {
-    // Total registered is always the full list count
-    const totalRegistered = attendees.length;
+    // Total registered uses the separate state that only updates on API response
     const checkedIn = selectedDayKey
       ? attendees.filter((attendee) => Boolean(attendee[selectedDayKey])).length
       : 0;
 
     return { totalRegistered, checkedIn };
-  }, [attendees, selectedDayKey]);
+  }, [attendees, selectedDayKey, totalRegistered]);
 
   const filteredAttendees = useMemo(() => {
     // First filter out already checked-in users for the selected day
