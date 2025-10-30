@@ -10,15 +10,13 @@ import { persistAuthSession } from "@/state/authSession";
 
 const VerifyOtp = () => {
   const router = useRouter();
-  const params = useLocalSearchParams<{ email?: string | string[]; message?: string | string[] }>();
+  const params = useLocalSearchParams<{ email?: string | string[] }>();
   const emailParam = params.email;
   const email = Array.isArray(emailParam) ? emailParam[0] : emailParam ?? "";
-  const messageParam = params.message;
-  const initialStatusMessage = Array.isArray(messageParam) ? messageParam[0] : messageParam ?? "";
 
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [verifying, setVerifying] = useState(false);
-  const [statusMessage, setStatusMessage] = useState(initialStatusMessage);
+  const [statusMessage, setStatusMessage] = useState("");
   const inputRefs = useRef<Array<TextInput | null>>([]);
 
   useEffect(() => {
@@ -26,10 +24,6 @@ const VerifyOtp = () => {
       router.replace("/(auth)/login");
     }
   }, [email, router]);
-
-  useEffect(() => {
-    setStatusMessage(initialStatusMessage);
-  }, [initialStatusMessage]);
 
   useEffect(() => {
     inputRefs.current[0]?.focus();

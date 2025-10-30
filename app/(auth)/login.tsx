@@ -8,9 +8,11 @@ import Logo from "@/components/common/Logo";
 import Toast from "react-native-toast-message";
 import server from "@/config/axios";
 import { persistAuthSession } from "@/state/authSession";
+import { useTheme } from "@/context/ThemeContext";
 
 const Login = () => {
   const router = useRouter();
+  const { isDarkMode, colors } = useTheme();
   const defaultStatusMessage = "Please enter your email to continue";
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
@@ -33,13 +35,6 @@ const Login = () => {
 
     setLoading(true);
 
-    // Navigate immediately to OTP page
-    router.push({
-      pathname: "/(auth)/verify-otp",
-      params: { email, message: "Sending verification code..." },
-    });
-
-    // Send OTP request in the background
     try {
       const response = await server.post(`/auth/send-otp`, {
         email,
@@ -61,10 +56,13 @@ const Login = () => {
           } else {
             router.replace("/");
           }
+        } else {
+          // Navigate to OTP page only after successful response
+          router.push({
+            pathname: "/(auth)/verify-otp",
+            params: { email },
+          });
         }
-        // Otherwise, user stays on OTP page waiting for code
-      } else {
-        // Error handled by axios interceptor
       }
     } catch (error: any) {
       // Error handled by axios interceptor
@@ -108,16 +106,26 @@ const Login = () => {
               onPress={requestOtp}
               disabled={loading || !email}
             >
-              {loading ? (
-                <ActivityIndicator color="white" style={tw`mr-2`} />
-              ) : null}
               <Text style={tw`text-white text-center`}>
-                {loading ? "Logging In" : "Login"}
+                Login
               </Text>
             </TouchableOpacity>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
+      {loading && (
+        <View style={[tw`absolute inset-0 items-center justify-center`, { backgroundColor: 'rgba(0, 0, 0, 0.7)' }]}>
+          <View style={[tw`p-8 rounded-2xl items-center max-w-sm mx-4`, { backgroundColor: isDarkMode ? colors.lightGray : colors.white }]}>
+            <ActivityIndicator size="large" color={colors.primary} style={tw`mb-4`} />
+            <Text style={{ color: colors.text, fontSize: 18, fontWeight: '600', marginBottom: 8, textAlign: 'center' }}>
+              Requesting OTP
+            </Text>
+            <Text style={{ color: colors.gray, fontSize: 14, textAlign: 'center' }}>
+              Please wait...
+            </Text>
+          </View>
+        </View>
+      )}
     </SafeAreaView>
   );
 };
