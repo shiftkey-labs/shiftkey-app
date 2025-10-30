@@ -7,8 +7,6 @@ import {
   ActivityIndicator,
   Modal,
   TextInput,
-  Animated,
-  PanResponder,
   RefreshControl,
 } from "react-native";
 import { Alert } from "@/utils/alert";
@@ -20,6 +18,16 @@ import server from "@/config/axios";
 import { useTheme } from "@/context/ThemeContext";
 import { SafeAreaView } from "react-native-safe-area-context";
 import state from "@/state";
+import ReanimatedSwipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
+import Reanimated, {
+  SharedValue,
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+  withTiming,
+  runOnJS
+} from 'react-native-reanimated';
+import { GestureHandlerRootView, Gesture, GestureDetector } from 'react-native-gesture-handler';
 
 // Define the Attendee type to fix TypeScript errors
 type DayKey = `day${number}`;
@@ -35,52 +43,37 @@ const CheckedInModal: React.FC<{
   visible: boolean;
   onClose: () => void;
   attendees: Attendee[];
-  onSwipe: (id: string) => void;
+  onMarkAbsent: (id: string) => void;
   colors: any;
   isDarkMode: boolean;
-}> = ({ visible, onClose, attendees, onSwipe, colors, isDarkMode }) => {
-  const translateY = useRef(new Animated.Value(0)).current;
+}> = ({ visible, onClose, attendees, onMarkAbsent, colors, isDarkMode }) => {
+  const translateY = useSharedValue(0);
 
-  const panResponder = useRef(
-    PanResponder.create({
-      onStartShouldSetPanResponder: () => false,
-      onMoveShouldSetPanResponder: (_, gestureState) => {
-        // Only respond to vertical drags that are clearly downward
-        const isVertical = Math.abs(gestureState.dy) > Math.abs(gestureState.dx);
-        const isDownward = gestureState.dy > 0;
-        const hasMovedEnough = Math.abs(gestureState.dy) > 10;
-        return isVertical && isDownward && hasMovedEnough;
-      },
-      onPanResponderMove: (_, gestureState) => {
-        // Only allow dragging down (positive dy)
-        if (gestureState.dy > 0) {
-          translateY.setValue(gestureState.dy);
-        }
-      },
-      onPanResponderRelease: (_, gestureState) => {
-        const threshold = 150; // Drag threshold to dismiss
-
-        if (gestureState.dy > threshold) {
-          // Dismiss modal
-          Animated.timing(translateY, {
-            toValue: 1000,
-            duration: 200,
-            useNativeDriver: true,
-          }).start(() => {
-            translateY.setValue(0);
-            onClose();
-          });
-        } else {
-          // Snap back
-          Animated.spring(translateY, {
-            toValue: 0,
-            friction: 8,
-            useNativeDriver: true,
-          }).start();
-        }
-      },
+  const panGesture = Gesture.Pan()
+    .onUpdate((event) => {
+      // Only allow dragging down
+      if (event.translationY > 0) {
+        translateY.value = event.translationY;
+      }
     })
-  ).current;
+    .onEnd((event) => {
+      const threshold = 150;
+
+      if (event.translationY > threshold) {
+        // Dismiss modal
+        translateY.value = withTiming(1000, { duration: 200 }, () => {
+          runOnJS(onClose)();
+          translateY.value = 0;
+        });
+      } else {
+        // Snap back
+        translateY.value = withSpring(0, { damping: 15 });
+      }
+    });
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: translateY.value }],
+  }));
 
   if (!visible) return null;
 
@@ -91,26 +84,29 @@ const CheckedInModal: React.FC<{
       visible={visible}
       onRequestClose={onClose}
     >
-      <View style={tw`flex-1 bg-black/50`}>
-        <TouchableOpacity
-          style={tw`flex-1`}
-          activeOpacity={1}
-          onPress={onClose}
-        />
-        <Animated.View
-          style={[
-            tw`absolute bottom-0 left-0 right-0 rounded-t-3xl`,
-            {
-              height: '68%',
-              backgroundColor: isDarkMode ? colors.lightGray : colors.white,
-              transform: [{ translateY }],
-            }
-          ]}
-        >
-          {/* Drag Handle Area */}
-          <View {...panResponder.panHandlers} style={tw`items-center pt-3 pb-2`}>
-            <View style={[tw`w-12 h-1 rounded-full`, { backgroundColor: colors.gray }]} />
-          </View>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <View style={tw`flex-1 bg-black/50`}>
+          <TouchableOpacity
+            style={tw`flex-1`}
+            activeOpacity={1}
+            onPress={onClose}
+          />
+          <Reanimated.View
+            style={[
+              tw`absolute bottom-0 left-0 right-0 rounded-t-3xl`,
+              {
+                height: '68%',
+                backgroundColor: isDarkMode ? colors.lightGray : colors.white,
+              },
+              animatedStyle
+            ]}
+          >
+            {/* Drag Handle Area */}
+            <GestureDetector gesture={panGesture}>
+              <View style={tw`items-center pt-3 pb-2`}>
+                <View style={[tw`w-12 h-1 rounded-full`, { backgroundColor: colors.gray }]} />
+              </View>
+            </GestureDetector>
 
           {/* Modal Header */}
           <View style={tw`px-6 py-3`}>
@@ -128,34 +124,36 @@ const CheckedInModal: React.FC<{
               data={attendees}
               keyExtractor={(item) => item.id.toString()}
               contentContainerStyle={tw`px-4 pb-4 pt-2`}
-              ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
+              ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
               scrollEnabled={true}
-              directionalLockEnabled={false}
               renderItem={({ item }) => (
                 <SwipeableAttendeeItem
                   attendee={item}
-                  onSwipe={onSwipe}
+                  onSwipe={onMarkAbsent}
                   colors={colors}
                   isDarkMode={isDarkMode}
                   swipeDirection="left"
                 />
               )}
               ListEmptyComponent={
-                <View style={tw`p-8 items-center`}>
-                  <Text style={{ color: colors.gray, textAlign: 'center' }}>
-                    No checked-in participants yet
-                  </Text>
-                </View>
+                attendees.length === 0 ? (
+                  <View style={tw`p-8 items-center`}>
+                    <Text style={{ color: colors.gray, textAlign: 'center' }}>
+                      No checked-in participants yet
+                    </Text>
+                  </View>
+                ) : null
               }
             />
           </View>
-        </Animated.View>
-      </View>
+          </Reanimated.View>
+        </View>
+      </GestureHandlerRootView>
     </Modal>
   );
 };
 
-// Swipeable Attendee Item Component
+// Swipeable Attendee Item Component using ReanimatedSwipeable
 const SwipeableAttendeeItem: React.FC<{
   attendee: Attendee;
   onSwipe: (id: string) => void;
@@ -163,157 +161,50 @@ const SwipeableAttendeeItem: React.FC<{
   isDarkMode: boolean;
   swipeDirection: 'right' | 'left'; // right = check in, left = check out
 }> = ({ attendee, onSwipe, colors, isDarkMode, swipeDirection }) => {
-  const translateX = useRef(new Animated.Value(0)).current;
-  const [isSwiping, setIsSwiping] = useState(false);
-  const [isTouching, setIsTouching] = useState(false);
-  const touchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
   const isRightSwipe = swipeDirection === 'right';
 
-  const clearTouchTimeout = () => {
-    if (touchTimeoutRef.current) {
-      clearTimeout(touchTimeoutRef.current);
-      touchTimeoutRef.current = null;
-    }
+  // Render action for swipe right (check in)
+  const renderRightActions = () => {
+    return (
+      <View style={[tw`flex-row items-center justify-start px-6 h-full`, { backgroundColor: '#22c55e' }]}>
+        <AntDesign name="check" size={24} color="white" />
+        <Text style={{ color: 'white', marginLeft: 8, fontSize: 16, fontWeight: '600' }}>
+          Mark Present
+        </Text>
+      </View>
+    );
   };
 
-  const panResponder = useRef(
-    PanResponder.create({
-      onStartShouldSetPanResponder: () => {
-        clearTouchTimeout();
-        setIsTouching(true);
-        // Auto-clear touch state after 200ms if no gesture is captured
-        touchTimeoutRef.current = setTimeout(() => {
-          setIsTouching(false);
-        }, 100);
-        return false; // Don't capture yet
-      },
-      onMoveShouldSetPanResponder: (_, gestureState) => {
-        // Require MORE horizontal movement to differentiate from scrolling
-        const isHorizontal = Math.abs(gestureState.dx) > Math.abs(gestureState.dy) * 2;
-        const hasMovedEnough = Math.abs(gestureState.dx) > 20; // Increased from 5 to 20
-
-        // Check if swipe is in the correct direction
-        const isCorrectDirection = isRightSwipe
-          ? gestureState.dx > 0  // Right swipe needs positive dx
-          : gestureState.dx < 0; // Left swipe needs negative dx
-
-        const shouldCapture = isHorizontal && hasMovedEnough && isCorrectDirection;
-
-        // If we're capturing, set swiping state and clear touch
-        if (shouldCapture) {
-          clearTouchTimeout();
-          setIsSwiping(true);
-          setIsTouching(false);
-        } else if (Math.abs(gestureState.dy) > 10) {
-          // User is scrolling vertically, clear touch state
-          clearTouchTimeout();
-          setIsTouching(false);
-        }
-
-        return shouldCapture;
-      },
-      onPanResponderTerminationRequest: () => {
-        // Allow termination and clear states
-        clearTouchTimeout();
-        setIsSwiping(false);
-        setIsTouching(false);
-        return true;
-      },
-      onPanResponderGrant: () => {
-        clearTouchTimeout();
-        setIsSwiping(true);
-        setIsTouching(false);
-      },
-      onPanResponderMove: (_, gestureState) => {
-        // Allow right swipe for check-in (positive dx) or left swipe for check-out (negative dx)
-        if (isRightSwipe && gestureState.dx > 0) {
-          translateX.setValue(gestureState.dx);
-        } else if (!isRightSwipe && gestureState.dx < 0) {
-          translateX.setValue(gestureState.dx);
-        }
-      },
-      onPanResponderRelease: (_, gestureState) => {
-        clearTouchTimeout();
-        setIsSwiping(false);
-        setIsTouching(false);
-        const threshold = 100; // Swipe threshold
-
-        const swipeSuccess = isRightSwipe
-          ? gestureState.dx > threshold
-          : gestureState.dx < -threshold;
-
-        if (swipeSuccess) {
-          // Swipe successful - animate out and mark attendance
-          Animated.timing(translateX, {
-            toValue: isRightSwipe ? 500 : -500,
-            duration: 150,
-            useNativeDriver: true,
-          }).start(() => {
-            onSwipe(attendee.id);
-          });
-        } else {
-          // Snap back
-          Animated.spring(translateX, {
-            toValue: 0,
-            friction: 8,
-            tension: 80,
-            useNativeDriver: true,
-          }).start();
-        }
-      },
-    })
-  ).current;
+  // Render action for swipe left (check out)
+  const renderLeftActions = () => {
+    return (
+      <View style={[tw`flex-row items-center justify-end px-6 h-full`, { backgroundColor: '#ef4444' }]}>
+        <Text style={{ color: 'white', marginRight: 8, fontSize: 16, fontWeight: '600' }}>
+          Mark Absent
+        </Text>
+        <AntDesign name="close" size={24} color="white" />
+      </View>
+    );
+  };
 
   return (
-    <View style={tw`overflow-hidden rounded-lg`}>
-      <View
-        style={[
-          tw`absolute inset-0 flex-row items-center rounded-lg`,
-          isRightSwipe ? tw`px-6` : tw`px-6 justify-end`,
-          { backgroundColor: isRightSwipe ? '#22c55e' : '#ef4444' }, // green for check-in, red for check-out
-        ]}
-      >
-        {isRightSwipe ? (
-          <>
-            <AntDesign name="check" size={24} color="white" />
-            <Text style={{ color: 'white', marginLeft: 8, fontSize: 16, fontWeight: '600' }}>
-              Mark Present
-            </Text>
-          </>
-        ) : (
-          <>
-            <Text style={{ color: 'white', marginRight: 8, fontSize: 16, fontWeight: '600' }}>
-              Mark Absent
-            </Text>
-            <AntDesign name="close" size={24} color="white" />
-          </>
-        )}
+    <ReanimatedSwipeable
+      friction={1.5}
+      enableTrackpadTwoFingerGesture
+      overshootLeft={false}
+      overshootRight={false}
+      leftThreshold={60}
+      rightThreshold={60}
+      renderLeftActions={isRightSwipe ? renderRightActions : undefined}
+      renderRightActions={!isRightSwipe ? renderLeftActions : undefined}
+      onSwipeableWillOpen={() => onSwipe(attendee.id)}
+    >
+      <View style={[tw`flex-row justify-between items-center p-4 rounded-lg shadow-sm`, { backgroundColor: isDarkMode ? colors.lightGray : colors.white }]}>
+        <Text style={{ color: colors.text, fontSize: 18, fontWeight: 'semibold' }}>
+          {attendee.fullName || "Unknown attendee"}
+        </Text>
       </View>
-      <Animated.View
-        style={[
-          tw`flex-row justify-between items-center p-4 rounded-lg shadow-sm`,
-          {
-            backgroundColor: isTouching
-              ? (isDarkMode ? colors.background : '#f3f4f6')
-              : (isDarkMode ? colors.lightGray : colors.white),
-            transform: [{ translateX }],
-            opacity: isSwiping ? 0.9 : 1,
-          }
-        ]}
-        {...panResponder.panHandlers}
-      >
-        <View>
-          <Text style={{
-            color: colors.text,
-            fontSize: 18,
-            fontWeight: 'semibold',
-          }}>
-            {attendee.fullName || "Unknown attendee"}
-          </Text>
-        </View>
-      </Animated.View>
-    </View>
+    </ReanimatedSwipeable>
   );
 };
 
@@ -592,12 +483,13 @@ const EventAttendance = () => {
   }
 
   return (
-    <SafeAreaView style={[tw`flex-1`, { backgroundColor: isDarkMode ? colors.lightGray : colors.white }]}>
-      <Stack.Screen
-        options={{
-          headerShown: false,
-        }}
-      />
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaView style={[tw`flex-1`, { backgroundColor: isDarkMode ? colors.lightGray : colors.white }]}>
+        <Stack.Screen
+          options={{
+            headerShown: false,
+          }}
+        />
       <View style={[tw`p-5 shadow-sm`, { backgroundColor: isDarkMode ? colors.lightGray : colors.white }]}>
         <View style={tw`flex-row items-center`}>
           <TouchableOpacity onPress={() => router.back()} style={tw`p-2`}>
@@ -795,7 +687,7 @@ const EventAttendance = () => {
           visible={showCheckedInModal}
           onClose={() => setShowCheckedInModal(false)}
           attendees={checkedInAttendees}
-          onSwipe={(id) => markAttendance(id, false)}
+          onMarkAbsent={(id) => markAttendance(id, false)}
           colors={colors}
           isDarkMode={isDarkMode}
         />
@@ -826,7 +718,8 @@ const EventAttendance = () => {
           </View>
         </View>
       )}
-    </SafeAreaView>
+      </SafeAreaView>
+    </GestureHandlerRootView>
   );
 };
 
