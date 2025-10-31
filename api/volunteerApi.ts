@@ -77,3 +77,18 @@ export const checkCanTakeShift = async (userId: string, eventId: string) => {
     throw new Error(`Error checking if user can take shift: ${error.message}`);
   }
 };
+
+export const inviteVolunteer = async (inviteData: {
+  email: string;
+  firstName?: string;
+  lastName?: string;
+  expiresAt?: string;
+  sendInvitationEmail?: boolean;
+}) => {
+  try {
+    const response = await server.post("/volunteer/invite", inviteData);
+    return response.data;
+  } catch (error: any) {
+    throw error;
+  }
+};

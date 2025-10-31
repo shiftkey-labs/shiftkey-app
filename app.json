@@ -2,7 +2,7 @@
   "expo": {
     "name": "ShiftKey",
     "slug": "shiftkey-app",
-    "version": "0.2.0",
+    "version": "0.2.1",
     "orientation": "portrait",
     "icon": "./assets/images/adaptive-icon.jpeg",
     "scheme": "myapp",
@@ -15,7 +15,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.shiftkey.app",
-      "buildNumber": "25",
+      "buildNumber": "26",
       "googleServicesFile": "./GoogleService-Info.plist",
       "infoPlist": {
         "NSCameraUsageDescription": "This app uses the camera to scan QR codes for events.",
@@ -28,7 +28,7 @@
         "backgroundColor": "#ffffff"
       },
       "package": "com.shiftkey.app",
-      "versionCode": 25,
+      "versionCode": 26,
       "googleServicesFile": "./google-services.json"
     },
     "web": {

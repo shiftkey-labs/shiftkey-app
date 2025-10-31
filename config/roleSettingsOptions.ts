@@ -2,7 +2,17 @@ import { router } from "expo-router";
 
 export const roleSettingsOptions = {
   STUDENT: {
-    accountSettings: [
+    supportOptions: [
+      {
+        label: "Invite Support Staff",
+        action: () => router.push("/(settings)/invite-volunteer"),
+      },
+      {
+        label: "Share Feedback",
+        action: () => router.push("/feedback"),
+      },
+    ],
+    accountOptions: [
       {
         label: "View Profile",
         action: () =>
@@ -12,7 +22,7 @@ export const roleSettingsOptions = {
           }),
       },
     ],
-    moreOptions: [
+    legalOptions: [
       {
         label: "Privacy Policy",
         action: () => console.log("Privacy Policy pressed"),
@@ -20,15 +30,21 @@ export const roleSettingsOptions = {
       {
         label: "Terms of Service",
         action: () => console.log("Terms of Service pressed"),
-      },
-      {
-        label: "Submit Feedback",
-        action: () => router.push("/feedback"),
       },
     ],
   },
   VOLUNTEER: {
-    accountSettings: [
+    supportOptions: [
+      {
+        label: "Invite Support Staff",
+        action: () => router.push("/(settings)/invite-volunteer"),
+      },
+      {
+        label: "Share Feedback",
+        action: () => router.push("/feedback"),
+      },
+    ],
+    accountOptions: [
       {
         label: "View Profile",
         action: () =>
@@ -38,7 +54,7 @@ export const roleSettingsOptions = {
           }),
       },
     ],
-    moreOptions: [
+    legalOptions: [
       {
         label: "Privacy Policy",
         action: () => console.log("Privacy Policy pressed"),
@@ -47,14 +63,20 @@ export const roleSettingsOptions = {
         label: "Terms of Service",
         action: () => console.log("Terms of Service pressed"),
       },
-      {
-        label: "Submit Feedback",
-        action: () => router.push("/feedback"),
-      },
     ],
   },
   ADMIN: {
-    accountSettings: [
+    supportOptions: [
+      {
+        label: "Invite Support Staff",
+        action: () => router.push("/(settings)/invite-volunteer"),
+      },
+      {
+        label: "Share Feedback",
+        action: () => router.push("/feedback"),
+      },
+    ],
+    accountOptions: [
       {
         label: "View Profile",
         action: () =>
@@ -68,7 +90,7 @@ export const roleSettingsOptions = {
         action: () => console.log("User Management pressed"),
       },
     ],
-    moreOptions: [
+    legalOptions: [
       {
         label: "Privacy Policy",
         action: () => console.log("Privacy Policy pressed"),
@@ -76,10 +98,6 @@ export const roleSettingsOptions = {
       {
         label: "Terms of Service",
         action: () => console.log("Terms of Service pressed"),
-      },
-      {
-        label: "Submit Feedback",
-        action: () => router.push("/feedback"),
       },
     ],
   },

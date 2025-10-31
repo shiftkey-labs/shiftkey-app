@@ -58,18 +58,9 @@ const Profile = () => {
     }
   };
 
-  const handleDeleteAccount = async () => {
-    try {
-      if (user.id) {
-        await deleteUserById(user.id);
-      }
-
-      await clearAuthSession();
-      router.replace("/(auth)/login");
-
-    } catch (error) {
-      Alert.alert("Delete Account Error", error.message);
-    }
+  const handleDeleteAccount = () => {
+    // Dummy link - no actual deletion
+    console.log("Delete Account pressed");
   };
   if (!user) {
     return null;
@@ -110,7 +101,7 @@ const Profile = () => {
     );
   }
 
-  const { accountSettings, moreOptions } =
+  const { supportOptions, accountOptions, legalOptions } =
     roleSettingsOptions[user.role as keyof typeof roleSettingsOptions] || roleSettingsOptions.STUDENT;
 
   const devCrashOption =
@@ -126,7 +117,7 @@ const Profile = () => {
           },
         ]
       : [];
-  const combinedMoreOptions = [...moreOptions, ...devCrashOption];
+  const combinedSupportOptions = [...supportOptions, ...devCrashOption];
 
   return (
     <SafeAreaView style={[tw`flex-1`, { backgroundColor: colors.background }]}>
@@ -139,12 +130,26 @@ const Profile = () => {
             {user.email || "johndoe@example.com"}
           </Text>
         </View>
-        <View style={[tw`p-5 rounded-lg shadow-sm mb-5`, { backgroundColor: isDarkMode ? colors.lightGray : colors.white }]}>
+        <View style={[tw`px-5 pt-4 pb-2 rounded-lg shadow-sm mb-5`, { backgroundColor: isDarkMode ? colors.lightGray : colors.white }]}>
           <Text style={{ color: colors.text, fontSize: 20, fontWeight: 'bold', marginBottom: 12 }}>
-            Account Settings
+            General
           </Text>
-          <View style={tw`flex-row items-center justify-between mb-3`}>
-            <Text style={{ color: colors.text }}>Enable dark mode</Text>
+          {combinedSupportOptions.map((item, index) => (
+            <TouchableOpacity
+              key={index}
+              style={[tw`flex-row items-center justify-between`, { paddingVertical: 10 }]}
+              onPress={item.action}
+            >
+              <Text style={{ color: colors.text, fontSize: 16 }}>{item.label}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+        <View style={[tw`px-5 pt-4 pb-2 rounded-lg shadow-sm mb-5`, { backgroundColor: isDarkMode ? colors.lightGray : colors.white }]}>
+          <Text style={{ color: colors.text, fontSize: 20, fontWeight: 'bold', marginBottom: 12 }}>
+            App Settings
+          </Text>
+          <View style={[tw`flex-row items-center justify-between`, { paddingVertical: 10 }]}>
+            <Text style={{ color: colors.text, fontSize: 16 }}>Enable dark mode</Text>
             <Switch
               value={isDarkModeEnabled}
               onValueChange={handleThemeToggle}
@@ -153,42 +158,47 @@ const Profile = () => {
               ios_backgroundColor={colors.gray}
             />
           </View>
-          {accountSettings.map((item, index) => (
-            <TouchableOpacity
-              key={index}
-              style={tw`flex-row items-center justify-between mb-3`}
-              onPress={item.action}
-            >
-              <Text style={{ color: colors.text }}>{item.label}</Text>
-            </TouchableOpacity>
-          ))}
         </View>
-        <View style={[tw`p-5 rounded-lg shadow-sm`, { backgroundColor: isDarkMode ? colors.lightGray : colors.white }]}>
+        <View style={[tw`px-5 pt-4 pb-2 rounded-lg shadow-sm mb-5`, { backgroundColor: isDarkMode ? colors.lightGray : colors.white }]}>
           <Text style={{ color: colors.text, fontSize: 20, fontWeight: 'bold', marginBottom: 12 }}>
-            More Options
+            Account
           </Text>
-          {combinedMoreOptions.map((item, index) => (
+          {accountOptions.map((item, index) => (
             <TouchableOpacity
               key={index}
-              style={tw`flex-row items-center justify-between mb-3`}
+              style={[tw`flex-row items-center justify-between`, { paddingVertical: 10 }]}
               onPress={item.action}
             >
-              <Text style={{ color: colors.text }}>{item.label}</Text>
+              <Text style={{ color: colors.text, fontSize: 16 }}>{item.label}</Text>
+            </TouchableOpacity>
+          ))}
+          <TouchableOpacity
+            style={[tw`flex-row items-center justify-between`, { paddingVertical: 10 }]}
+            onPress={handleLogout}
+          >
+            <Text style={{ color: colors.text, fontSize: 16 }}>Logout</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[tw`flex-row items-center justify-between`, { paddingVertical: 10 }]}
+            onPress={handleDeleteAccount}
+          >
+            <Text style={{ color: colors.error, fontSize: 16 }}>Delete Account</Text>
+          </TouchableOpacity>
+        </View>
+        <View style={[tw`px-5 pt-4 pb-2 rounded-lg shadow-sm mb-5`, { backgroundColor: isDarkMode ? colors.lightGray : colors.white }]}>
+          <Text style={{ color: colors.text, fontSize: 20, fontWeight: 'bold', marginBottom: 12 }}>
+            Legal
+          </Text>
+          {legalOptions.map((item, index) => (
+            <TouchableOpacity
+              key={index}
+              style={[tw`flex-row items-center justify-between`, { paddingVertical: 10 }]}
+              onPress={item.action}
+            >
+              <Text style={{ color: colors.text, fontSize: 16 }}>{item.label}</Text>
             </TouchableOpacity>
           ))}
         </View>
-        <TouchableOpacity
-          style={[tw`p-4 rounded mb-3 mt-5`, { backgroundColor: colors.error }]}
-          onPress={handleLogout}
-        >
-          <Text style={{ color: colors.white, textAlign: 'center' }}>Logout</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={tw`p-4 rounded mb-3`}
-          onPress={handleDeleteAccount}
-        >
-          <Text style={{ color: colors.error, textAlign: 'center' }}>Delete Account</Text>
-        </TouchableOpacity>
         {appVersion ? (
           <Text
             style={{

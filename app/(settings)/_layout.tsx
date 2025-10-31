@@ -9,6 +9,12 @@ export default function SettingsLayout() {
                     headerShown: false,
                 }}
             />
+            <Stack.Screen
+                name="invite-volunteer"
+                options={{
+                    title: "Invite Support Staff",
+                }}
+            />
         </Stack>
     );
 } 
