@@ -206,7 +206,10 @@ const AppContent = observer(() => {
           />
           <Stack.Screen
             name="feedback"
-            options={{ presentation: "modal", headerShown: false }}
+            options={{
+              presentation: "modal",
+              title: "Share Feedback"
+            }}
           />
           <Stack.Screen
             name="update-required"

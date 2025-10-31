@@ -103,7 +103,7 @@ export const EditProfileForm: React.FC<EditProfileFormProps> = ({
           placeholder="First Name"
           placeholderTextColor={colors.gray}
           value={formData.firstName}
-          onChangeText={(text) => setFormData({ ...formData, firstName: text })}
+          editable={false}
         />
       </View>
 
@@ -114,7 +114,7 @@ export const EditProfileForm: React.FC<EditProfileFormProps> = ({
           placeholder="Last Name"
           placeholderTextColor={colors.gray}
           value={formData.lastName}
-          onChangeText={(text) => setFormData({ ...formData, lastName: text })}
+          editable={false}
         />
       </View>
 
@@ -138,7 +138,7 @@ export const EditProfileForm: React.FC<EditProfileFormProps> = ({
           placeholder="Pronouns"
           placeholderTextColor={colors.gray}
           value={formData.pronouns}
-          onChangeText={(text) => setFormData({ ...formData, pronouns: text })}
+          editable={false}
         />
       </View>
 
@@ -149,26 +149,9 @@ export const EditProfileForm: React.FC<EditProfileFormProps> = ({
           placeholder="Current Degree"
           placeholderTextColor={colors.gray}
           value={formData.currentDegree}
-          onChangeText={(text) =>
-            setFormData({ ...formData, currentDegree: text })
-          }
+          editable={false}
         />
       </View>
-
-      <TouchableOpacity
-        style={[tw`p-4 rounded-lg mt-4`, { backgroundColor: colors.primary }]}
-        onPress={handleSave}
-      >
-        <Text
-          style={{
-            color: colors.white,
-            textAlign: "center",
-            fontWeight: "600",
-          }}
-        >
-          Save Changes
-        </Text>
-      </TouchableOpacity>
     </ScrollView>
   );
 };

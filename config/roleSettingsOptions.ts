@@ -15,11 +15,7 @@ export const roleSettingsOptions = {
     accountOptions: [
       {
         label: "View Profile",
-        action: () =>
-          router.push({
-            pathname: "/(tabs)/profile",
-            params: { view: "edit" },
-          }),
+        action: () => router.push("/(settings)/edit-profile"),
       },
     ],
     legalOptions: [
@@ -47,11 +43,7 @@ export const roleSettingsOptions = {
     accountOptions: [
       {
         label: "View Profile",
-        action: () =>
-          router.push({
-            pathname: "/(tabs)/profile",
-            params: { view: "edit" },
-          }),
+        action: () => router.push("/(settings)/edit-profile"),
       },
     ],
     legalOptions: [

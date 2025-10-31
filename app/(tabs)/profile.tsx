@@ -10,13 +10,12 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import tw from "../styles/tailwind";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import state from "@/state";
 import { roleSettingsOptions } from "@/config/roleSettingsOptions";
 import { deleteUserById } from "@/api/userApi";
 import { useTheme } from "@/context/ThemeContext";
 import Constants from "expo-constants";
-import { EditProfileForm } from "@/app/(settings)/edit-profile";
 import { clearAuthSession } from "@/state/authSession";
 import { Alert } from "@/utils/alert";
 type CrashlyticsModule = typeof import("@react-native-firebase/crashlytics");
@@ -32,8 +31,6 @@ if (Platform.OS === "android" || Platform.OS === "ios") {
 const Profile = () => {
   const user = state.user.userState.get();
   const router = useRouter();
-  const params = useLocalSearchParams<{ view?: string }>();
-  const isEditingProfile = params.view === "edit";
   const { isDarkMode, colors, themePreference, setManualTheme } = useTheme();
   const appVersion = Constants.expoConfig?.version ?? "";
   const isDarkModeEnabled = themePreference === "dark";
@@ -43,10 +40,6 @@ const Profile = () => {
 
   const handleThemeToggle = (value: boolean) => {
     setManualTheme(value);
-  };
-
-  const exitEditProfile = () => {
-    router.replace("/(tabs)/profile");
   };
 
   const handleLogout = async () => {
@@ -62,43 +55,9 @@ const Profile = () => {
     // Dummy link - no actual deletion
     console.log("Delete Account pressed");
   };
+
   if (!user) {
     return null;
-  }
-
-  if (isEditingProfile) {
-    return (
-      <SafeAreaView
-        style={[tw`flex-1`, { backgroundColor: colors.background }]}
-      >
-        <View
-          style={[
-            tw`flex-row items-center justify-between px-5 py-4`,
-            { backgroundColor: colors.background },
-          ]}
-        >
-          <TouchableOpacity onPress={exitEditProfile}>
-            <Text style={{ color: colors.primary, fontWeight: "600" }}>
-              Back
-            </Text>
-          </TouchableOpacity>
-          <Text
-            style={{
-              color: colors.text,
-              fontSize: 18,
-              fontWeight: "600",
-            }}
-          >
-            Edit Profile
-          </Text>
-          <View style={{ width: 48 }} />
-        </View>
-        <EditProfileForm
-          onSubmitSuccess={exitEditProfile}
-          showHeading={false}
-        />
-      </SafeAreaView>
-    );
   }
 
   const { supportOptions, accountOptions, legalOptions } =

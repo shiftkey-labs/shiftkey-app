@@ -6,7 +6,7 @@ export default function SettingsLayout() {
             <Stack.Screen
                 name="edit-profile"
                 options={{
-                    headerShown: false,
+                    title: "View Profile",
                 }}
             />
             <Stack.Screen

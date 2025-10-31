@@ -79,24 +79,6 @@ const FeedbackScreen = () => {
         style={tw`flex-1`}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
-        <View
-          style={[
-            tw`flex-row items-center justify-between px-5 py-4`,
-            { backgroundColor: colors.background },
-          ]}
-        >
-          <TouchableOpacity onPress={handleClose}>
-            <Text style={{ color: colors.primary, fontWeight: "600" }}>
-              Close
-            </Text>
-          </TouchableOpacity>
-          <Text
-            style={{ color: colors.text, fontSize: 18, fontWeight: "600" }}
-          >
-            Submit Feedback
-          </Text>
-          <View style={{ width: 60 }} />
-        </View>
         <ScrollView
           style={[tw`flex-1 px-5`]}
           contentContainerStyle={tw`pb-10`}
