@@ -1,24 +1,56 @@
 const fs = require('fs');
 const path = require('path');
 
-// Helper function to decode and write Firebase config files from environment variables
+// Helper function to write Firebase config files from environment variables
 function setupFirebaseConfigs() {
   // Android google-services.json
   if (process.env.GOOGLE_SERVICES_JSON) {
-    const androidPath = path.join(__dirname, 'google-services.json');
-    const decoded = Buffer.from(process.env.GOOGLE_SERVICES_JSON, 'base64').toString('utf-8');
-    fs.writeFileSync(androidPath, decoded);
-    console.log('[Firebase Config] google-services.json written from environment variable');
+    try {
+      const sourcePath = process.env.GOOGLE_SERVICES_JSON;
+      const androidPath = path.join(__dirname, 'google-services.json');
+
+      // Check if it's a file path or raw content
+      if (fs.existsSync(sourcePath)) {
+        // It's a path, copy the file
+        fs.copyFileSync(sourcePath, androidPath);
+        console.log('[Firebase Config] google-services.json copied from', sourcePath);
+      } else {
+        // It's raw content, write it directly
+        JSON.parse(sourcePath); // Validate JSON
+        fs.writeFileSync(androidPath, sourcePath);
+        console.log('[Firebase Config] google-services.json written from environment variable');
+      }
+    } catch (error) {
+      console.error('[Firebase Config] Error writing google-services.json:', error.message);
+      throw error;
+    }
   } else if (!fs.existsSync(path.join(__dirname, 'google-services.json'))) {
     console.warn('[Firebase Config] google-services.json not found and GOOGLE_SERVICES_JSON not set');
   }
 
   // iOS GoogleService-Info.plist
   if (process.env.GOOGLE_SERVICE_INFO_PLIST) {
-    const iosPath = path.join(__dirname, 'GoogleService-Info.plist');
-    const decoded = Buffer.from(process.env.GOOGLE_SERVICE_INFO_PLIST, 'base64').toString('utf-8');
-    fs.writeFileSync(iosPath, decoded);
-    console.log('[Firebase Config] GoogleService-Info.plist written from environment variable');
+    try {
+      const sourcePath = process.env.GOOGLE_SERVICE_INFO_PLIST;
+      const iosPath = path.join(__dirname, 'GoogleService-Info.plist');
+
+      // Check if it's a file path or raw content
+      if (fs.existsSync(sourcePath)) {
+        // It's a path, copy the file
+        fs.copyFileSync(sourcePath, iosPath);
+        console.log('[Firebase Config] GoogleService-Info.plist copied from', sourcePath);
+      } else {
+        // It's raw content, validate and write it
+        if (!sourcePath.trim().startsWith('<?xml') && !sourcePath.trim().startsWith('<plist')) {
+          throw new Error('Invalid plist format: does not start with XML or plist declaration');
+        }
+        fs.writeFileSync(iosPath, sourcePath);
+        console.log('[Firebase Config] GoogleService-Info.plist written from environment variable');
+      }
+    } catch (error) {
+      console.error('[Firebase Config] Error writing GoogleService-Info.plist:', error.message);
+      throw error;
+    }
   } else if (!fs.existsSync(path.join(__dirname, 'GoogleService-Info.plist'))) {
     console.warn('[Firebase Config] GoogleService-Info.plist not found and GOOGLE_SERVICE_INFO_PLIST not set');
   }
