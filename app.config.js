@@ -1,27 +1,17 @@
 const fs = require('fs');
 const path = require('path');
 
-// Helper function to write Firebase config files from environment variables
+// Helper function to copy Firebase config files from EAS file secrets
 function setupFirebaseConfigs() {
   // Android google-services.json
   if (process.env.GOOGLE_SERVICES_JSON) {
     try {
       const sourcePath = process.env.GOOGLE_SERVICES_JSON;
       const androidPath = path.join(__dirname, 'google-services.json');
-
-      // Check if it's a file path or raw content
-      if (fs.existsSync(sourcePath)) {
-        // It's a path, copy the file
-        fs.copyFileSync(sourcePath, androidPath);
-        console.log('[Firebase Config] google-services.json copied from', sourcePath);
-      } else {
-        // It's raw content, write it directly
-        JSON.parse(sourcePath); // Validate JSON
-        fs.writeFileSync(androidPath, sourcePath);
-        console.log('[Firebase Config] google-services.json written from environment variable');
-      }
+      fs.copyFileSync(sourcePath, androidPath);
+      console.log('[Firebase Config] google-services.json copied from', sourcePath);
     } catch (error) {
-      console.error('[Firebase Config] Error writing google-services.json:', error.message);
+      console.error('[Firebase Config] Error copying google-services.json:', error.message);
       throw error;
     }
   } else if (!fs.existsSync(path.join(__dirname, 'google-services.json'))) {
@@ -33,22 +23,10 @@ function setupFirebaseConfigs() {
     try {
       const sourcePath = process.env.GOOGLE_SERVICE_INFO_PLIST;
       const iosPath = path.join(__dirname, 'GoogleService-Info.plist');
-
-      // Check if it's a file path or raw content
-      if (fs.existsSync(sourcePath)) {
-        // It's a path, copy the file
-        fs.copyFileSync(sourcePath, iosPath);
-        console.log('[Firebase Config] GoogleService-Info.plist copied from', sourcePath);
-      } else {
-        // It's raw content, validate and write it
-        if (!sourcePath.trim().startsWith('<?xml') && !sourcePath.trim().startsWith('<plist')) {
-          throw new Error('Invalid plist format: does not start with XML or plist declaration');
-        }
-        fs.writeFileSync(iosPath, sourcePath);
-        console.log('[Firebase Config] GoogleService-Info.plist written from environment variable');
-      }
+      fs.copyFileSync(sourcePath, iosPath);
+      console.log('[Firebase Config] GoogleService-Info.plist copied from', sourcePath);
     } catch (error) {
-      console.error('[Firebase Config] Error writing GoogleService-Info.plist:', error.message);
+      console.error('[Firebase Config] Error copying GoogleService-Info.plist:', error.message);
       throw error;
     }
   } else if (!fs.existsSync(path.join(__dirname, 'GoogleService-Info.plist'))) {
