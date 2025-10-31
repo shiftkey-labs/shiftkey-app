@@ -55,3 +55,6 @@ shiftkey-app.jks
 *.keystore
 *.jks
 gradle.properties
+
+google-services.json
+GoogleService-Info.plist
