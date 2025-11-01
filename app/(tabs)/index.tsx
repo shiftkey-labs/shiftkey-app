@@ -78,14 +78,17 @@ const Home: React.FC = () => {
       setIsLoading(true);
       try {
         await initializeAuth();
-        await loadEvents();
+        // Only load events if user is authenticated
+        if (user) {
+          await loadEvents();
+        }
       } finally {
         setIsLoading(false);
       }
     };
 
     initialize();
-  }, [loadEvents]);
+  }, [loadEvents, user]);
 
   // Clear loading state when screen comes back into focus
   useFocusEffect(
