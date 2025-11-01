@@ -16,6 +16,7 @@ import { initializeAuth } from "@/state/userState";
 import { useTheme } from "@/context/ThemeContext";
 import { UpcomingEvent } from "@/types/event";
 import { getUpcomingEvents } from "@/api/eventApi";
+import { groupEventsByTime } from "@/utils/groupEventsByTime";
 const Home: React.FC = () => {
   const router = useRouter();
   const events = state.event;
@@ -39,6 +40,11 @@ const Home: React.FC = () => {
       setEventsList([]);
     }
   }, []);
+
+  // Group events by time period using reusable utility
+  const groupedEvents = useCallback(() => {
+    return groupEventsByTime(eventsList);
+  }, [eventsList]);
 
   const handlePressEvent = useCallback(async (eventId: string, eventName: string) => {
     // Prevent multiple simultaneous presses
@@ -114,33 +120,131 @@ const Home: React.FC = () => {
         contentContainerStyle={tw`pb-6`}
         onRefresh={loadEvents}
       >
-        <View style={tw`pt-5`}>
+        <View style={tw`pt-5 mb-4`}>
           <Text style={{ color: colors.text, fontSize: 36, fontWeight: 'bold' }}>
-            Hi {user.firstName}
+            👋 {user.firstName}
+          </Text>
+          <Text style={{ color: colors.gray, fontSize: 16, marginTop: 4 }}>
+            Upcoming Events
           </Text>
         </View>
-        <SectionHeader
-          title="Upcoming Events"
-          onPressSeeAll={() => handlePressSeeAll("Upcoming Events")}
-        />
-        {eventsList.map((event) => {
+
+        {(() => {
+          const groups = groupedEvents();
+          const hasEvents = eventsList.length > 0;
+
+          if (!hasEvents) {
+            return (
+              <Text style={{ color: colors.gray, marginTop: 16 }}>
+                No upcoming events found.
+              </Text>
+            );
+          }
+
           return (
-            <EventCard
-              key={event.id}
-              title={event.eventName || "No Title"}
-              location={event.location || "No Location"}
-              date={event.startDate || ""}
-              imageUrl={event.image}
-              onPress={() => handlePressEvent(event.id, event.eventName || "Event")}
-              isLoading={loadingEventId === event.id}
-            />
+            <>
+              {groups.today.length > 0 && (
+                <>
+                  <SectionHeader
+                    title="Today"
+                    onPressSeeAll={() => handlePressSeeAll("Today")}
+                  />
+                  {groups.today.map((event) => (
+                    <EventCard
+                      key={event.id}
+                      title={event.eventName || "No Title"}
+                      location={event.location || "No Location"}
+                      date={event.startDate || ""}
+                      imageUrl={event.image}
+                      onPress={() => handlePressEvent(event.id, event.eventName || "Event")}
+                      isLoading={loadingEventId === event.id}
+                    />
+                  ))}
+                </>
+              )}
+
+              {groups.thisWeek.length > 0 && (
+                <>
+                  <SectionHeader
+                    title="This Week"
+                    onPressSeeAll={() => handlePressSeeAll("This Week")}
+                  />
+                  {groups.thisWeek.map((event) => (
+                    <EventCard
+                      key={event.id}
+                      title={event.eventName || "No Title"}
+                      location={event.location || "No Location"}
+                      date={event.startDate || ""}
+                      imageUrl={event.image}
+                      onPress={() => handlePressEvent(event.id, event.eventName || "Event")}
+                      isLoading={loadingEventId === event.id}
+                    />
+                  ))}
+                </>
+              )}
+
+              {groups.nextWeek.length > 0 && (
+                <>
+                  <SectionHeader
+                    title="Next Week"
+                    onPressSeeAll={() => handlePressSeeAll("Next Week")}
+                  />
+                  {groups.nextWeek.map((event) => (
+                    <EventCard
+                      key={event.id}
+                      title={event.eventName || "No Title"}
+                      location={event.location || "No Location"}
+                      date={event.startDate || ""}
+                      imageUrl={event.image}
+                      onPress={() => handlePressEvent(event.id, event.eventName || "Event")}
+                      isLoading={loadingEventId === event.id}
+                    />
+                  ))}
+                </>
+              )}
+
+              {groups.thisMonth.length > 0 && (
+                <>
+                  <SectionHeader
+                    title="This Month"
+                    onPressSeeAll={() => handlePressSeeAll("This Month")}
+                  />
+                  {groups.thisMonth.map((event) => (
+                    <EventCard
+                      key={event.id}
+                      title={event.eventName || "No Title"}
+                      location={event.location || "No Location"}
+                      date={event.startDate || ""}
+                      imageUrl={event.image}
+                      onPress={() => handlePressEvent(event.id, event.eventName || "Event")}
+                      isLoading={loadingEventId === event.id}
+                    />
+                  ))}
+                </>
+              )}
+
+              {groups.later.length > 0 && (
+                <>
+                  <SectionHeader
+                    title="Later"
+                    onPressSeeAll={() => handlePressSeeAll("Later")}
+                  />
+                  {groups.later.map((event) => (
+                    <EventCard
+                      key={event.id}
+                      title={event.eventName || "No Title"}
+                      location={event.location || "No Location"}
+                      date={event.startDate || ""}
+                      imageUrl={event.image}
+                      onPress={() => handlePressEvent(event.id, event.eventName || "Event")}
+                      isLoading={loadingEventId === event.id}
+                    />
+                  ))}
+                </>
+              )}
+            </>
           );
-        })}
-        {eventsList.length === 0 && (
-          <Text style={{ color: colors.gray, marginTop: 16 }}>
-            No upcoming events found.
-          </Text>
-        )}
+        })()}
       </RefreshableScrollView>
       <FullScreenLoader
         visible={!!loadingEventId}
