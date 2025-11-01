@@ -1,9 +1,10 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState, useMemo } from "react";
 import {
   View,
   Text,
   TouchableOpacity,
   FlatList,
+  SectionList,
 } from "react-native";
 import { Alert } from "@/utils/alert";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -20,6 +21,7 @@ import {
 } from "@/api/shiftApi";
 import state from "@/state";
 import LoadingOverlay from "@/components/common/LoadingOverlay";
+import { groupEventsByTime } from "@/utils/groupEventsByTime";
 
 type ShiftTab = "available" | "booked" | "past";
 
@@ -341,6 +343,37 @@ const MyShifts = observer(() => {
   const activeTabLabel =
     TAB_ORDER.find((tab) => tab.key === activeTab)?.label ?? "Available";
 
+  // Group shifts by time for Available and Claimed tabs
+  const groupedShifts = useMemo(() => {
+    if (activeTab === "past") {
+      return null; // Don't group past shifts
+    }
+    return groupEventsByTime(activeShifts);
+  }, [activeShifts, activeTab]);
+
+  // Convert grouped shifts to section list format
+  const shiftSections = useMemo(() => {
+    if (!groupedShifts) return [];
+
+    const sections = [];
+    if (groupedShifts.today.length > 0) {
+      sections.push({ title: "Today", data: groupedShifts.today });
+    }
+    if (groupedShifts.thisWeek.length > 0) {
+      sections.push({ title: "This Week", data: groupedShifts.thisWeek });
+    }
+    if (groupedShifts.nextWeek.length > 0) {
+      sections.push({ title: "Next Week", data: groupedShifts.nextWeek });
+    }
+    if (groupedShifts.thisMonth.length > 0) {
+      sections.push({ title: "This Month", data: groupedShifts.thisMonth });
+    }
+    if (groupedShifts.later.length > 0) {
+      sections.push({ title: "Later", data: groupedShifts.later });
+    }
+    return sections;
+  }, [groupedShifts]);
+
   const renderShiftRow = useCallback(
     ({ item }: { item: ShiftRecord }) => {
       const schedule = formatShiftWindow(item.startDate, item.endDate);
@@ -465,36 +498,82 @@ const MyShifts = observer(() => {
           })}
         </View>
 
-        <FlatList
-          data={activeShifts}
-          keyExtractor={keyExtractor}
-          renderItem={renderShiftRow}
-          contentContainerStyle={tw`pb-10`}
-          refreshing={isLoading}
-          onRefresh={() => fetchShiftsForTab(activeTab)}
-          ListEmptyComponent={
-            <View
-              style={[
-                tw`flex-1 items-center justify-center pt-20`,
-                { backgroundColor: colors.background },
-              ]}
-            >
+        {activeTab === "past" ? (
+          <FlatList
+            data={activeShifts}
+            keyExtractor={keyExtractor}
+            renderItem={renderShiftRow}
+            contentContainerStyle={tw`pb-10`}
+            refreshing={isLoading}
+            onRefresh={() => fetchShiftsForTab(activeTab)}
+            ListEmptyComponent={
+              <View
+                style={[
+                  tw`flex-1 items-center justify-center pt-20`,
+                  { backgroundColor: colors.background },
+                ]}
+              >
+                <Text
+                  style={{
+                    color: colors.text,
+                    fontSize: 22,
+                    fontWeight: "600",
+                    marginBottom: 8,
+                  }}
+                >
+                  No {activeTabLabel} Shifts
+                </Text>
+                <Text style={{ color: colors.gray }}>
+                  You do not have any {activeTabLabel.toLowerCase()} shifts yet.
+                </Text>
+              </View>
+            }
+          />
+        ) : (
+          <SectionList
+            sections={shiftSections}
+            keyExtractor={keyExtractor}
+            renderItem={renderShiftRow}
+            renderSectionHeader={({ section: { title } }) => (
               <Text
                 style={{
                   color: colors.text,
-                  fontSize: 22,
-                  fontWeight: "600",
-                  marginBottom: 8,
+                  fontSize: 18,
+                  fontWeight: "bold",
+                  marginTop: 16,
+                  marginBottom: 12,
                 }}
               >
-                No {activeTabLabel} Shifts
+                {title}
               </Text>
-              <Text style={{ color: colors.gray }}>
-                You do not have any {activeTabLabel.toLowerCase()} shifts yet.
-              </Text>
-            </View>
-          }
-        />
+            )}
+            contentContainerStyle={tw`pb-10`}
+            refreshing={isLoading}
+            onRefresh={() => fetchShiftsForTab(activeTab)}
+            ListEmptyComponent={
+              <View
+                style={[
+                  tw`flex-1 items-center justify-center pt-20`,
+                  { backgroundColor: colors.background },
+                ]}
+              >
+                <Text
+                  style={{
+                    color: colors.text,
+                    fontSize: 22,
+                    fontWeight: "600",
+                    marginBottom: 8,
+                  }}
+                >
+                  No {activeTabLabel} Shifts
+                </Text>
+                <Text style={{ color: colors.gray }}>
+                  You do not have any {activeTabLabel.toLowerCase()} shifts yet.
+                </Text>
+              </View>
+            }
+          />
+        )}
       </View>
     </SafeAreaView>
   );
