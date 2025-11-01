@@ -506,6 +506,7 @@ const MyShifts = observer(() => {
             contentContainerStyle={tw`pb-10`}
             refreshing={isLoading}
             onRefresh={() => fetchShiftsForTab(activeTab)}
+            showsVerticalScrollIndicator={false}
             ListEmptyComponent={
               <View
                 style={[
@@ -534,6 +535,7 @@ const MyShifts = observer(() => {
             sections={shiftSections}
             keyExtractor={keyExtractor}
             renderItem={renderShiftRow}
+            showsVerticalScrollIndicator={false}
             renderSectionHeader={({ section: { title } }) => (
               <Text
                 style={{
