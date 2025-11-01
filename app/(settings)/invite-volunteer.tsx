@@ -162,7 +162,7 @@ const InviteVolunteer = () => {
   const renderStep1 = () => (
     <View>
       <Text style={{ color: colors.text, fontSize: 20, fontWeight: "bold", marginBottom: 8 }}>
-        Enter Volunteer Email
+        Enter Email
       </Text>
       <Text style={{ color: colors.gray, marginBottom: 24 }}>
         Provide the email address of the person you want to invite
@@ -180,7 +180,7 @@ const InviteVolunteer = () => {
               borderColor: colors.gray,
             },
           ]}
-          placeholder="volunteer@example.com"
+          placeholder="staff@dal.ca"
           placeholderTextColor={colors.gray}
           value={email}
           onChangeText={setEmail}
