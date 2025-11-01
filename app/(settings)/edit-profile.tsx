@@ -164,7 +164,7 @@ const EditProfile = () => {
     <SafeAreaView
       style={[tw`flex-1`, { backgroundColor: colors.background }]}
     >
-      <EditProfileForm onSubmitSuccess={() => router.back()} />
+      <EditProfileForm onSubmitSuccess={() => router.back()} showHeading={false} />
     </SafeAreaView>
   );
 };
