@@ -41,7 +41,7 @@ module.exports = {
   expo: {
     name: "ShiftKey",
     slug: "shiftkey-app",
-    version: "0.2.2",
+    version: "0.2.3",
     orientation: "portrait",
     icon: "./assets/images/adaptive-icon.jpeg",
     scheme: "myapp",
@@ -54,7 +54,7 @@ module.exports = {
     ios: {
       supportsTablet: true,
       bundleIdentifier: "com.shiftkey.app",
-      buildNumber: "27",
+      buildNumber: "28",
       googleServicesFile: "./GoogleService-Info.plist",
       infoPlist: {
         NSCameraUsageDescription: "This app uses the camera to scan QR codes for events.",
@@ -67,7 +67,7 @@ module.exports = {
         backgroundColor: "#ffffff"
       },
       package: "com.shiftkey.app",
-      versionCode: 27,
+      versionCode: 28,
       googleServicesFile: "./google-services.json"
     },
     web: {

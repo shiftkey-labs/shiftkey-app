@@ -1,4 +1,5 @@
 import { router } from "expo-router";
+import { Linking } from "react-native";
 
 export const roleSettingsOptions = {
   STUDENT: {
@@ -21,7 +22,7 @@ export const roleSettingsOptions = {
     legalOptions: [
       {
         label: "Privacy Policy",
-        action: () => console.log("Privacy Policy pressed"),
+        action: () => Linking.openURL("https://shiftkeylabs.ca/privacy-policy"),
       },
       {
         label: "Terms of Service",
@@ -49,7 +50,7 @@ export const roleSettingsOptions = {
     legalOptions: [
       {
         label: "Privacy Policy",
-        action: () => console.log("Privacy Policy pressed"),
+        action: () => Linking.openURL("https://shiftkeylabs.ca/privacy-policy"),
       },
       {
         label: "Terms of Service",
@@ -85,7 +86,7 @@ export const roleSettingsOptions = {
     legalOptions: [
       {
         label: "Privacy Policy",
-        action: () => console.log("Privacy Policy pressed"),
+        action: () => Linking.openURL("https://shiftkeylabs.ca/privacy-policy"),
       },
       {
         label: "Terms of Service",
