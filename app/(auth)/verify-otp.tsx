@@ -66,13 +66,8 @@ const VerifyOtp = () => {
         const userData = response.data.user;
         const token = response.data.token;
 
-        const hasRequiredProfile = await persistAuthSession(userData, token);
-
-        if (!hasRequiredProfile) {
-          router.push("/(auth)/signup");
-        } else {
-          router.push("/");
-        }
+        await persistAuthSession(userData, token);
+        router.push("/");
         return;
       }
 

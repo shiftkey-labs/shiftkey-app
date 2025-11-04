@@ -60,8 +60,35 @@ const Profile = () => {
   };
 
   const handleDeleteAccount = () => {
-    // Dummy link - no actual deletion
-    console.log("Delete Account pressed");
+    Alert.alert(
+      "Delete Account",
+      "Are you sure you want to delete your account? This action cannot be undone.",
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await server.post("/user/delete-account");
+              await clearAuthSession();
+              router.replace("/(auth)/login");
+            } catch (error) {
+              const message =
+                error instanceof Error
+                  ? error.message
+                  : "Failed to delete account. Please try again.";
+              console.error("Delete account failed:", error);
+              Alert.alert("Error", message);
+            }
+          },
+        },
+      ],
+      { cancelable: true }
+    );
   };
 
   if (!user) {

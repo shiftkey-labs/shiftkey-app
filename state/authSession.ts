@@ -1,6 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { setAuthToken } from "@/config/axiosAuth";
-import { hasRequiredFields, defaultUserState, userState } from "@/state/userState";
+import { defaultUserState, userState } from "@/state/userState";
 
 export const persistAuthSession = async (userData: any, token?: string | null) => {
   userState.set({
@@ -21,8 +21,6 @@ export const persistAuthSession = async (userData: any, token?: string | null) =
   }
 
   await Promise.all(tasks);
-
-  return hasRequiredFields(userData);
 };
 
 // Centralized logout function

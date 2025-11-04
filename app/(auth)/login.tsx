@@ -49,13 +49,8 @@ const Login = () => {
 
         // If user is already authenticated (no OTP needed)
         if (token && userData) {
-          const hasRequiredProfile = await persistAuthSession(userData, token);
-
-          if (!hasRequiredProfile) {
-            router.replace("/(auth)/signup");
-          } else {
-            router.replace("/");
-          }
+          await persistAuthSession(userData, token);
+          router.replace("/");
         } else {
           // Navigate to OTP page only after successful response
           router.push({

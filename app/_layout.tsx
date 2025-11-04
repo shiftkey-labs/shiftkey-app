@@ -13,7 +13,7 @@ import "react-native-reanimated";
 import { ActivityIndicator, Platform, View, useColorScheme as useNativeColorScheme } from "react-native";
 import tw from "./styles/tailwind";
 import { observer } from "@legendapp/state/react";
-import { initializeAuth, hasRequiredFields } from "@/state/userState";
+import { initializeAuth } from "@/state/userState";
 import state from "@/state";
 import Toast from "react-native-toast-message";
 import { ThemeProvider, useTheme } from "@/context/ThemeContext";
@@ -87,8 +87,6 @@ const RootLayoutNav = observer(() => {
 
     if (!user.email) {
       router.replace("/(auth)/login");
-    } else if (!hasRequiredFields(user)) {
-      router.replace("/(auth)/signup");
     } else {
       router.replace("/(tabs)");
     }
