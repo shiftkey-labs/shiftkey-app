@@ -24,10 +24,6 @@ export const roleSettingsOptions = {
         label: "Privacy Policy",
         action: () => Linking.openURL("https://shiftkeylabs.ca/privacy-policy"),
       },
-      {
-        label: "Terms of Service",
-        action: () => console.log("Terms of Service pressed"),
-      },
     ],
   },
   VOLUNTEER: {
@@ -51,10 +47,6 @@ export const roleSettingsOptions = {
       {
         label: "Privacy Policy",
         action: () => Linking.openURL("https://shiftkeylabs.ca/privacy-policy"),
-      },
-      {
-        label: "Terms of Service",
-        action: () => console.log("Terms of Service pressed"),
       },
     ],
   },
@@ -87,10 +79,6 @@ export const roleSettingsOptions = {
       {
         label: "Privacy Policy",
         action: () => Linking.openURL("https://shiftkeylabs.ca/privacy-policy"),
-      },
-      {
-        label: "Terms of Service",
-        action: () => console.log("Terms of Service pressed"),
       },
     ],
   },

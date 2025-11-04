@@ -17,6 +17,7 @@ import { deleteUserById } from "@/api/userApi";
 import { useTheme } from "@/context/ThemeContext";
 import Constants from "expo-constants";
 import { clearAuthSession } from "@/state/authSession";
+import server from "@/config/axios";
 import { Alert } from "@/utils/alert";
 type CrashlyticsModule = typeof import("@react-native-firebase/crashlytics");
 let crashlyticsModule: CrashlyticsModule | null = null;
@@ -44,10 +45,17 @@ const Profile = () => {
 
   const handleLogout = async () => {
     try {
+      await server.post("/auth/logout");
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Failed to contact the server. Logging out locally.";
+      console.error("Logout request failed:", error);
+      Alert.alert("Logout Error", message);
+    } finally {
       await clearAuthSession();
       router.replace("/(auth)/login");
-    } catch (error) {
-      Alert.alert("Logout Error", error.message);
     }
   };
 
