@@ -5,7 +5,6 @@ import {
   TextInput,
   TouchableOpacity,
   ScrollView,
-  Switch,
   Platform,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -28,7 +27,6 @@ const InviteVolunteer = () => {
   const [lastName, setLastName] = useState("");
   const [expirationDate, setExpirationDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [sendEmail, setSendEmail] = useState(false);
   const [loading, setLoading] = useState(false);
   const [inviteResponse, setInviteResponse] = useState<any>(null);
   const [userFirstName, setUserFirstName] = useState("");
@@ -89,7 +87,7 @@ const InviteVolunteer = () => {
       const payload: any = {
         email: email.trim(),
         expiresAt: formattedDate,
-        sendInvitationEmail: sendEmail,
+        sendInvitationEmail: true,
       };
 
       // Add firstName and lastName if they were collected
@@ -308,19 +306,6 @@ const InviteVolunteer = () => {
             minimumDate={new Date()}
           />
         )}
-      </View>
-
-      <View style={[tw`flex-row items-center justify-between mb-4 p-3 rounded-lg`, {
-        backgroundColor: isDarkMode ? colors.lightGray : colors.white,
-      }]}>
-        <Text style={{ color: colors.text }}>Send invitation email</Text>
-        <Switch
-          value={sendEmail}
-          onValueChange={setSendEmail}
-          trackColor={{ false: colors.gray, true: colors.primary }}
-          thumbColor={sendEmail ? colors.white : colors.lightGray}
-          ios_backgroundColor={colors.gray}
-        />
       </View>
 
       <TouchableOpacity
