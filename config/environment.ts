@@ -7,7 +7,7 @@ interface EnvironmentConfig {
 
 const ENV: Record<string, EnvironmentConfig> = {
   development: {
-    apiUrl: 'https://d3yvyt3tmm.us-east-1.awsapprunner.com',
+    apiUrl: 'http://localhost:3000',
     env: 'development',
   },
   production: {
