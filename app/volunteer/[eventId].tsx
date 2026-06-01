@@ -302,7 +302,11 @@ const EventAttendance = () => {
         return;
       }
 
-      const dayKeySet = new Set<DayKey>();
+      const eventDayKeys: DayKey[] = Array.isArray(payload.dayKeys)
+        ? payload.dayKeys.filter((key: string) => /^day\d+$/.test(key)).map((key: string) => key as DayKey)
+        : [];
+
+      const dayKeySet = new Set<DayKey>(eventDayKeys);
       const normalisedAttendees: Attendee[] = payload.data.map((record: any) => {
         const attendee: Attendee = {
           id: String(record?.id ?? record?.userId ?? Math.random()),
