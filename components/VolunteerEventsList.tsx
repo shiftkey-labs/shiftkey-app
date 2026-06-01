@@ -15,6 +15,7 @@ interface VolunteerEvent {
   category?: string;
   images?: ImageType[];
   registration?: boolean;
+  isActive?: boolean;
 }
 
 interface VolunteerEventsListProps {
@@ -86,7 +87,7 @@ const VolunteerEventsList: React.FC<VolunteerEventsListProps> = ({ events, onRef
               date={event.startDate || "No Date"}
               style={"w-full my-2"}
               images={event.images?.length ? event.images : [dummyImage]}
-              onPressShow={() => event.registration ? handlePressEvent(event.id) : Alert.alert("Event is not active")}
+              onPressShow={() => (event.isActive ?? event.registration) ? handlePressEvent(event.id) : Alert.alert("Event is not active")}
               category={event.category || "Event"}
             />
           ))}

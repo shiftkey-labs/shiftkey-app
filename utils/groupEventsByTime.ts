@@ -8,16 +8,30 @@ export interface GroupedEvents<T = any> {
 
 interface DateItem {
   startDate?: string | null;
+  endDate?: string | null;
+  isActive?: boolean | null;
 }
+
+const parseDateString = (value?: string | null): Date | null => {
+  if (!value) {
+    return null;
+  }
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+};
+
+const toMidnight = (date: Date): Date => {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+};
 
 /**
  * Groups items by time periods: Today, This Week, Next Week, This Month, Later
- * @param items - Array of items with startDate property
+ * @param items - Array of items with startDate and optional endDate properties
  * @returns Object with items grouped by time period
  */
 export function groupEventsByTime<T extends DateItem>(items: T[]): GroupedEvents<T> {
   const now = new Date();
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const today = toMidnight(now);
   const tomorrow = new Date(today);
   tomorrow.setDate(tomorrow.getDate() + 1);
 
@@ -43,29 +57,61 @@ export function groupEventsByTime<T extends DateItem>(items: T[]): GroupedEvents
   };
 
   items.forEach((item) => {
-    if (!item.startDate) {
-      groups.later.push(item);
+    const startDate = parseDateString(item.startDate);
+    const endDate = parseDateString(item.endDate) ?? startDate;
+    const isActive = item.isActive === true;
+
+    if (!startDate) {
+      if (isActive) {
+        groups.today.push(item);
+      } else {
+        groups.later.push(item);
+      }
       return;
     }
 
-    // Parse ISO date string (2025-01-15T14:00:00.000Z)
-    const itemDate = new Date(item.startDate);
+    const startDateOnly = toMidnight(startDate);
+    const endDateOnly = endDate ? toMidnight(endDate) : startDateOnly;
+    const effectiveEndDate = endDateOnly >= startDateOnly ? endDateOnly : startDateOnly;
+    const isCurrentlyActive =
+      today.getTime() >= startDateOnly.getTime() &&
+      today.getTime() <= effectiveEndDate.getTime();
 
-    // Reset time to midnight for date-only comparison
-    const itemDateOnly = new Date(itemDate.getFullYear(), itemDate.getMonth(), itemDate.getDate());
-
-    if (itemDateOnly.getTime() === today.getTime()) {
+    if (isActive || isCurrentlyActive) {
       groups.today.push(item);
-    } else if (itemDateOnly >= tomorrow && itemDateOnly < endOfWeek) {
+      return;
+    }
+
+    if (startDateOnly >= tomorrow && startDateOnly < endOfWeek) {
       groups.thisWeek.push(item);
-    } else if (itemDateOnly >= endOfWeek && itemDateOnly < endOfNextWeek) {
+    } else if (startDateOnly >= endOfWeek && startDateOnly < endOfNextWeek) {
       groups.nextWeek.push(item);
-    } else if (itemDateOnly >= endOfNextWeek && itemDateOnly < monthEnd) {
+    } else if (startDateOnly >= endOfNextWeek && startDateOnly < monthEnd) {
       groups.thisMonth.push(item);
     } else {
       groups.later.push(item);
     }
   });
+
+  const sortByStartDateAndActive = (a: T, b: T) => {
+    const aStart = parseDateString(a.startDate);
+    const bStart = parseDateString(b.startDate);
+
+    if (a.isActive === true && b.isActive !== true) return -1;
+    if (b.isActive === true && a.isActive !== true) return 1;
+
+    if (!aStart && !bStart) return 0;
+    if (!aStart) return 1;
+    if (!bStart) return -1;
+
+    return aStart.getTime() - bStart.getTime();
+  };
+
+  groups.today.sort(sortByStartDateAndActive);
+  groups.thisWeek.sort(sortByStartDateAndActive);
+  groups.nextWeek.sort(sortByStartDateAndActive);
+  groups.thisMonth.sort(sortByStartDateAndActive);
+  groups.later.sort(sortByStartDateAndActive);
 
   return groups;
 }

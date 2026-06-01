@@ -13,6 +13,7 @@ export type EventFields = {
   images?: any[] | null;
   uid: number | null;
   registration?: boolean;
+  isActive?: boolean;
   volunteerCount?: number;
   shiftsScheduled?: number;
   staffShiftCount?: number;
@@ -106,6 +107,7 @@ export type UpcomingEvent = {
   image: string | null;
   parentEventID?: string | null;
   registration?: boolean | null;
+  isActive?: boolean | null;
   parentRegistrationCount?: number | null;
   day?: number;
   dayLabel?: string | null;
