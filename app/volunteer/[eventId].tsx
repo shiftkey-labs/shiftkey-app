@@ -38,6 +38,13 @@ type Attendee = {
   fullName: string;
 } & Partial<Record<DayKey, boolean>>;
 
+type UserSearchResult = {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+};
+
 // Draggable Checked-In Modal Component
 const CheckedInModal: React.FC<{
   visible: boolean;
@@ -238,6 +245,10 @@ const EventAttendance = () => {
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
   const [eventTitle, setEventTitle] = useState(eventNameParam ?? "Event");
   const [searchQuery, setSearchQuery] = useState("");
+  const [userSearchResults, setUserSearchResults] = useState<UserSearchResult[]>([]);
+  const [searchingUsers, setSearchingUsers] = useState(false);
+  const [hasSearchedUsers, setHasSearchedUsers] = useState(false);
+  const [registeringUserId, setRegisteringUserId] = useState<string | null>(null);
   const [selectedDayKey, setSelectedDayKey] = useState<DayKey | null>(null);
   const [availableDayKeys, setAvailableDayKeys] = useState<DayKey[]>([]);
   const [initialDayKeyFromParams, setInitialDayKeyFromParams] = useState<DayKey | null>(() => {
@@ -353,7 +364,10 @@ const EventAttendance = () => {
       setAttendees(normalisedAttendees);
       setTotalRegistered(normalisedAttendees.length);
     } catch (error) {
-      console.error("Failed to fetch attendees:", error?.message);
+      console.error(
+        "Failed to fetch attendees:",
+        error instanceof Error ? error.message : error
+      );
       Alert.alert("Error", "Failed to fetch attendees.");
     } finally {
       setLoading(false);
@@ -478,6 +492,71 @@ const EventAttendance = () => {
       : [];
   }, [attendees, selectedDayKey]);
 
+  const searchExistingUsers = async () => {
+    const query = searchQuery.trim();
+    if (query.length < 2) {
+      Alert.alert("Search", "Enter at least 2 characters to search existing users.");
+      return;
+    }
+
+    try {
+      setSearchingUsers(true);
+      setHasSearchedUsers(true);
+      const response = await server.get(`/events/${eventId}/search-users`, {
+        params: { q: query },
+      });
+      setUserSearchResults(Array.isArray(response.data?.users) ? response.data.users : []);
+    } catch (error) {
+      console.error("Failed to search existing users:", error);
+      setUserSearchResults([]);
+      Alert.alert("Error", "Unable to search existing users.");
+    } finally {
+      setSearchingUsers(false);
+    }
+  };
+
+  const registerAndMarkAttendance = async (userId: string) => {
+    if (!selectedDayKey) {
+      Alert.alert("Select Day", "Choose a day before registering and checking in a user.");
+      setShowDayModal(true);
+      return;
+    }
+
+    const targetUser = userSearchResults.find((user) => user.id === userId);
+    const targetName = [targetUser?.firstName, targetUser?.lastName].filter(Boolean).join(" ") || "This user";
+
+    try {
+      setRegisteringUserId(userId);
+
+      const registerResponse = await server.post("/events/register", {
+        userId,
+        eventId,
+      });
+
+      const registrationId = registerResponse.data?.registrationId;
+      if (!registrationId) {
+        throw new Error("No registration ID returned for this user.");
+      }
+
+      await server.patch(`/registration/${registrationId}`, {
+        [selectedDayKey]: true,
+      });
+
+      setUserSearchResults((prev) => prev.filter((user) => user.id !== userId));
+      await fetchAttendees(true);
+
+      Alert.alert(
+        "Success",
+        `${targetName} has been registered and marked present for ${selectedDayKey.replace("day", "Day ")}.`
+      );
+    } catch (error) {
+      console.error("Failed to register and check in user:", error);
+      Alert.alert("Error", `Unable to register ${targetName} for this event.`);
+    } finally {
+      setRegisteringUserId(null);
+    }
+  };
+
   if (loading) {
     return (
       <View style={[tw`flex-1 justify-center items-center`, { backgroundColor: colors.background }]}>
@@ -541,7 +620,11 @@ const EventAttendance = () => {
               placeholder="Search attendees..."
               placeholderTextColor={colors.gray}
               value={searchQuery}
-              onChangeText={setSearchQuery}
+              onChangeText={(value) => {
+                setSearchQuery(value);
+                setUserSearchResults([]);
+                setHasSearchedUsers(false);
+              }}
               clearButtonMode="while-editing"
             />
             {searchQuery.length > 0 && (
@@ -550,6 +633,67 @@ const EventAttendance = () => {
               </TouchableOpacity>
             )}
           </View>
+          {filteredAttendees.length === 0 && searchQuery.trim().length >= 2 && (
+            <TouchableOpacity
+              onPress={searchExistingUsers}
+              disabled={searchingUsers}
+              style={[tw`mt-3 p-3 rounded-lg items-center`, { backgroundColor: colors.primary }]}
+            >
+              {searchingUsers ? (
+                <ActivityIndicator color={colors.white} />
+              ) : (
+                <Text style={{ color: colors.white, fontWeight: '600' }}>
+                  Search existing users
+                </Text>
+              )}
+            </TouchableOpacity>
+          )}
+          {userSearchResults.length > 0 && (
+            <View style={tw`mt-3`}>
+              <Text style={{ color: colors.gray, marginBottom: 8 }}>
+                Users not registered for this event
+              </Text>
+              {userSearchResults.map((user) => (
+                <View
+                  key={user.id}
+                  style={[tw`p-3 mb-2 rounded-lg`, { backgroundColor: isDarkMode ? colors.background : colors.lightGray }]}
+                >
+                  <View style={tw`flex-row justify-between items-start`}>
+                    <View style={tw`flex-1 pr-3`}>
+                      <Text style={{ color: colors.text, fontWeight: '600' }}>
+                        {[user.firstName, user.lastName].filter(Boolean).join(' ') || 'Unnamed user'}
+                      </Text>
+                      <Text style={{ color: colors.gray, marginTop: 2 }}>{user.email}</Text>
+                    </View>
+                    <TouchableOpacity
+                      onPress={() => registerAndMarkAttendance(user.id)}
+                      disabled={registeringUserId === user.id || !selectedDayKey}
+                      style={[
+                        tw`px-3 py-2 rounded-lg`,
+                        {
+                          backgroundColor: registeringUserId === user.id ? colors.gray : colors.primary,
+                          opacity: !selectedDayKey ? 0.5 : 1,
+                        }
+                      ]}
+                    >
+                      {registeringUserId === user.id ? (
+                        <ActivityIndicator color={colors.white} size="small" />
+                      ) : (
+                        <Text style={{ color: colors.white, fontWeight: '600', fontSize: 12 }}>
+                          Register & Check In
+                        </Text>
+                      )}
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              ))}
+            </View>
+          )}
+          {!searchingUsers && hasSearchedUsers && userSearchResults.length === 0 && filteredAttendees.length === 0 && (
+            <Text style={{ color: colors.gray, textAlign: 'center', marginTop: 12 }}>
+              No existing users found.
+            </Text>
+          )}
         </View>
 
         <FlatList
