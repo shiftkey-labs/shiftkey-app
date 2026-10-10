@@ -28,6 +28,7 @@ type ShiftTab = "available" | "booked" | "past";
 interface ShiftRecord {
   id: string;
   title: string;
+  shiftTime?: string | null;
   location?: string | null;
   startDate?: string | null;
   endDate?: string | null;
@@ -53,35 +54,6 @@ const emptyShiftState: ShiftState = {
   available: { items: [], loaded: false },
   booked: { items: [], loaded: false },
   past: { items: [], loaded: false },
-};
-
-const safeDate = (value?: string | null) => {
-  if (!value) return null;
-  const parsed = new Date(value);
-  if (Number.isNaN(parsed.getTime())) return null;
-  return parsed;
-};
-
-const formatShiftWindow = (start?: string | null, end?: string | null) => {
-  const parsedStart = safeDate(start);
-  const parsedEnd = safeDate(end);
-
-  if (parsedStart && parsedEnd) {
-    return `${parsedStart.toLocaleString()} - ${parsedEnd.toLocaleTimeString([], {
-      hour: "numeric",
-      minute: "2-digit",
-    })}`;
-  }
-
-  if (parsedStart) {
-    return parsedStart.toLocaleString();
-  }
-
-  if (parsedEnd) {
-    return parsedEnd.toLocaleString();
-  }
-
-  return "Schedule pending";
 };
 
 const normaliseShiftData = (payload: any): ShiftRecord[] => {
@@ -110,6 +82,7 @@ const normaliseShiftData = (payload: any): ShiftRecord[] => {
         item?.eventName ??
         item?.shiftName ??
         "Shift",
+      shiftTime: item?.shiftTime ?? null,
       location: item?.location ?? item?.venue ?? null,
       startDate: item?.startDate ?? item?.start_time ?? item?.start ?? null,
       endDate: item?.endDate ?? item?.end_time ?? item?.end ?? null,
@@ -376,7 +349,7 @@ const MyShifts = observer(() => {
 
   const renderShiftRow = useCallback(
     ({ item }: { item: ShiftRecord }) => {
-      const schedule = formatShiftWindow(item.startDate, item.endDate);
+      const schedule = item.shiftTime || "Schedule pending";
       const isProcessing =
         loadingShiftId === item.id ||
         claimingShiftId === item.id ||

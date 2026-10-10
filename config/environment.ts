@@ -16,8 +16,12 @@ const ENV: Record<string, EnvironmentConfig> = {
   },
 };
 
-// Get current environment from NODE_ENV, default to 'development'
-const currentEnv = process.env.NODE_ENV || 'development';
+const requestedEnv = (process.env.EXPO_PUBLIC_ENV ?? process.env.NODE_ENV ?? 'development') as keyof typeof ENV;
+const currentEnv: 'development' | 'production' = requestedEnv === 'production' ? 'production' : 'development';
+const apiUrl = process.env.EXPO_PUBLIC_BACKEND_URL || ENV[currentEnv].apiUrl;
 
-// Export the config for the current environment
-export default ENV[currentEnv];
+export default {
+  ...ENV[currentEnv],
+  apiUrl,
+  env: currentEnv,
+};
