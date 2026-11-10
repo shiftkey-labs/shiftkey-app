@@ -92,6 +92,29 @@ const normaliseShiftData = (payload: any): ShiftRecord[] => {
     .filter((item: ShiftRecord) => item.id);
 };
 
+const formatShiftDate = (value?: string | null): string => {
+  if (!value) {
+    return "Date pending";
+  }
+
+  const dateOnlyMatch = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  const date = dateOnlyMatch
+    ? new Date(
+        Number(dateOnlyMatch[1]),
+        Number(dateOnlyMatch[2]) - 1,
+        Number(dateOnlyMatch[3])
+      )
+    : new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  return date.toLocaleDateString(undefined, {
+    dateStyle: "medium",
+  });
+};
+
 const MyShifts = observer(() => {
   const { isDarkMode, colors } = useTheme();
   const [activeTab, setActiveTab] = useState<ShiftTab>("available");
@@ -380,6 +403,9 @@ const MyShifts = observer(() => {
               }}
             >
               {item.title}
+            </Text>
+            <Text style={{ color: colors.gray, marginTop: 6 }}>
+              {formatShiftDate(item.startDate)}
             </Text>
             <Text style={{ color: colors.gray, marginTop: 6 }}>{schedule}</Text>
             {item.location ? (
