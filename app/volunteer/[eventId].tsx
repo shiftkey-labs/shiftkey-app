@@ -368,36 +368,49 @@ const EventAttendance = () => {
         "Failed to fetch attendees:",
         error instanceof Error ? error.message : error
       );
-      Alert.alert("Error", "Failed to fetch attendees.");
+      const status =
+        typeof error === "object" &&
+        error !== null &&
+        "response" in error &&
+        typeof error.response === "object" &&
+        error.response !== null &&
+        "status" in error.response
+          ? error.response.status
+          : undefined;
+      if (status !== 401) {
+        Alert.alert("Error", "Failed to fetch attendees.");
+      }
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
   };
 
-  const markAttendance = async (registrationId: string, checkIn: boolean = true) => {
+  const markAttendance = async (registrationId: string, checkIn: boolean = true): Promise<boolean> => {
     if (!selectedDayKey) {
       Alert.alert("Error", "Please select a day first.");
       setShowDayModal(true);
-      return;
+      return false;
     }
 
     try {
-      // Optimistically remove from UI
-      setAttendees(prev => prev.filter(a => a.id !== registrationId));
-
       // PATCH the registration record with the day field
       await server.patch(`/registration/${registrationId}`, {
         [selectedDayKey]: checkIn
       });
 
-      // Refresh the list from server in the background
-      await fetchAttendees(true);
+      setAttendees((prev) =>
+        prev.map((attendee) =>
+          attendee.id === registrationId
+            ? { ...attendee, [selectedDayKey]: checkIn }
+            : attendee
+        )
+      );
+      return true;
     } catch (error) {
       console.error(error);
       Alert.alert("Error", `Failed to ${checkIn ? 'check in' : 'check out'}.`);
-      // Refetch on error to sync with backend
-      await fetchAttendees();
+      return false;
     }
   };
 
@@ -433,10 +446,12 @@ const EventAttendance = () => {
       setProcessingQR(true);
 
       // Mark attendance using the registration ID
-      await markAttendance(qrData.registrationId, true);
+      const attendanceMarked = await markAttendance(qrData.registrationId, true);
       setProcessingQR(false);
       setProcessingName("");
-      Alert.alert("Success", "Attendance marked successfully!");
+      if (attendanceMarked) {
+        Alert.alert("Success", "Attendance marked successfully!");
+      }
     } catch (error) {
       setProcessingQR(false);
       setProcessingName("");
